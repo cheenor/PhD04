@@ -18,13 +18,16 @@ import string
 import time 
 rgns=['ETP','WTP']
 fnm=['OBS_Surface_input.txt','Q1Q2_profiles_input.txt','.43','.49','.dyn',
-     '_lsforcing.37','_surface.39','_thetaqv_profile.41','_uv_profiles.35']
-nv=[3,2,3,3,5,2,5,2,2]    # number variables of every file
-ndim=[1,17,52,1,52,52,1,52,52]  # is the varlables has the vertical dimension
+     '_lsforcing.37','_surface.39','_thetaqv_profile.41','_uv_profiles.35',
+     '.99']
+nv=[3,2,3,3,5,2,5,2,2,2]    # number variables of every file
+ndim=[1,17,52,1,52,52,1,52,52,52]  # is the varlables has the vertical dimension
 dirin='Z:/DATA/LargeScale/TP/NcepR2_Pre/'
 fold2='/input/'
-pic_out='D:/MyPaper/PhD04/RawPics/'
+pic_out='D:/MyPaper/PhD04/RawPics_MJJAS/'
 det=datetime.timedelta(hours=6)
+lev99=[-8,-4,-2,2,6,9]
+color99=['g','g','g','r','r','r']
 ##################################################
 matplotlib.rcParams['xtick.direction'] = 'in'
 matplotlib.rcParams['ytick.direction'] = 'in'
@@ -48,13 +51,13 @@ for yd in ydat_r:
     ydat.append(yd*0.001)
 del ydat_r    
 ###########################################################################
-for iy in range(2011,2013):
+for iy in range(1990,2013):
     year=str(iy)  # number to string
     fold1=year[2:]+'0101'+'-'+year[2:]+'1231'  #### connect the string
     dirpath=dirin+fold1+fold2
     
     for rg in rgns:
-        for im in range(0,12):
+        for im in range(4,9):
             monstr="%02d"%(im+1)  ### number to string, 1 to 01, 10 to 10
             dnm=calendar.monthrange(iy,im+1)[1]  #calendar.monthrange(1997,7) 
 #                              #reture two index, sencond is the day number
@@ -68,7 +71,7 @@ for iy in range(2011,2013):
                 xdate.append(datetime.datetime.strftime( tm,"%b/%d"))  
             del dateiso    
             nf=len(fnm)
-            for n in range(0,nf):
+            for n in range(nf-1,nf): #range(0,nf):
                 onedim=[]
                 linesplit=[]
                 nsrts=0                
@@ -122,23 +125,24 @@ for iy in range(2011,2013):
                         else:
                             ydatx=ydat    
                         if zdat.any>0:
-                            axes[i]=plt.contour(xdat,ydatx,zdat,colors='r',
-                                    linewidths=1)
+                            matplotlib.rcParams['contour.negative_linestyle'] = 'dashed'
+                            axes[i]=plt.contour(xdat,ydatx,zdat,colors=color99,
+                                    linewidths=1,levels=lev99)
                             if len(ydatx)==17:
                                 plt.axis([0, dnm*4, 600,50])
                             else:
                                 plt.axis([0, dnm*4, 3.5, 18])
                             plt.clabel(axes[i],inline=1,fontsize=10) 
                             plt.show()                        
-                        if zdat.any<0:
-                            axes[i]=plt.contour(xdat,ydatx,zdat,linewidths=1,
-                                    colors='green',linestyles='dotted')
-                            if len(ydatx)==17:
-                                plt.axis([0, dnm*4,600,50])
-                            else:
-                                plt.axis([0, dnm*4, 3.5, 18])                                  
-                            plt.clabel(axes[i],inline=1,fontsize=10) 
-                            plt.show()
+#                        if zdat.any<0:
+#                            axes[i]=plt.contour(xdat,ydatx,zdat,linewidths=1,
+#                                    colors='green',linestyles='dotted')
+#                            if len(ydatx)==17:
+#                                plt.axis([0, dnm*4,600,50])
+#                            else:
+#                                plt.axis([0, dnm*4, 3.5, 18])                                  
+#                            plt.clabel(axes[i],inline=1,fontsize=10) 
+#                            plt.show()
                         axx=fig.add_subplot(nv[n],1,i)                         
                         axx.set_xticks(range(0,dnm*4,16))
                         xticklabels = [xdate[nn] for nn in range(0,dnm*4,16)] 
