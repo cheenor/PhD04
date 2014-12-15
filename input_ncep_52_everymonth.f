@@ -13,7 +13,7 @@ cc we add 3 levels in the stratosphere (21, 31, 42 km) assuming
 cc constant T to get deep sounding.
 cc
 cc number of time levels:
-      parameter(ntdat=125)
+      parameter(ntdat=125) !!! 30days 120+1, 31 days 124+1
       dimension tidat(ntdat),pl1(ntdat),pl2(ntdat),pl3(ntdat)
 cc level of test plot
       data ktest /30/
@@ -23,15 +23,15 @@ cc below are arrays defined at clarks model levels:
       dimension tx(2),tz(2)
       data rd,cp,g,rv,hlat /287.,1005.,9.81,461.,2.5e6/
       dimension tme1(l),the1(l),qve1(l),ue1(l),ve1(l),dtls(l),dqls(l)
-      dimension out1(l),out2(l),we1(l),q1ls(l),q2ls(l)
+      dimension out1(l),out2(l),we1(l),q1ls(l),q2ls(l),rhe1(l)
 	dimension outdy(l,4),omg_adj(l)
 cc npin is number of levels
 !     parameter(npin0=39,npin=42)
-	parameter(npin0=17,npin=19)
-      dimension press(npin),temp(npin),thet(npin),zin(npin),
-     1          vap(npin),uu(npin),vv(npin),ww(npin),rh(npin)
-      dimension tlsf(npin),qlsf(npin),XYN_OUT(npin,19)
-	real gz(npin),the(npin)
+	parameter(npin0=17,nltp=13,npin=15)
+      dimension press(npin0),temp(npin0),thet(npin0),zin(npin0),
+     1          vap(npin0),uu(npin0),vv(npin0),ww(npin0),rh(npin0)
+      dimension tlsf(npin0),qlsf(npin0),XYN_OUT(npin0,19)
+	real gz(npin0),the(npin0)
 cc
 cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
       parameter(nsst=9)
@@ -40,15 +40,15 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 	character monstr*2
 	character*16 date
 	integer ims(4),ids(4),ime(4),ide(4),days(12),tmid
-	integer im,id
+	integer im,id,kkk
       dimension tsst(nsst),dsst(nsst)
 !--------------------------------------------------------------------
-      parameter(ntm=124)
+      parameter(ntm=125)
       real lhf(ntm),shf(ntm)
 	data rd,cp,g,rv,hlat /287.,1005.,9.81,461.,2.5e6/
 !--------------------------------------------------------------------
       character*16 celord,fold2
-      real XYD(npin,19),dyn(npin,4)
+      real XYD(npin0,19),dyn(npin0,4)
 !---------------set the time ----------------------------------------
    	do i=1,12
 	  days(i)=31
@@ -57,12 +57,12 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 !	hour(2)='06:00'
 !	hour(3)='12:00'
 !	hour(4)='18:00'
-	 days(2)=28
-	 days(6)=30
-	 days(4)=30
-	 days(9)=30
-	 days(11)=30   
-	 iyr=2010      
+	days(2)=28
+	days(6)=30
+	days(4)=30
+	days(9)=30
+	days(11)=30   
+	iyr=2010      
 	ims(1)=6  ;ime(1)=7
 	ims(2)=6  ;ime(2)=7
 	ims(3)=5  ;ime(3)=6
@@ -80,73 +80,74 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
         fold2='input'
         write(yearstr,'(I4)')iyr
 		fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
-      	dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
+        dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
         istatus1=CHDIR(trim(dir)//trim(fold))
 	  istatus2=system("Md "//trim(fold2))
 	  fold2='input/'
-    	  do 1015 im=1,12 
+    	  do 1015 im=1,11
     	   days(2)=28
 	       if(mod(iyr,4)==0.and.mod(iyr,100)/=0)then
 	          days(2)=29 
 	       elseif(mod(iyr,400)==0)then
 	          days(2)=29
 	       endif
- 		    ims(1)=im  ;ime(1)=im
-			ims(2)=im  ;ime(2)=im
-			ims(3)=im  ;ime(3)=im
-			ims(4)=im  ;ime(4)=im
-			ids(1)=1  ;ide(1)=days(im)
-			ids(2)=1  ;ide(2)=days(im)
-			ids(3)=1  ;ide(3)=days(im)
-			ids(4)=1  ;ide(4)=days(im)
-			write(yearstr,'(I4)')iyr
-			write(monstr,'(I2.2)')im
-			fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
-      		dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
-			path=trim(dir)//trim(fold)
-			filepath=trim(dir)//trim(fold)//'daystrt.txt'
-			open(997,file=trim(filepath))
+ 		     ims(1)=im  ;ime(1)=im
+			 ims(2)=im  ;ime(2)=im
+			 ims(3)=im  ;ime(3)=im
+			 ims(4)=im  ;ime(4)=im
+			 ids(1)=1  ;ide(1)=days(im)
+			 ids(2)=1  ;ide(2)=days(im)
+			 ids(3)=1  ;ide(3)=days(im)
+			 ids(4)=1  ;ide(4)=days(im)
+			 write(yearstr,'(I4)')iyr
+			 write(monstr,'(I2.2)')im
+			 fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
+      		     dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
+			 path=trim(dir)//trim(fold)
+			 filepath=trim(dir)//trim(fold)//'daystrt.txt'
+			 open(997,file=trim(filepath))
 !-----------------------------------
 cc
 c       print*,'  ktest ??'
 c       read *,ktest
 cc
-      		tx(1)=0.
-      		tx(2)=40.
-      		tz(1)=0.
-      		tz(2)=0.
+      		    tx(1)=0.
+      		    tx(2)=40.
+      		    tz(1)=0.
+      		    tz(2)=0.
 ccccccccccccccc code below taken out from clarks model setup:
-      		nzm=l-1 
+      		    nzm=l-1 
 cc
 cc
-      		rat=15.
-      		XI(2)=0.
-      		DO 152 K=2,NZM
-      			RATZ=RAT
-      			DEL=100.
-      			nzm1=L-1
-      			k1=k
-      			XI(K+1)=XI(K)+((RATZ-1.)/FLOAT(NZM1-2)*FLOAT(K1-2)+1.)*DEL
-      			PRINT 501,K+1,XI(K+1)
-  501 FORMAT(2X,'** GRID: K,XI:  ',I5,E16.8)
+      		    rat=15.
+      		    XI(2)=0.
+      		    DO 152 K=2,NZM
+      			    RATZ=RAT
+      			    DEL=100.
+      			    nzm1=L-1
+      			    k1=k
+      			    XI(K+1)=XI(K)+((RATZ-1.)/FLOAT(NZM1-2)*FLOAT(K1-2)+1.)*DEL
+      			    PRINT 501,K+1,XI(K+1)
+  501           FORMAT(2X,'** GRID: K,XI:  ',I5,E16.8)
   152       CONTINUE
-      		xi(1)=2.*xi(2)-xi(3)
-      		xi(lp)=2.*xi(l)-xi(l-1)
-      		do k=1,l
-      			xis(k)=.5*(xi(k)+xi(k+1))
-      			z(k)=xis(k)
+      		        xi(1)=2.*xi(2)-xi(3)
+      		        xi(lp)=2.*xi(l)-xi(l-1)
+      		        do k=1,l
+      			        xis(k)=.5*(xi(k)+xi(k+1))
+      			        z(k)=xis(k)
 C	print*,z(k)
-     		    enddo
-     		    open(99,file='Z-Geo.txt')
-			write(99,9999)(z(k),k=1,l)
-9999        format(1X,52(1X,F10.3))
-            close(99)	 
+     		        enddo
+     		        open(99,file='D:\MyPaper\PhD04\FortranProjects
+     +\input_everymonth\Z-Geo.txt')
+			    write(99,9999)(z(k),k=1,l)
+9999            format(1X,52(1X,F10.3))
+                close(99)	 
 ccc sst data: convert time into hours
-      		do iii=1,nsst
-      			tsst(iii)=tsst(iii)*24.
-      		enddo
-      		nstsst=2 ! STARTING INDEX FOR INTERPOLATION FROM SST DATASET
-       		iwrite=0
+      		        do iii=1,nsst
+      			        tsst(iii)=tsst(iii)*24.
+      		        enddo
+      		        nstsst=2 ! STARTING INDEX FOR INTERPOLATION FROM SST DATASET
+       		    iwrite=0
 !!!-----TOGA sounding file open--------------
 !      open(10,file=
 !     *'/mnt/raid50/hiba/data_toga_obs_dat/ifa_dat_new.sounding'
@@ -161,47 +162,48 @@ ccc sst data: convert time into hours
 !     *'/mnt/raid50/hiba/data_toga_obs_dat/ifa_dat.surface'
 !     *,status='old')
 !----------------------------------------------------------
-      		do 1014 ip=1,3   ! area loops
-				tempress=0
-				temptemp=0
+      		        do 1014 ip=1,2   ! area loops   just for TP
+				    tempress=0
+				    temptemp=0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      			imts=0
-	 			imte=0 
-         		do imt=1,ims(ip)-1
-	    			 imts=imts+days(imt)
-	   		enddo
-	   		imts=imts*4+ids(ip)*4-4
-	   		do imt=1,ime(ip)-1
-	    			imte=imte+days(imt)
-	   		enddo	  
-        		imte=imte*4+ide(ip)*4
-	   		imt=imte-imts    
-	   		write(997,*)imts ,ip
+      			        imts=0
+	 			    imte=0 
+         		    do imt=1,ims(ip)-1
+	    			    imts=imts+days(imt)
+	   		    enddo
+	   		    imts=imts*4+ids(ip)*4-4
+	   		    do imt=1,ime(ip)-1
+	    			    imte=imte+days(imt)
+	   		    enddo	  
+        		    imte=imte*4+ide(ip)*4
+	   		    imt=imte-imts    
+	   		    write(997,*)imts ,ip
 !-------------------------------------------------------------
-     			    filepath=trim(dir)//trim(fold)//
-     +			     yearstr//trim(area(ip))//'_RAW.txt'
-      			filepath2=trim(dir)//trim(fold)//
-     +			     yearstr//trim(area(ip))//'_Surface.txt'
-    
-	   		call OBS(imts,ip,filepath,filepath2,ntdat,days(im)*4,monstr)
-      			open(90,file=trim(filepath))
-				read(90,*)
-				do i=1,imts*17
-      				read(90,*)
-				enddo
+     			        filepath=trim(dir)//trim(fold)//
+     +			        yearstr//trim(area(ip))//'_RAW.txt'
+      			        filepath2=trim(dir)//trim(fold)//
+     +			        yearstr//trim(area(ip))//'_Surface.txt'    
+	   		    call OBS(imts,ip,filepath,filepath2,days(im)*4+1
+     +                                       ,days(im)*4,monstr)
+      			        open(90,file=trim(filepath))
+				    read(90,*)
+				    do i=1,imts*17
+      				        read(90,*)
+				    enddo
 !----target 1 2 3 .....imts imts+1 ......imte.......1460-----------------
-
 !!!-------NCEP imitative sounding files open---------------
-      			filepath=trim(dir)//trim(fold)//trim(area(ip))//'_sounding.txt'
+      			        filepath=trim(dir)//trim(fold)//trim(area(ip))//
+     +                   '_sounding.txt'
 !   Press(hPa) heigh(m) U(m/s) V(m/s)  omega(pa/s) Temp(K) Theta(K) Qv(kg/kg) RH(%)
-      			open(10,file=trim(filepath))
-				read(10,*)
-				read(10,*)
-      			filepath=trim(dir)//trim(fold)//trim(area(ip))//'_Forcing.txt'
+      			        open(10,file=trim(filepath))
+				    read(10,*)
+				    read(10,*)
+      			        filepath=trim(dir)//trim(fold)//trim(area(ip))//
+     +                   '_Forcing.txt'
 !	TimeID 17_levels_T_forcing(K/day) 17_levels_qv_forcing(K/day)
-      			open(20,file=trim(filepath))
-				read(20,*)
-				read(20,*)
+      			        open(20,file=trim(filepath))
+				    read(20,*)
+				    read(20,*)
 !      	filepath=trim(dir)//trim(fold)//'2010'//trim(area(ip))//'_RAW.txt'
 !	'DATE','HOUR','T_ls(k/day)','Q_ls(k/day)','U(m/s)',
 !     +'V(m/s)','moisture(kg/kg)','HGT(m)','AIR(K)','Adj_omega(pa/s)',
@@ -211,69 +213,73 @@ ccc sst data: convert time into hours
 !      open(20,file=trim(filepath))
 !	read(20,*)
 
-				filepath=trim(dir)//trim(fold)//trim(area(ip))//'_surface22.txt'
+				    filepath=trim(dir)//trim(fold)//trim(area(ip))//'_surface22.txt'
 !	Press(hPa) heigh(m) U(m/s) V(m/s)  omega(pa/s) Temp(K) Theta(K) Qv(kg/kg) RH(%) for Surface
- 			    open(40,file=trim(filepath))
-				read(40,*)
-				read(40,*)
-				filepath=trim(dir)//trim(fold)//trim(area(ip))//'_HF.txt'
+ 			        open(40,file=trim(filepath))
+				    read(40,*)
+				    read(40,*)
+				    filepath=trim(dir)//trim(fold)//trim(area(ip))//'_HF.txt'
 !	TimeID latentHeat(W/m^2) SensibleHeat(W/m^2)  Precipipitable_water_for_entire_atmosphere(kg/m^2)
-     			open(30,file=trim(filepath))
-				read(30,*)
-				read(30,*)
-      			read(30,*)
-      			filepath=trim(dir)//trim(fold)//yearstr//
-     +			trim(area(ip))//'_dyn.txt'
+     			        open(30,file=trim(filepath))
+				    read(30,*)
+				    read(30,*)
+      			        read(30,*)
+      			        filepath=trim(dir)//trim(fold)//yearstr//
+     +			                    trim(area(ip))//'_dyn.txt'
 !	TimeID latentHeat(W/m^2) SensibleHeat(W/m^2)  Precipipitable_water_for_entire_atmosphere(kg/m^2)
-      			open(50,file=trim(filepath))
-				read(50,*)
+      			        open(50,file=trim(filepath))
+				    read(50,*)
 cc
 c      do ik=1,120
 c      read(30,876) iy,im,id,ih,bt,sst,fsh,flh
 c      enddo]
 !------------skip ----------------------------------------
-       			do i=1,imts
-       				read(30,*)
-	 			enddo
-      			do i=1,imts*18
-	 				read(10,*)
-	 			enddo
-       			do i=1,imts
-	 				read(20,*)
-	 			enddo
-	 			do i=1,imts
-	 				read(40,*)
-	 			enddo
-       			do i=1,imts*17
-	 				read(50,*)
-	 			enddo
+       			    do i=1,imts
+       				    read(30,*)
+	 			    enddo
+      			        do i=1,imts*18
+	 				    read(10,*)
+	 			    enddo
+       			    do i=1,imts 
+	 				    read(20,*)
+	 			    enddo
+	 			    do i=1,imts
+	 				    read(40,*)
+	 			    enddo
+       			    do i=1,imts*17
+	 				    read(50,*)
+	 			    enddo
 !---------------------------------------------------
-      			do 999 itim=1,days(im)*4 
-      				read(30,301) tmid,flh,fsh,pewr,cpewr
-!	print*, tmid,flh,fsh,pewr,cpewr
-301   format(1X,I4,1X,F8.2,1X,F8.2,1X,e12.4,1X,e12.4)
+                   open(111,file='D:\MyPaper\PhD04\FortranProjects\
+     +input_everymonth\input_everymonthzingz.txt')
+                    do 999 itim=1,days(im)*4+1   !!! why +1`, one more timestep than one month  
+      				        read(30,301) tmid,flh,fsh,pewr,cpewr
+!                       	print*, tmid,'30'
+301                     format(1X,I4,1X,F8.2,1X,F8.2,1X,e12.4,1X,e12.4)
 c 876  format(4i5,4f8.2)
 cc read sounding data for this time level:
-      				read(10,*)tmid
-      				do k=1,npin0
-      					read(10,101) press(k),gz(k),uu(k),vv(k),ww(k),temp(k),
-     +									the(k),vap(k),rh(k)
-      				enddo
+      				        read(10,*)tmid
+!                            print*,tmid,'10',days(im)*4
+
+      				        do k=1,npin0
+      					        read(10,101) press(k),gz(k),uu(k),vv(k),ww(k),
+     +									temp(k),the(k),vap(k),rh(k)
+      				        enddo
 !	print*,press(k),gz(k),uu(k),vv(k),ww(k),temp(k),
 !     +	the(k),vap(k),rh(k)
 c 176  format(1x,7e18.8)
 cc read first level (surface)
-     				 isfl=1
-      				if(ip==3)isfl=1
-     				read(40,101) press(isfl),gz(isfl),uu(isfl),vv(isfl),    !!! 4 = surface
-     +   				ww(isfl),temp(isfl), the(isfl),vap(isfl),rh(isfl),sst
+     				        isfl=5  !!!! for TP, the 5th levle (600hPa) is the surface
+
+     				        read(40,101) press(isfl),gz(isfl),uu(isfl),vv(isfl),    !!! 4 = surface
+     +   				     ww(isfl),temp(isfl), the(isfl),vap(isfl),rh(isfl),sst
 !	print*, press(1),gz(1),uu(1),vv(1),ww(1),temp(1),
 !     +	the(1),vap(1),rh(1)
-       				tempress=press(isfl)+tempress
-       				temptemp=temp(isfl)+temptemp
+       				    tempress=press(isfl)+tempress
+       				    temptemp=temp(isfl)+temptemp
 101   format(1X,4(1X,F9.3),1X,e12.4,2(1X,F9.2),1X,e12.4,1X,F7.3,1X,F7.3)
 !      				press(1)=1008.
-      				ww(1)=0.
+      				        ww(isfl)=0.
 cc extrapolate first level (surface)
 c     press(1)=1008.
 c     coe2=(press(1)-press(2))/(press(3)-press(2))
@@ -283,247 +289,269 @@ c     uu(1)=coe2*uu(3) + (1.-coe2)*uu(2)
 c     vv(1)=coe2*vv(3) + (1.-coe2)*vv(2)
 
 cc read ls forcing data for this time level:
-     				tlsf(isfl)=0.   ! 4=surdace
-      				qlsf(isfl)=0.
-       				do k=npin0+1,npin
-      					tlsf(k)=0.
-      					qlsf(k)=0.
-       				enddo
-      				read(20,201)tmid,tlsss,(tlsf(K),K=1,npin0),
-     + 				qlsfss, (qlsf(K),K=1,npin0)
-201   format(1X,I4,36(1X,e12.4))
+     				        tlsf(isfl)=0.   ! 4=surdace
+      				        qlsf(isfl)=0.
+      				        read(20,201)tmid,tlsss,(tlsf(K),K=1,npin0),
+     + 				                qlsfss, (qlsf(K),K=1,npin0)
+201                     format(1X,I4,36(1X,e12.4))
 
 c      read(20,776) (qlsf(K),K=2,npin0)
-      				tlsf(isfl)=0.
-     				 qlsf(isfl)=0.
+      				        tlsf(isfl)=0.
+     				        qlsf(isfl)=0.
 c 776  format(1x,5e20.8)
 !--------------read the q1 and q2 whcih are written by Chenjinghua 
-     				do ik=1,17
-	  		    read(90,906)celord,(XYD(ik,kk),kk=1,19)
-	  	    enddo
-906             format(1X,A16,1X,19(1X,e12.4))
-      			do ik=1,17
-	    			read(50,517)date,(dyn(ik,ir),ir=1,4)
-      			enddo  
-517             format(1X,A16,1X,4(1X,e12.4))
-
+     				        do ik=1,17
+	  		            read(90,906)celord,(XYD(ik,kk),kk=1,19)
+	  	            enddo
+906                     format(1X,A16,1X,19(1X,e12.4))
+      			            do ik=1,17
+	    			        read(50,517)date,(dyn(ik,ir),ir=1,4)
+      			            enddo  
+517                     format(1X,A16,1X,4(1X,e12.4))
+!!!!!! the following codes are for TP
+                        do k=1,nltp
+                           ik=k+4
+                           tlsf(k)=tlsf(ik)
+                           qlsf(k)=qlsf(ik)
+                           press(k)=press(ik)
+                           gz(k)=gz(ik)
+                           uu(k)=uu(ik)
+                           vv(k)=vv(ik)                          
+                            ww(k)=ww(ik)
+                           temp(k)=temp(ik)
+                           the(k)=the(ik)
+                           vap(k)=vap(ik)
+                           rh(k)=rh(ik)
+                           do ir=1,3
+                            dyn(k,ir)=dyn(ik,ir)
+                           end do
+                        end do
+                        do k=nltp+1,npin
+      					        tlsf(k)=0.
+      					        qlsf(k)=0.
+       				    enddo
 convert from temperature (deg C or K) into potential temperature
-      do k=1,npin0
-      temp(k)=temp(k) ! +273.16
-      thet(k)=temp(k)*(1.e3/press(k))**(rd/cp)
+                        do k=1,nltp  !npin0   !!!!  model level  npin0
+                            temp(k)=temp(k) ! +273.16
+                            thet(k)=temp(k)*(1.e3/press(k))**(rd/cp)
 cc !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     				 tlsf(k)=tlsf(k)*thet(k)/temp(k) ! theta forcing in K/day
+     				            tlsf(k)=tlsf(k)*thet(k)/temp(k) ! theta forcing in K/day
 c      tlsf(k)=tlsf(k) ! temperature forcing in K/day
-      				 qlsf(k)=qlsf(k)*cp/hlat           ! qv forcing in kg/kg/day
+      				            qlsf(k)=qlsf(k)*cp/hlat           ! qv forcing in kg/kg/day
 cc !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      			enddo
+      			            enddo
 
 compute approximated height of pressure levels:
-      			zin(1)=0.
-      			do k=2,npin0
-          			km=k-1
-            		tempk =temp(k ) * (1.+.6e-3*vap(k ))   !!!!Vap  vapor mixing  kg/kg
-            		tempkm=temp(km) * (1.+.6e-3*vap(km))
-                	delt=tempk-tempkm
-                    if(delt.gt.1.e-4) then
-                      tavi=alog(tempk/tempkm)/delt
-                    else
-                      tavi=1./tempk
-                    endif
-               		deltz=-rd/(tavi*g) * alog(press(k)/press(km))
-            		zin(k)=zin(km)+deltz
+      			            zin(1)=0.
+      			            do k=2,nltp   !npin0  !!!!!!!
+          			        km=k-1
+            		        tempk =temp(k ) * (1.+.6e-3*vap(k ))   !!!!Vap  vapor mixing  kg/kg
+            		        tempkm=temp(km) * (1.+.6e-3*vap(km))
+                	        delt=tempk-tempkm
+                            if(delt.gt.1.e-4) then
+                                tavi=alog(tempk/tempkm)/delt
+                            else
+                                tavi=1./tempk
+                            endif
+               		        deltz=-rd/(tavi*g) * alog(press(k)/press(km))
+            		        zin(k)=zin(km)+deltz
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	      			zin(k)=gz(k)
+!	      			    zin(k)=gz(k)
+                            write(111,*)k, '  zin',zin(k),'   gz',gz(k)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-      		enddo
+      		                enddo
 cc extrapolate stratosphere:
 !      zin(npin0+1)=21.e3
 !      zin(npin0+2)=31.e3
 !      zin(npin0+3)=42.5e3
 !      		print*,zin(16),zin(17),zin(18)
 !	zin(16)=21.e3
-      		zin(18)=35.e3
-      		zin(19)=42.5e3
+      		                zin(14)=35.e3
+      		                zin(15)=42.5e3
 !	stop
-      		temp00=temp(npin0)
-      		z00=zin(npin0)
-      		p00=press(npin0)
-      		den00=p00*1.e2/(rd*temp00)
-      		coe=g/(rd*temp00) 
+      		                temp00=temp(nltp)
+      		                z00=zin(nltp)
+      		                p00=press(nltp)
+      		                den00=p00*1.e2/(rd*temp00)
+      		                coe=g/(rd*temp00) 
 cc get rh at k=npin0:
-      		rh00=rh(npin0)/100.
+      		                rh00=rh(nltp)/100.
 cc          print*,' rh at k=npin0: ',rh00
 
-      		do k=npin0-3,npin0
-      			den=press(k)*1.e2/(rd*temp(k))
-      			esat=611.*exp(hlat/rv * (1./273.16 - 1./temp(k)))
-      			qvs00=esat/(rv*den*temp(k))
-      			rh(k)=0.1*rh(k-1)
-      			vap(k)=rh(k)/100.*qvs00*1.e3
-				vap(k)=vap(k)*1e-3  !!!!! unit  must follow the input data
-      		enddo
-
-			do k=npin0+1,npin
-     			 press(k)=p00*exp(-coe*(zin(k)-z00))
-      			temp(k)=temp(npin0)
-      			thet(k)=temp(k)*(1.e3/press(k))**(rd/cp)
-      			den=press(k)*1.e2/(rd*temp(k))
-      			esat=611.*exp(hlat/rv * (1./273.16 - 1./temp(k)))
-      			qvs00=esat/(rv*den*temp(k))
+      		                do k=nltp-3,nltp   !npin0-3,npin0
+      			                den=press(k)*1.e2/(rd*temp(k))
+      			                esat=611.*
+     +                           exp(hlat/rv * (1./273.16 - 1./temp(k)))
+      			                qvs00=esat/(rv*den*temp(k))
+      			                rh(k)=0.1*rh(k-1)
+      			                vap(k)=rh(k)/100.*qvs00*1.e3
+				            vap(k)=vap(k)*1e-3  !!!!! unit  must follow the input data
+      		                enddo
+			            do k=nltp+1,npin
+     			                press(k)=p00*exp(-coe*(zin(k)-z00))
+!                            if(k==npin) print*,press(k),p00,zin(k),z00,k
+      			                temp(k)=temp(nltp)
+      			                thet(k)=temp(k)*(1.e3/press(k))**(rd/cp)
+      			                den=press(k)*1.e2/(rd*temp(k))
+      			                esat=611.*
+     +                           exp(hlat/rv * (1./273.16 - 1./temp(k)))
+      			                qvs00=esat/(rv*den*temp(k))
 c     vap(k)=0.1*rh00*qvs00*1.e3
 c     rh(k)=0.1*rh00*100.
-      			rh(k)=0.1*rh(k-1)
-      			vap(k)=rh(k)/100.*qvs00*1.e3
-      			vap(k)=vap(k)*1e-3  !!!!! unit  must follow the input data
-      			uu(k)=uu(npin0)
-      			vv(k)=vv(npin0)
-      			ww(k)=ww(npin0)
-      		enddo
+      			                rh(k)=0.1*rh(k-1)
+      			                vap(k)=rh(k)/100.*qvs00*1.e3
+      			                vap(k)=vap(k)*1e-3  !!!!! unit  must follow the input data
+      			                uu(k)=uu(nltp)
+      			                vv(k)=vv(nltp)
+      			                ww(k)=ww(nltp)
+      		                enddo
 ccc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !	from 1000 or surface
 c write initial sounding to fort.33 if itim is the starting time:
-     	   filename=trim(dir)//trim(fold)//trim(fold2)//
-     +     	    trim(area(ip))//monstr//'.33'
-		   open(33,file=trim(filename))
+     	                 filename=trim(dir)//trim(fold)//trim(fold2)//
+     +     	                trim(area(ip))//monstr//'.33'
+		               open(33,file=trim(filename))
 !     	   if(itim.eq.17) then
-       		 if(itim.eq.1) then
-				npin00=npin
-     			 write(33,701) (press(k),k=1,npin00)
+                       if(itim.eq.1) then   !!! the first step of sounding
+!            Make sure the pressure is declining along with the altitude  
+                          npin00=npin
+	                    kkk=1
+     	                    write(33,701) (press(k),k=kkk,npin00)
 701    format(5x,16h  data press  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
      1        5x,3h1  ,4(f7.2,1h,),f7.2,1h/) 
-      write(33,702) (temp(k)-273.16,k=1,npin00)
+                          write(33,702) (temp(k)-273.16,k=kkk,npin00)
 702    format(5x,15h  data temp  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
      1        5x,3h1  ,4(f7.2,1h,),f7.2,1h/) 
-      write(33,703) (vap(k)*1000,k=1,npin00)
+                          write(33,703) (vap(k)*1000,k=kkk,npin00)
 703    format(5x,14h  data vap  / /
-     1        5x,3h1  ,5(e10.3,1h,)/
-     1        5x,3h1  ,5(e10.3,1h,)/
-     1        5x,3h1  ,5(e10.3,1h,)/
+     1        5x,3h1  ,4(e10.3,1h,)/
+     1        5x,3h1  ,4(e10.3,1h,)/
+     1        5x,3h1  ,4(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
-     1        5x,3h1  ,3(e10.3,1h,),e10.3,1h/) 
-      write(33,704) (uu(k),k=1,npin00)
+     1        5x,3h1  ,2(e10.3,1h,),e10.3,1h/) 
+                          write(33,704) (uu(k),k=kkk,npin00)
 704    format(5x,12h  data u  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
      1        5x,3h1  ,4(f7.2,1h,),f7.2,1h/) 
-      write(33,705) (vv(k),k=1,npin00)
+                        write(33,705) (vv(k),k=kkk,npin00)
 705    format(5x,12h  data v  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
  !    1        5x,3h1  ,7(f7.2,1h,)/
  !    1        5x,3h1  ,7(f7.2,1h,)/
  !    1        5x,3h1  ,7(f7.2,1h,)/
      1        5x,3h1  ,4(f7.2,1h,),f7.2,1h/) 
 
 ccc flag to write other data
-          			itims=itim
-          			iwrite=1
-
-      		endif
+          			    itims=itim
+          			    iwrite=1
+      		            endif  !end of firtst step
 compute environmental profiles from sounding assuming no topography:
-      		iisn=1
-      		the1(iisn)=thet(iisn)
-      		tme1(iisn)=temp(iisn)
-      		qve1(iisn)=vap(iisn)      !*1.e-3
-      		ue1(iisn)=uu(iisn)
-      		ve1(iisn)=vv(iisn)
-      		we1(iisn)=ww(iisn)
-      		presst=press(iisn)
+      		            iisn=1
+                    rhe1(iisn)=rh(iisn)
+      		            the1(iisn)=thet(iisn)
+      		            tme1(iisn)=temp(iisn)
+      		            qve1(iisn)=vap(iisn)      !*1.e-3
+      		            ue1(iisn)=uu(iisn)
+      		            ve1(iisn)=vv(iisn)
+      		            we1(iisn)=ww(iisn)
+      		            presst=press(iisn)
 c      q1ls(iisn)=XYD(iisn,11)
 c 	q2ls(iisn)=XYD(iisn,12)
 cc integrate upwards:
-      		filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     + 	             monstr//'_uv_profiles.35'
-			open(35,file=trim(filename))
-	
-      		filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     + 		            monstr//'_lsforcing.37'
-			open(37,file=trim(filename))
-	
-      		filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     + 		            monstr//'_surface.39' 
-			open(39,file=trim(filename))
-	  		filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     +	  		            monstr//'.49'
-			open(49,file=trim(filename))
-	  		filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     +		                        monstr//'_thetaqv_profile.41'   !!!!!! unit theta(K)  qv g/kg 
-			open(41,file=trim(filename))
-	 		 filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     +          	 		 monstr//'.43'
-			open(43,file=trim(filename))
-	  		filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     +              	  		monstr//'.99'
-			open(99,file=trim(filename))
-			filename=trim(dir)//trim(fold)//trim(fold2)//trim(area(ip))//
-     +              			monstr//'.dyn'
-			open(999,file=trim(filename))
+      		            filename=trim(dir)//trim(fold)//trim(fold2)//
+     + 	                 trim(area(ip))//monstr//'_uv_profiles.35'
+			        open(35,file=trim(filename))	
+      		            filename=trim(dir)//trim(fold)//trim(fold2)//
+     + 		             trim(area(ip))//monstr//'_lsforcing.37'
+			        open(37,file=trim(filename))
+      		            filename=trim(dir)//trim(fold)//trim(fold2)//
+     + 		             trim(area(ip))//monstr//'_surface.39' 
+			        open(39,file=trim(filename))
+	  		    filename=trim(dir)//trim(fold)//trim(fold2)//
+     +	  		         trim(area(ip))//monstr//'.49'
+			        open(49,file=trim(filename))
+	  		    filename=trim(dir)//trim(fold)//trim(fold2)//
+     +		                 trim(area(ip))//monstr//'_thetaqv_profile.41'   !!!!!! unit theta(K)  qv g/kg 
+			        open(41,file=trim(filename))
+	 		        filename=trim(dir)//trim(fold)//trim(fold2)//
+     +          	 	 trim(area(ip))//monstr//'.43'
+			        open(43,file=trim(filename))
+	  		    filename=trim(dir)//trim(fold)//trim(fold2)//
+     +              	 trim(area(ip))//monstr//'.99'
+			        open(99,file=trim(filename))
+			        filename=trim(dir)//trim(fold)//trim(fold2)//
+     +              	 trim(area(ip))//monstr//'.dyn'
+			        open(999,file=trim(filename))
 
-      		do 64 k=2,l
-       			do kk=2,npin
-        			iisn=kk-1
+      		            do 64 k=2,l
+       			        do kk=2,npin  !!!! from 2 or
+        			        iisn=kk-1
 !	   	print*,zin(kk),z(k),k,kk
-        			if(zin(kk).ge.z(k)) go to 665
-       			enddo
-      			 print*,' *** input sounding does not go high enough. stop.'
-              stop 'sounding'
- 665   		continue 
-       		coe2=(z(k)-zin(iisn))/(zin(iisn+1)-zin(iisn))
+        			        if(zin(kk).ge.z(k)) go to 665
+       			        enddo
+      			print*,' *** input sounding does not go high enough. stop.'
+            stop 'sounding'
+ 665   		            continue 
+       		            coe2=(z(k)-zin(iisn))/(zin(iisn+1)-zin(iisn))
 c	print*,coe2,z(k),zin(iisn)
-       		the1(k)=coe2*thet(iisn+1) + (1.-coe2)*thet(iisn)
-       		tme1(k)=coe2*temp(iisn+1) + (1.-coe2)*temp(iisn)
-       		qve1(k)=(coe2*vap(iisn+1) + (1.-coe2)*vap(iisn))!*1.e-3
-       		ue1(k)=coe2*uu(iisn+1) + (1.-coe2)*uu(iisn)
-       		ve1(k)=coe2*vv(iisn+1) + (1.-coe2)*vv(iisn)
-       		we1(k)=coe2*ww(iisn+1) + (1.-coe2)*ww(iisn)
-       		dtls(k)=coe2*tlsf(iisn+1) + (1.-coe2)*tlsf(iisn)
-       		dqls(k)=coe2*qlsf(iisn+1) + (1.-coe2)*qlsf(iisn)
-	 		q1ls(k)=coe2*XYD(iisn+1,11) + (1.-coe2)*XYD(iisn,11)
-	 		q2ls(k)=coe2*XYD(iisn+1,12) + (1.-coe2)*XYD(iisn,12)
-			omg_adj(k)=coe2*XYD(iisn+1,8) + (1.-coe2)*XYD(iisn,8) 
-	 		do idy=1,4
-       			outdy(k,idy)=coe2*dyn(iisn+1,idy) + (1.-coe2)*dyn(iisn,idy)
- 	  		enddo  
- 64  		continue
+       		            the1(k)=coe2*thet(iisn+1) + (1.-coe2)*thet(iisn)
+       		            tme1(k)=coe2*temp(iisn+1) + (1.-coe2)*temp(iisn)
+       		            qve1(k)=(coe2*vap(iisn+1) + (1.-coe2)*vap(iisn))!*1.e-3
+       		            ue1(k)=coe2*uu(iisn+1) + (1.-coe2)*uu(iisn)
+       		            ve1(k)=coe2*vv(iisn+1) + (1.-coe2)*vv(iisn)
+       		            we1(k)=coe2*ww(iisn+1) + (1.-coe2)*ww(iisn)
+       		            dtls(k)=coe2*tlsf(iisn+1) + (1.-coe2)*tlsf(iisn)
+       		            dqls(k)=coe2*qlsf(iisn+1) + (1.-coe2)*qlsf(iisn)
+	 		            q1ls(k)=coe2*XYD(iisn+1,11) + (1.-coe2)*XYD(iisn,11)
+	 		            q2ls(k)=coe2*XYD(iisn+1,12) + (1.-coe2)*XYD(iisn,12)
+			            omg_adj(k)=coe2*XYD(iisn+1,8) + (1.-coe2)*XYD(iisn,8) 
+                        rhe1(k)=coe2*rh(iisn+1) + (1.-coe2)*rh(iisn)
+	 		            do idy=1,4
+       			            outdy(k,idy)=coe2*dyn(iisn+1,idy) + 
+     +                          (1.-coe2)*dyn(iisn,idy)
+ 	  		        enddo  
+ 64  		            continue
 
 cc scale and write to files:
-            if(iwrite.eq.1) then
-	    		itims=1
-          		time = float(itim-itims)*6.
-         		tidat(itim-itims+1)=(itim-itims)*6./24.
+                    if(iwrite.eq.1) then
+	    		        itims=1
+          		        time = float(itim-itims)*6.
+         		        tidat(itim-itims+1)=(itim-itims)*6./24.
 cc   velocity profiles for selected period (fort.35); NOTE ROTATION
-          		svel=10.    ! velocity scale in Clarks model
-          		do k=1,l
-          			out1(k)=-ve1(k)/svel
-         			out2(k)= ue1(k)/svel
-          		enddo
-          		write(35,801) time,out1,out2
-801       		format(10f8.3)
+          		        svel=10.    ! velocity scale in Clarks model
+          		        do k=1,l
+          			        out1(k)=-ve1(k)/svel
+         			        out2(k)= ue1(k)/svel
+          		        enddo
+          		        write(35,801) time,out1,out2
+801       		        format(10f8.3)
 cc   profiles for l-s forcing terms (fort.37)
-          		day=24.*3600.
-          		out1(1)=0.
-          		out2(1)=0.
-          		do k=2,l
-          			out1(k)=dtls(k)/day    ! now in K/sec
-          			out2(k)=dqls(k)/day    ! now in kg/kg/sec
+          		        day=24.*3600.
+          		        out1(1)=0.
+          		        out2(1)=0.
+          		        do k=2,l
+          			        out1(k)=dtls(k)/day    ! now in K/sec
+          			        out2(k)=dqls(k)/day    ! now in kg/kg/sec
 cccccccccccc
 cc   set forcing to zero above 17km (17.19km at level 33)
 c         if(k.ge.33) then
@@ -531,14 +559,14 @@ c         out1(k)=0.
 c         out2(k)=0.
 c         endif
 cccccccccccccccccccc
-          		enddo
-          		write(37,802) time,out1,out2
-          		write(99,802) time,q1ls,q2ls
-          		write(999,802)time,outdy(:,1),outdy(:,2),outdy(:,3)
-     +	   						,outdy(:,4),omg_adj
-802       		format(8e12.4)
-           		pl1(itim-itims+1)=out1(ktest)*day
-            	pl2(itim-itims+1)=out2(ktest)*1.e3*day
+          		        enddo
+          		        write(37,802) time,out1,out2
+          		        write(99,802) time,q1ls,q2ls
+          		        write(999,802)time,outdy(:,1),outdy(:,2),
+     +	   						outdy(:,3),outdy(:,4),omg_adj
+802       		        format(8e12.4)
+           		        pl1(itim-itims+1)=out1(ktest)*day
+            	        pl2(itim-itims+1)=out2(ktest)*1.e3*day
 
 cc   time series of ocean surface theta and qv (fort.39)
 c     time2=time+itims*6.
@@ -548,49 +576,48 @@ c     enddo
 ccccccc interpolate ocean temp:
 c      coe2=(time2-tsst(nstsst-1))/(tsst(nstsst)-tsst(nstsst-1))
 c        sst=coe2*dsst(nstsst) + (1.-coe2)*dsst(nstsst-1)
-          		sst=temp(1)
-          		ths=sst*(the1(1)+the1(2))/(tme1(1)+tme1(2))
-          		den=press(1)*1.e2/(rd*temp(1))
-          		esat=611.*exp(hlat/rv * (1./273.16 - 1./sst))
-          		qvss=esat/(rv*den*sst)
-         		write(39,803) time,ths,qvss,sst,flh,fsh   !!! what are the units?
-          		write(49,903) time,sst,ths,qvss
-803       		format(6e16.5)
-903       		format(4e16.5)
-            	pl3(itim-itims+1)=sst
+          		        sst=temp(1)
+          		        ths=sst*(the1(1)+the1(2))/(tme1(1)+tme1(2))
+          		        den=press(1)*1.e2/(rd*temp(1))
+          		        esat=611.*exp(hlat/rv * (1./273.16 - 1./sst))
+          		        qvss=esat/(rv*den*sst)
+         		        write(39,803) time,ths,qvss,sst,flh,fsh   !!! what are the units?
+          		        write(49,903) time,sst,ths,qvss
+803       		        format(6e16.5)
+903       		        format(4e16.5)
+            	        pl3(itim-itims+1)=sst
 cc   theta and qv profiles for selected period (fort.41)
-          		do k=1,l
-          			out1(k)=the1(k)
-          			out2(k)=qve1(k)
-          		enddo
-          		write(41,804) time,out1,out2
-          		write(43,804) time,out1,out2,tme1
-804       		format(8e13.5)
-            endif
+          		        do k=1,l
+          			        out1(k)=the1(k)
+          			        out2(k)=qve1(k)
+          		        enddo
+          		        write(41,804) time,out1,out2
+          		        write(43,804) time,out1,out2,tme1,rhe1,ue1,ve1,we1
+804       		        format(8e13.5)
+                    endif
 
-999     continue
+999             continue
          
-        write(997,*)tempress/125. ,ip
-	   	write(997,*)temptemp/125., ip
-1014   continue       
-       close(997)
-       close(99)
-       close(90)
-       close(10)
-       close(20)
-       close(30)
-       close(40)
-       close(50)
-       close(33)
-       close(35)
-       close(37)
-       close(39)
-       close(49)
-       close(43)
-       close(41)
-       close(999)
-1015   continue
-
+                write(997,*)tempress/(days(im)*4+1.),ip,days(im),im
+	   	    write(997,*)temptemp/(days(im)*4+1.), ip,days(im),im
+1014        continue       
+            close(997)
+            close(99)
+            close(90)
+            close(10)
+            close(20)
+            close(30)
+            close(40)
+            close(50)
+            close(33)
+            close(35)
+            close(37)
+            close(39)
+            close(49)
+            close(43)
+            close(41)
+            close(999)
+1015      continue
 1016   continue
       stop
       end
@@ -643,12 +670,12 @@ cc   theta and qv profiles for selected period (fort.41)
        fouts=fraw(1:ilen-15)//'input'//fraw(ilen-15:ilen-7)//
      +  monstr//'Q1Q2_profiles_input.txt'
        open(50,file=trim(fouts))
-	 write(50,*)'Timestep Q1_level1_to_17 Q2_level1_to_17'  !!!! the first level is not zero 
+	 write(50,*)'Timestep Q1_level5_to_17 Q2_level5_to_17'  !!!! the first level is not zero 
 
 	 do it=1,ntdat
 	 write(40,1014)it*1.0,Q1Q2(it,1),Q1Q2(it,2),XYS(it,3)*3600.0
-       write(50,417)it*1.0,(XYD(it,kk,11),kk=1,17),
-     +	 (XYD(it,kk,12),kk=1,17)
+       write(50,417)it*1.0,(XYD(it,kk,11),kk=5,17),
+     +	 (XYD(it,kk,12),kk=5,17)
 	 enddo 
 
 

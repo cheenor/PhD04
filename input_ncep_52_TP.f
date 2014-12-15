@@ -35,10 +35,11 @@ cc npin is number of levels
 cc
 cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
       parameter(nsst=9)
-	character*100 dir,filepath,path,fold,filename,filepath2
+	character*100 dir,filepath,path,fold,filename,filepath2,dirout
+	character*100 foldout,fileout(3)
 	character*4 yearstr,area(4)
-	character*16 date
-	integer ims(4),ids(4),ime(4),ide(4),days(12),tmid
+	character*16 date,etpdate,wtpdate,bobdate
+	integer ims(4),ids(4),ime(4),ide(4),days(12),tmid,kkk
       dimension tsst(nsst),dsst(nsst)
 !--------------------------------------------------------------------
       parameter(ntm=124)
@@ -48,22 +49,46 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
       character*16 celord
       real XYD(npin,19),dyn(npin,4)
 !---------------set the time ----------------------------------------
-      iyr=2010
-	ims(1)=6  ;ime(1)=7
-	ims(2)=6  ;ime(2)=7
-	ims(3)=5  ;ime(3)=6
-	ims(4)=8  ;ime(4)=8
-	ids(1)=24  ;ide(1)=23
-	ids(2)=24  ;ide(2)=23
-	ids(3)=25  ;ide(3)=24
-	ids(4)=1  ;ide(4)=31
-	write(yearstr,'(I4)')iyr
-	fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
-      dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
 	area(1)='WTP'
 	area(2)='ETP'
 	area(3)='BOB'
 	area(4)='NEC'
+      iyr=1979
+	ims(1)=8  ;ime(1)=8
+	ims(2)=6  ;ime(2)=7
+	ims(3)=5  ;ime(3)=5
+	ims(4)=8  ;ime(4)=8
+	ids(1)=1  ;ide(1)=31
+	ids(2)=22  ;ide(2)=23
+	ids(3)=25  ;ide(3)=24
+	ids(4)=1  ;ide(4)=31
+	
+	etpdate='0622-0723'
+	wtpdate='0801-0831'
+	bobdate='0501-0531'
+	write(yearstr,'(I4)')iyr
+	fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
+      dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
+      dirout='D:\MyPaper\PhD04\Data\'
+      istatus1=CHDIR(trim(dirout)) !!! year!
+	istatus2=system("Md "//trim(yearstr))
+	foldout=trim(dirout)//yearstr
+	istatus1=CHDIR(trim(foldout))
+	istatus2=system("Md ETP")
+	istatus2=system("Md WTP")
+	istatus2=system("Md BOB")
+	foldout=trim(dirout)//yearstr//'\'//'ETP'
+	istatus1=CHDIR(trim(foldout))
+	istatus2=system("Md "//trim(etpdate))
+	foldout=trim(dirout)//yearstr//'\'//'WTP'
+	istatus1=CHDIR(trim(foldout))
+	istatus2=system("Md "//trim(wtpdate))	
+	foldout=trim(dirout)//yearstr//'\'//'BOB'
+	istatus1=CHDIR(trim(foldout))
+	istatus2=system("Md "//trim(bobdate))	
+      fileout(1)=trim(dirout)//yearstr//'\'//'WTP\'//trim(wtpdate)//'\'
+      fileout(2)=trim(dirout)//yearstr//'\'//'ETP\'//trim(etpdate)//'\'
+      fileout(3)=trim(dirout)//yearstr//'\'//'BOB\'//trim(bobdate)//'\'
 	path=trim(dir)//trim(fold)
 	do i=1,12
 	  days(i)=31
@@ -82,7 +107,7 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 	 elseif(mod(iyr,400)==0)then
 	 days(2)=29
 	 endif
-	filepath=trim(dir)//trim(fold)//'daystrt.txt'
+	filepath=trim(dirout)//trim(yearstr)//'/ETP/daystrt.txt'
 	open(997,file=trim(filepath))
 !-----------------------------------
 cc
@@ -154,7 +179,7 @@ ccc sst data: convert time into hours
 	   enddo	  
          imte=imte*4+ide(ip)*4
 	   imt=imte-imts    
-	   write(997,*)imts ,ip
+	   write(997,*)'TimeS',' ',imts ,'Days',imts/4,ip,area(ip)
 !-------------------------------------------------------------
       filepath=trim(dir)//trim(fold)//
      +yearstr//trim(area(ip))//'_RAW.txt'
@@ -281,10 +306,10 @@ c      read(20,776) (qlsf(K),K=2,npin0)
       qlsf(isfl)=0.
 c 776  format(1x,5e20.8)
 !--------------read the q1 and q2 whcih are written by Chenjinghua 
-     do ik=1,17
+      do ik=1,17
 	   read(90,906)celord,(XYD(ik,kk),kk=1,19)
 	   enddo
-906  format(1X,A16,1X,19(1X,e12.4))
+906   format(1X,A16,1X,19(1X,e12.4))
       do ik=1,17
 	     read(50,517)date,(dyn(ik,ir),ir=1,4)
       enddo  
@@ -368,50 +393,59 @@ ccc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !	from 1000 or surface
 c write initial sounding to fort.33 if itim is the starting time:
-      filename=trim(dir)//trim(fold)//trim(area(ip))//'.33'
+      filename=trim(fileout(ip))//trim(area(ip))//'.33'
 	open(33,file=trim(filename))
 !      if(itim.eq.17) then
        if(itim.eq.1) then
 	npin00=npin
-      write(33,701) (press(k),k=1,npin00)
+	kkk=1
+	do k=2,npin00
+	   if(press(k)<press(1))then
+	       kkk=k
+	       print*, kkk
+	       goto 699
+	    endif    
+	enddo
+699   continue	
+      write(33,701) press(1),(press(k),k=kkk,npin00)
 701    format(5x,16h  data press  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
      1        5x,3h1  ,4(f7.2,1h,),f7.2,1h/) 
-      write(33,702) (temp(k)-273.16,k=1,npin00)
+      write(33,702) temp(1)-273.16,(temp(k)-273.16,k=kkk,npin00)
 702    format(5x,15h  data temp  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
      1        5x,3h1  ,4(f7.2,1h,),f7.2,1h/) 
-      write(33,703) (vap(k)*1000,k=1,npin00)
+      write(33,703) vap(1)*1000,(vap(k)*1000,k=kkk,npin00)
 703    format(5x,14h  data vap  / /
      1        5x,3h1  ,5(e10.3,1h,)/
      1        5x,3h1  ,5(e10.3,1h,)/
-     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
 !     1        5x,3h1  ,5(e10.3,1h,)/
-     1        5x,3h1  ,3(e10.3,1h,),e10.3,1h/) 
-      write(33,704) (uu(k),k=1,npin00)
+!     1        5x,3h1  ,5(e10.3,1h,)/
+     1        5x,3h1  ,4(e10.3,1h,),e10.3,1h/) 
+      write(33,704)uu(1), (uu(k),k=kkk,npin00)
 704    format(5x,12h  data u  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
 !     1        5x,3h1  ,7(f7.2,1h,)/
      1        5x,3h1  ,4(f7.2,1h,),f7.2,1h/) 
-      write(33,705) (vv(k),k=1,npin00)
+      write(33,705) vv(1),(vv(k),k=kkk,npin00)
 705    format(5x,12h  data v  / /
-     1        5x,3h1  ,7(f7.2,1h,)/
-     1        5x,3h1  ,7(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
+     1        5x,3h1  ,5(f7.2,1h,)/
  !    1        5x,3h1  ,7(f7.2,1h,)/
  !    1        5x,3h1  ,7(f7.2,1h,)/
  !    1        5x,3h1  ,7(f7.2,1h,)/
@@ -435,24 +469,24 @@ compute environmental profiles from sounding assuming no topography:
 c      q1ls(iisn)=XYD(iisn,11)
 c 	q2ls(iisn)=XYD(iisn,12)
 cc integrate upwards:
-      filename=trim(dir)//trim(fold)//trim(area(ip))//'_uv_profiles.35'
+      filename=trim(fileout(ip))//trim(area(ip))//'_uv_profiles.35'
 	open(35,file=trim(filename))
 	
-      filename=trim(dir)//trim(fold)//trim(area(ip))//'_lsforcing.37'
+      filename=trim(fileout(ip))//trim(area(ip))//'_lsforcing.37'
 	open(37,file=trim(filename))
 	
-      filename=trim(dir)//trim(fold)//trim(area(ip))//'_surface.39' 
+      filename=trim(fileout(ip))//trim(area(ip))//'_surface.39' 
 	open(39,file=trim(filename))
-	  filename=trim(dir)//trim(fold)//trim(area(ip))//'.49'
+	  filename=trim(fileout(ip))//trim(area(ip))//'.49'
 	open(49,file=trim(filename))
-	  filename=trim(dir)//trim(fold)//trim(area(ip))//
+	  filename=trim(fileout(ip))//trim(area(ip))//
      +'_thetaqv_profile.41'   !!!!!! unit theta(K)  qv g/kg 
 	open(41,file=trim(filename))
-	  filename=trim(dir)//trim(fold)//trim(area(ip))//'.43'
+	  filename=trim(fileout(ip))//trim(area(ip))//'.43'
 	open(43,file=trim(filename))
-	  filename=trim(dir)//trim(fold)//trim(area(ip))//'.99'
+	  filename=trim(fileout(ip))//trim(area(ip))//'.99'
 	open(99,file=trim(filename))
-	filename=trim(dir)//trim(fold)//trim(area(ip))//'.dyn'
+	filename=trim(fileout(ip))//trim(area(ip))//'.dyn'
 	open(999,file=trim(filename))
 
       do 64 k=2,l

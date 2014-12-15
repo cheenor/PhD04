@@ -22,17 +22,21 @@ fnm=['OBS_Surface_input.txt','Q1Q2_profiles_input.txt','.43','.49','.dyn',
      '.99']
 nv=[3,2,3,3,5,2,5,2,2,2]    # number variables of every file
 ndim=[1,17,52,1,52,52,1,52,52,52]  # is the varlables has the vertical dimension
-dirin='Z:/DATA/LargeScale/TP/NcepR2_Pre/'
+dirin='Z:/DATA/LargeScale/TP/NcepR2_Pre_new/'
 fold2='/input/'
-pic_out='D:/MyPaper/PhD04/RawPics_MJJAS/'
+pic_out='D:/MyPaper/PhD04/RawPics_MJJAS_new/'
 det=datetime.timedelta(hours=6)
-lev99=[-8,-4,-2,2,6,9]
+lev99=[-9,-6,-3,3,6,9]
 color99=['g','g','g','r','r','r']
+lev37=[-9,-6,-3,3,6,9]
+color37=['g','g','g','r','r','r']
+linetyp37=['dotted','dotted','dotted','solid','solid','solid']
+name99=['Q1','Q2']
 ##################################################
 matplotlib.rcParams['xtick.direction'] = 'in'
 matplotlib.rcParams['ytick.direction'] = 'in'
 matplotlib.rcParams['contour.negative_linestyle'] = 'dashed'
-matplotlib.rcParams['savefig.dpi'] = 100
+matplotlib.rcParams['savefig.dpi'] = 300
 plt.rc('lines', linewidth=4)
 ###################################################
 ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
@@ -49,9 +53,14 @@ ylevs=[1000, 925, 850, 700, 600, 500, 400, 300, 250,
        200, 150, 100, 70, 50, 30, 20, 10]
 for yd in ydat_r:
     ydat.append(yd*0.001)
-del ydat_r    
+del ydat_r  
+font = {'family' : 'serif',
+        'color'  : 'k',
+        'weight' : 'normal',
+        'size'   : 16,
+        }  
 ###########################################################################
-for iy in range(1990,2013):
+for iy in range(1979,1980):
     year=str(iy)  # number to string
     fold1=year[2:]+'0101'+'-'+year[2:]+'1231'  #### connect the string
     dirpath=dirin+fold1+fold2
@@ -71,7 +80,7 @@ for iy in range(1990,2013):
                 xdate.append(datetime.datetime.strftime( tm,"%b/%d"))  
             del dateiso    
             nf=len(fnm)
-            for n in range(nf-1,nf): #range(0,nf):
+            for n in range(nf-1,nf): #range(0,nf): 37(5,6):
                 onedim=[]
                 linesplit=[]
                 nsrts=0                
@@ -99,7 +108,12 @@ for iy in range(1990,2013):
                         for ik in range(0,ndim[n]):                        
 #                            ll=it*nv[n]+inv*ndim[n]+1+ik
                             ll=it*(nv[n]*ndim[n]+1)+inv*ndim[n]+ik+1
-                            dat[ik,it,inv]=onedim[ll]
+                            dayscale=1.0
+                            if n==5:
+                                dayscale=3600.0*24
+                                if inv==1:
+                                    dayscale=dayscale*1000. # q forcing in g/kg/day
+                            dat[ik,it,inv]=onedim[ll]*dayscale
 ###################################################################### 
                 if ndim[n]<2:                    
                     fig=plt.figure(figsize=(8,6))  ### all in one panle
@@ -117,22 +131,23 @@ for iy in range(1990,2013):
                         axe=fig.add_subplot(111)
                         axe.set_xticks(range(0,dnm*4,16))
                         xticklabels = [xdate[nn] for nn in range(0,dnm*4,16)]
-                        axe.set_xticklabels(xticklabels, size=10)
+                        axe.set_xticklabels(xticklabels, size=16)
                     else:                                                    
-                        axes[i]=plt.subplot(nv[n],1,i)
+                        axes[i]=plt.subplot(nv[n],1,i+1)
                         if ndim[n]==17:
                             ydatx=ylevs
                         else:
                             ydatx=ydat    
                         if zdat.any>0:
-                            matplotlib.rcParams['contour.negative_linestyle'] = 'dashed'
-                            axes[i]=plt.contour(xdat,ydatx,zdat,colors=color99,
-                                    linewidths=1,levels=lev99)
+#                            matplotlib.rcParams['contour.negative_linestyle'] = 'dashed'
+                            axes[i]=plt.contour(xdat,ydatx,zdat,colors=color37,
+                                    linewidths=1,levels=lev37,linestyles=linetyp37)                           
+                            plt.title(name99[i]+' of '+year+monstr,fontsize=16)                          
                             if len(ydatx)==17:
                                 plt.axis([0, dnm*4, 600,50])
                             else:
-                                plt.axis([0, dnm*4, 3.5, 18])
-                            plt.clabel(axes[i],inline=1,fontsize=10) 
+                                plt.axis([0, dnm*4, 3.5, 16])
+                            plt.clabel(axes[i],inline=1,fmt='%1.1f',fontsize=12) 
                             plt.show()                        
 #                        if zdat.any<0:
 #                            axes[i]=plt.contour(xdat,ydatx,zdat,linewidths=1,
@@ -143,10 +158,11 @@ for iy in range(1990,2013):
 #                                plt.axis([0, dnm*4, 3.5, 18])                                  
 #                            plt.clabel(axes[i],inline=1,fontsize=10) 
 #                            plt.show()
-                        axx=fig.add_subplot(nv[n],1,i)                         
+                        axx=fig.add_subplot(nv[n],1,i+1)                         
                         axx.set_xticks(range(0,dnm*4,16))
                         xticklabels = [xdate[nn] for nn in range(0,dnm*4,16)] 
-                        axx.set_xticklabels(xticklabels, size=14)
+                        axx.set_xticklabels(xticklabels, size=16)
+                        plt.ylabel('Height (km)', fontdict=font)
                         plt.show()                     
                 plt.savefig(pic_out+rg+year+monstr+fnm[n]+'.png')          
                 plt.show()
