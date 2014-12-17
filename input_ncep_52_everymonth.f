@@ -45,6 +45,7 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 !--------------------------------------------------------------------
       parameter(ntm=125)
       real lhf(ntm),shf(ntm)
+!      real q1torain,q2torain
 	data rd,cp,g,rv,hlat /287.,1005.,9.81,461.,2.5e6/
 !--------------------------------------------------------------------
       character*16 celord,fold2
@@ -76,7 +77,7 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 	area(3)='BOB'
 	area(4)='NEC'
 	
-      do 1016 iyr=1979,2012
+      do 1016 iyr=2010,2010
         fold2='input'
         write(yearstr,'(I4)')iyr
 		fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
@@ -298,6 +299,7 @@ cc read ls forcing data for this time level:
 c      read(20,776) (qlsf(K),K=2,npin0)
       				        tlsf(isfl)=0.
      				        qlsf(isfl)=0.
+
 c 776  format(1x,5e20.8)
 !--------------read the q1 and q2 whcih are written by Chenjinghua 
      				        do ik=1,17
@@ -308,6 +310,9 @@ c 776  format(1x,5e20.8)
 	    			        read(50,517)date,(dyn(ik,ir),ir=1,4)
       			            enddo  
 517                     format(1X,A16,1X,4(1X,e12.4))
+	 		            XYD(isfl,11)=0.  !!!q1 
+	 		            XYD(isfl,12)=0.   !!!q2
+			            XYD(isfl,8) =0.   !!omg_adj
 !!!!!! the following codes are for TP
                         do k=1,nltp
                            ik=k+4
@@ -322,6 +327,9 @@ c 776  format(1x,5e20.8)
                            the(k)=the(ik)
                            vap(k)=vap(ik)
                            rh(k)=rh(ik)
+                           XYD(k,11)=XYD(ik,11)  !!!q1 
+	 		              XYD(k,12)=XYD(ik,12)   !!!q2
+			              XYD(k,8) =XYD(ik,8)   !!omg_adj
                            do ir=1,3
                             dyn(k,ir)=dyn(ik,ir)
                            end do
@@ -404,6 +412,9 @@ c     rh(k)=0.1*rh00*100.
       			                uu(k)=uu(nltp)
       			                vv(k)=vv(nltp)
       			                ww(k)=ww(nltp)
+                            XYD(k,11)= XYD(nltp,11)
+                            XYD(k,12)= XYD(nltp,12)
+                            XYD(k,8)= XYD(nltp,8)
       		                enddo
 ccc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -502,7 +513,10 @@ cc integrate upwards:
 			        filename=trim(dir)//trim(fold)//trim(fold2)//
      +              	 trim(area(ip))//monstr//'.dyn'
 			        open(999,file=trim(filename))
-
+                    filename=trim(dir)//trim(fold)//trim(fold2)//
+     +              	 trim(area(ip))//monstr//'_diagnosed_Rain.txt'
+			        open(44,file=trim(filename))
+!                   write(44,*)'TimeID Q1toRain Q2toRain'
       		            do 64 k=2,l
        			        do kk=2,npin  !!!! from 2 or
         			        iisn=kk-1
@@ -583,6 +597,20 @@ c        sst=coe2*dsst(nstsst) + (1.-coe2)*dsst(nstsst-1)
           		        qvss=esat/(rv*den*sst)
          		        write(39,803) time,ths,qvss,sst,flh,fsh   !!! what are the units?
           		        write(49,903) time,sst,ths,qvss
+                        tmpq1=0.0
+                        tmpq2=0.0
+                        do ic=1,npin0
+                           tmpq1=tmpq1+XYD(ic,11)
+                           tmpq2=tmpq2+XYD(ic,12) !  data rd,cp,g,rv,hlat /287.,1005.,9.81,461.,2.5e6/
+                        enddo
+                        q2torain=(((tmpq2/24./3600.)*cp)/(hlat*g*1000.)  !!! *1000 water denity
+     +                               +flh/(hlat*1000.))*3600*1000.     !!!! m/s convert to mm/hr
+
+                        q1torain=(((tmpq1/24./3600.)*cp/g)-fsh/cp)
+     +                                   /(hlat*1000.)                 !  *1000 water denity
+     +                             *3600*1000   !!! convert to mm/hr
+                        write(44,803)time,tmpq1,q1torain,tmpq2,q2torain
+
 803       		        format(6e16.5)
 903       		        format(4e16.5)
             	        pl3(itim-itims+1)=sst
