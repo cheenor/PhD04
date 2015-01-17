@@ -24,7 +24,7 @@ yy(3)=2010; mm(3)=6; dd(3)=1; ndd(3)=30; rgns(3)='PRD'
 !!!! MLYR
 yy(4)=2010; mm(4)=6; dd(4)=1; ndd(4)=30; rgns(4)='MLYR'
 !!!! NPC
-yy(5)=2010; mm(5)=7; dd(5)=2; ndd(5)=30; rgns(5)='NPC'
+yy(5)=2010; mm(5)=8; dd(5)=2; ndd(5)=30; rgns(5)='NPC'
 !!!! NEC
 yy(6)=2010; mm(6)=6; dd(6)=1; ndd(6)=30; rgns(6)='NEC'
 
@@ -152,10 +152,10 @@ end program
               endif
             endif
             write(52,*)ig,iy+1960,im,id
-          do 335 k=1,2  ! temp, rian 
            kk=0
            temp=0.
            dout=0.
+          do 335 k=1,2  ! temp, rian 
           do 335 j=1,NY
              lat=14.75+0.5*(j-1)
           do 335  i=1,NX

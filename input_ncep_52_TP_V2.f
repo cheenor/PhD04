@@ -37,7 +37,7 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
       parameter(nsst=9)
 	character*100 dir,filepath,path,fold,filename,filepath2
 	character*4 yearstr,area(4)
-	character monstr*2
+	character monstr*2,dirout*50
 	character*16 date
 	integer ims(4),ids(4),ime(4),ide(4),days(12),tmid
 	integer im,id,kkk
@@ -48,7 +48,8 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 !      real q1torain,q2torain
 	data rd,cp,g,rv,hlat /287.,1005.,9.81,461.,2.5e6/
 !--------------------------------------------------------------------
-      character*16 celord,fold2
+      character*16 celord
+      character cmon*2,cday*2,fold2*30,fold1*30,fold0*30
       real XYD(npin0,19),dyn(npin0,4)
 !---------------set the time ----------------------------------------
    	do i=1,12
@@ -69,43 +70,55 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 	ims(3)=5  ;ime(3)=6
 	ims(4)=8  ;ime(4)=8
 	ids(1)=24  ;ide(1)=23
-	ids(2)=24  ;ide(2)=23
+	ids(2)=4  ;ide(2)=4
 	ids(3)=25  ;ide(3)=24
 	ids(4)=1  ;ide(4)=31
+      ndds=30
 	area(1)='WTP'
 	area(2)='ETP'
 	area(3)='BOB'
 	area(4)='NEC'
-	
-      do 1016 iyr=2010,2010
-        fold2='input'
+	do 1017 ip =1,2 
+      do 1016 icase=1,1
+        iyr=2010
         write(yearstr,'(I4)')iyr
+        write(cmon,'(I2.2)')ims(ip)
+        write(cday,'(I2.2)')ids(ip)
+        fold0=yearstr//cmon//cday
+        write(cmon,'(I2.2)')ime(ip)
+        write(cday,'(I2.2)')ide(ip)
+        fold1=trim(fold0)//'_'//cmon//cday
+        print*,fold1,cmon,cday
 		fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
-        dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
-        istatus1=CHDIR(trim(dir)//trim(fold))
-	  istatus2=system("Md "//trim(fold2))
-	  fold2='input/'
-    	  do 1015 im=1,11
+        dirout='D:\MyPaper\PhD04\Cases\'
+        dirout=trim(dirout)//trim(area(ip))
+       istatus1=CHDIR(trim(dirout))
+	 istatus2=system("Md "//trim(fold1))
+	 fold2=trim(fold1)//'\'
+       print*, fold2
+       dirout=trim(dirout)//'\'
+       print*,dirout
+!    	  do 1015 im=1,11
     	   days(2)=28
 	       if(mod(iyr,4)==0.and.mod(iyr,100)/=0)then
 	          days(2)=29 
 	       elseif(mod(iyr,400)==0)then
 	          days(2)=29
 	       endif
- 		     ims(1)=im  ;ime(1)=im
-			 ims(2)=im  ;ime(2)=im
-			 ims(3)=im  ;ime(3)=im
-			 ims(4)=im  ;ime(4)=im
-			 ids(1)=1  ;ide(1)=days(im)
-			 ids(2)=1  ;ide(2)=days(im)
-			 ids(3)=1  ;ide(3)=days(im)
-			 ids(4)=1  ;ide(4)=days(im)
+ 		     ims(1)=ims(1)  ;ime(1)=ime(1)
+			 ims(2)=ims(2)  ;ime(2)=ime(2)
+			 ims(3)=ims(3)  ;ime(3)=ime(3)
+			 ims(4)=ims(4)  ;ime(4)=ime(4)
+!			 ids(1)=1  ;ide(1)=days(im)
+!			 ids(2)=1  ;ide(2)=days(im)
+!			 ids(3)=1  ;ide(3)=days(im)
+!			 ids(4)=1  ;ide(4)=days(im)
 			 write(yearstr,'(I4)')iyr
-			 write(monstr,'(I2.2)')im
+			 write(monstr,'(I2.2)')ims(ip)
 			 fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
       		     dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
 			 path=trim(dir)//trim(fold)
-			 filepath=trim(dir)//trim(fold)//'daystrt.txt'
+			 filepath=trim(dirout)//trim(fold2)//'daystrt.txt'
 			 open(997,file=trim(filepath))
 !-----------------------------------
 cc
@@ -163,7 +176,7 @@ ccc sst data: convert time into hours
 !     *'/mnt/raid50/hiba/data_toga_obs_dat/ifa_dat.surface'
 !     *,status='old')
 !----------------------------------------------------------
-      		        do 1014 ip=1,2   ! area loops   just for TP
+!      		        do 1014 ip=1,2   ! area loops   just for TP
 				    tempress=0
 				    temptemp=0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -178,14 +191,15 @@ ccc sst data: convert time into hours
 	   		    enddo	  
         		    imte=imte*4+ide(ip)*4
 	   		    imt=imte-imts    
-	   		    write(997,*)imts ,ip
+	   		    write(997,*)imts,imte,imte-imts,ip
+                    write(997,*)imts/4 ,ip
 !-------------------------------------------------------------
      			        filepath=trim(dir)//trim(fold)//
      +			        yearstr//trim(area(ip))//'_RAW.txt'
       			        filepath2=trim(dir)//trim(fold)//
      +			        yearstr//trim(area(ip))//'_Surface.txt'    
-	   		    call OBS(imts,ip,filepath,filepath2,days(im)*4+1
-     +                                       ,days(im)*4,monstr)
+	   		    call OBS(imts,ip,filepath,filepath2,ndds*4+1
+     +                            ,ndds*4,monstr,dirout,fold2)
       			        open(90,file=trim(filepath))
 				    read(90,*)
 				    do i=1,imts*17
@@ -253,7 +267,7 @@ c      enddo]
 !---------------------------------------------------
                    open(111,file='D:\MyPaper\PhD04\FortranProjects\
      +input_everymonth\input_everymonthzingz.txt')
-                    do 999 itim=1,days(im)*4+1   !!! why +1`, one more timestep than one month  
+                    do 999 itim=1,ndds*4+1   !!! why +1`, one more timestep than one month  
       				        read(30,301) tmid,flh,fsh,pewr,cpewr
 !                       	print*, tmid,'30'
 301                     format(1X,I4,1X,F8.2,1X,F8.2,1X,e12.4,1X,e12.4)
@@ -420,7 +434,7 @@ ccc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !	from 1000 or surface
 c write initial sounding to fort.33 if itim is the starting time:
-     	                 filename=trim(dir)//trim(fold)//trim(fold2)//
+     	                 filename=trim(dirout)//trim(fold2)//
      +     	                trim(area(ip))//monstr//'.33'
 		               open(33,file=trim(filename))
 !     	   if(itim.eq.17) then
@@ -489,31 +503,31 @@ compute environmental profiles from sounding assuming no topography:
 c      q1ls(iisn)=XYD(iisn,11)
 c 	q2ls(iisn)=XYD(iisn,12)
 cc integrate upwards:
-      		            filename=trim(dir)//trim(fold)//trim(fold2)//
+      		            filename=trim(dirout)//trim(fold2)//
      + 	                 trim(area(ip))//monstr//'_uv_profiles.35'
 			        open(35,file=trim(filename))	
-      		            filename=trim(dir)//trim(fold)//trim(fold2)//
+      		            filename=trim(dirout)//trim(fold2)//
      + 		             trim(area(ip))//monstr//'_lsforcing.37'
 			        open(37,file=trim(filename))
-      		            filename=trim(dir)//trim(fold)//trim(fold2)//
+      		            filename=trim(dirout)//trim(fold2)//
      + 		             trim(area(ip))//monstr//'_surface.39' 
 			        open(39,file=trim(filename))
-	  		    filename=trim(dir)//trim(fold)//trim(fold2)//
+	  		    filename=trim(dirout)//trim(fold2)//
      +	  		         trim(area(ip))//monstr//'.49'
 			        open(49,file=trim(filename))
-	  		    filename=trim(dir)//trim(fold)//trim(fold2)//
+	  		    filename=trim(dirout)//trim(fold2)//
      +		                 trim(area(ip))//monstr//'_thetaqv_profile.41'   !!!!!! unit theta(K)  qv g/kg 
 			        open(41,file=trim(filename))
-	 		        filename=trim(dir)//trim(fold)//trim(fold2)//
+	 		        filename=trim(dirout)//trim(fold2)//
      +          	 	 trim(area(ip))//monstr//'.43'
 			        open(43,file=trim(filename))
-	  		    filename=trim(dir)//trim(fold)//trim(fold2)//
+	  		    filename=trim(dirout)//trim(fold2)//
      +              	 trim(area(ip))//monstr//'.99'
 			        open(99,file=trim(filename))
-			        filename=trim(dir)//trim(fold)//trim(fold2)//
+			        filename=trim(dirout)//trim(fold2)//
      +              	 trim(area(ip))//monstr//'.dyn'
 			        open(999,file=trim(filename))
-                    filename=trim(dir)//trim(fold)//trim(fold2)//
+                    filename=trim(dirout)//trim(fold2)//
      +              	 trim(area(ip))//monstr//'_diagnosed_Rain.txt'
 			        open(44,file=trim(filename))
 !                   write(44,*)'TimeID Q1toRain Q2toRain'
@@ -626,9 +640,9 @@ cc   theta and qv profiles for selected period (fort.41)
 
 999             continue
          
-                write(997,*)tempress/(days(im)*4+1.),ip,days(im),im
-	   	    write(997,*)temptemp/(days(im)*4+1.), ip,days(im),im
-1014        continue       
+                write(997,*)tempress/(ndds*4+1.),ip,ndds
+	   	    write(997,*)temptemp/(ndds*4+1.), ip,ndds
+!1014        continue       
             close(997)
             close(99)
             close(90)
@@ -645,13 +659,14 @@ cc   theta and qv profiles for selected period (fort.41)
             close(43)
             close(41)
             close(999)
-1015      continue
+!1015      continue
 1016   continue
+1017  continue
       stop
       end
 
 
-      subroutine OBS(itt,ip,fraw,fsurf,ntdat,ntdys,monstr)
+      subroutine OBS(itt,ip,fraw,fsurf,ntdat,ntdys,monstr,dout,fold)
 
 	character*100 fraw,fsurf,fouts
 	character*16 celord(ntdat) , celors(ntdat)
@@ -659,7 +674,7 @@ cc   theta and qv profiles for selected period (fort.41)
       real XYS(ntdat,6)
 	real Q1Q2(ntdat,2)
 	integer ntdys
-	character monstr*2
+	character monstr*2,fold*30,dout*50
 
 
 !	'DATE','HOUR','1 T_ls(k/day)','2 Q_ls(k/day)','3 U(m/s)',
@@ -691,11 +706,11 @@ cc   theta and qv profiles for selected period (fort.41)
 	enddo
 !---------------output-----------------------------------------
        ilen=len_trim(fraw)
-	 fouts=fraw(1:ilen-15)//'input/'//fraw(ilen-15:ilen-7)//  
+	 fouts=trim(dout)//trim(fold)//fraw(ilen-15:ilen-7)// 
      +	 monstr//'OBS_Surface_input.txt'
        open(40,file=trim(fouts))
 	 write(40,*)'Timestep  [Q1](k/d)   [Q2](k/d)  Rainfall(mm/hr)'
-       fouts=fraw(1:ilen-15)//'input'//fraw(ilen-15:ilen-7)//
+       fouts=trim(dout)//trim(fold)//fraw(ilen-15:ilen-7)//
      +  monstr//'Q1Q2_profiles_input.txt'
        open(50,file=trim(fouts))
 	 write(50,*)'Timestep Q1_level5_to_17 Q2_level5_to_17'  !!!! the first level is not zero 
