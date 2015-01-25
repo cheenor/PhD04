@@ -11,15 +11,19 @@ import matplotlib as mpl
 import calendar
 import string
 import numpy as np
+import os
+os.system("cls")
 nt=2880
 nx=200
 nz=52
-casenm='ETP2D1'
+casenm='NPC2D1'
 iy=2010
-im=6
-jd=4
-dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
-dirout='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/Dayliy/'
+im=8
+jd=2
+#dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
+dirin='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/'
+#dirout='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/Dayliy/'
+dirout='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/animate/'
 filenm=casenm+'_qabcr_daily.txt'
 nlines=14976000  # the total lines of the file
 reslu=3  ### reslution is 3km
@@ -167,7 +171,7 @@ for it in range(0,96):
     timstr="%02d"%(it)
     color=colorr
     color[0]=skycolor[it,:]
-    for i in range(0,5):
+    for i in range(4,5):
         qds=np.ndarray(shape=(nz,nx), dtype=float)
         if i== 0 :
             qds[:,:]=daymean[i,it,:,:]
@@ -211,7 +215,8 @@ for it in range(0,96):
 #            axx.set_xticklabels(xticklabels, size=16)    
 #            plt.show()
             varnm=["qc","qa","qb","qr","TCWC"]          
-            plt.savefig(dirout+varnm[i]+'_'+casenm+'_fordaily_'+timstr+'.png')          
+#            plt.savefig(dirout+varnm[i]+'_'+casenm+'_fordaily_'+timstr+'.png') 
+            plt.savefig(dirout+timstr+'.png')
             plt.show()
             plt.close()
         del qds
