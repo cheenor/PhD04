@@ -11,22 +11,23 @@ import string
 import numpy as np
 import os
 os.system("cls")
-#casenm='ETP2D1'
-casenm='NPC2D1'
+casenm='ETP2D2'
+#casenm='NPC2D1'
 iy=2010
-im=8
-jd=2
+im=6
+jd=4
 nt=121
 nz=52
-#dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
-dirin='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/'
+starid=4  # this parameter can discard the dirst day
+dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
+#dirin='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/'
 dirpic='D:/MyPaper/PhD04/Pics/'
-#dirq12='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/'
-dirq12='D:/MyPaper/PhD04/Cases/NPC/20100802/'
-#nameq1q2="ETP06.99"
-#nameforcing="ETP06_lsforcing.37"
-nameq1q2="NPC.99"
-nameforcing="NPC_lsforcing.37"
+dirq12='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/'
+#dirq12='D:/MyPaper/PhD04/Cases/NPC/20100802/'
+nameq1q2="ETP06.99"
+nameforcing="ETP06_lsforcing.37"
+#nameq1q2="NPC.99"
+#nameforcing="NPC_lsforcing.37"
 #################################
 mpl.rcParams['ytick.labelsize'] = 24
 mpl.rcParams['xtick.labelsize'] = 24
@@ -76,8 +77,8 @@ allvar_mean=np.ndarray(shape=(nvar,nz), dtype=float)
 for iz in range(0,nz):
     for ir in range(0,nvar): 
         temp=0.0
-        for it in range(1,nt-1):
-            temp=temp+allvar[ir,it,iz]/(nt-2.) 
+        for it in range(starid,nt-1):
+            temp=temp+allvar[ir,it,iz]/(nt-starid-1.) 
         allvar_mean[ir,iz]=temp   
 del allvar
 ############### simulation Q1 Q2 phase change
@@ -144,16 +145,16 @@ q2cm=np.ndarray(shape=(nz), dtype=float) # 1 condensation 2 evaporation
 for iz in range(0,nz):
     temp1=0.0
     temp2=0.0
-    for it in range(1,nt-1): #### abandon the firt and the last timestep 
-        temp1=temp1+q1c[it,iz]/(nt-2.) 
-        temp2=temp2+q2c[it,iz]/(nt-2.)
+    for it in range(starid,nt-1): #### abandon the firt and the last timestep 
+        temp1=temp1+q1c[it,iz]/(nt-starid-1.) 
+        temp2=temp2+q2c[it,iz]/(nt-starid-1.)
     q1cm[iz]=temp1
     q2cm[iz]=temp2
 for iz in range(0,nz):    
     for iv in range(0,5):
         tmp3=0.0
-        for it in range(1,nt-1):
-            tmp3=tmp3+micro[iv,it,iz]/(nt-2)
+        for it in range(starid,nt-1):
+            tmp3=tmp3+micro[iv,it,iz]/(nt-starid-1.)
         micro_com[iv,iz]= tmp3
 q1cm[0]=0.0
 q2cm[0]=0.0
@@ -205,8 +206,8 @@ eddyvar_mean=np.ndarray(shape=(nvar,nz), dtype=float)
 for iz in range(0,nz):
     for ir in range(0,nvar): 
         temp=0.0
-        for it in range(1,nt-1): #### abandon the firt and the last timestep 
-            temp=temp+eddyvar[ir,it,iz]/(nt-2.) 
+        for it in range(starid,nt-1): #### abandon the firt and the last timestep 
+            temp=temp+eddyvar[ir,it,iz]/(nt-1-starid) 
         eddyvar_mean[ir,iz]=temp   
 eddyvar_mean[:,0]=0.0
 eddyvar_mean[:,1]=0.0
@@ -243,9 +244,9 @@ q2obs_pf=np.ndarray(shape=(nz), dtype=float)
 for iz in range(0,nz):
     tmp1=0.0
     tmp2=0.0
-    for it in range(1,nt-1):
-        tmp1=tmp1+q1obs[it,iz]/(nt-2.)
-        tmp2=tmp2+q2obs[it,iz]/(nt-2.)
+    for it in range(starid,nt-1):
+        tmp1=tmp1+q1obs[it,iz]/(nt-starid-1.)
+        tmp2=tmp2+q2obs[it,iz]/(nt-starid-1.)
     q1obs_pf[iz]=tmp1
     q2obs_pf[iz]=tmp2
 #########################################################
@@ -277,9 +278,9 @@ fcq2obs_pf=np.ndarray(shape=(nz), dtype=float)
 for iz in range(0,nz):
     tmp1=0.0
     tmp2=0.0
-    for it in range(1,nt-1):
-        tmp1=tmp1+fcq1[it,iz]/(nt-2.)
-        tmp2=tmp2+fcq2[it,iz]/(nt-2.)
+    for it in range(starid,nt-1):
+        tmp1=tmp1+fcq1[it,iz]/(nt-starid-1.)
+        tmp2=tmp2+fcq2[it,iz]/(nt-starid-1.)
     fcq1obs_pf[iz]=tmp1
     fcq2obs_pf[iz]=tmp2            
 ##### Plotting set up   
@@ -362,12 +363,14 @@ mker=lnmkcolor
 width=lnwidcolor 
 size_title=16     
 fig,([ax0,ax1,ax2],[ax3,ax4,ax5]) = plt.subplots(nrows=2,ncols=3,figsize=(18,8)) 
-ax0.set_ylim(0,16)           
+ax0.set_ylim(0,16)
+"""           
 ax0.plot(q1sim_pf[0:32],ydat[0:32],label=r'Simulated $Q_1$',
     c=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #q1sim
 #allvar_mean[5,0]=0.
 ax0.plot(q2sim_pf[0:32],ydat[0:32],label=r'Simulated $Q_2$',
     c=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #q1sim
+"""    
 ax0.plot(q1obs_pf[0:32],ydat[0:32],label=r'Obsevation $Q_1$',
     c=colors[2],ls=sty[2],marker=mker[2],lw=width[2],)  #q1obs
 ax0.plot(q2obs_pf[0:32],ydat[0:32],label=r'Obsevation $Q_2$',
@@ -377,7 +380,8 @@ ylabs='Height'+r' ($km$)'
 ax0.set_ylabel(ylabs,fontsize=size_title)
 #ax0.legend()
 ############forcing
-ax1.set_ylim(0,16)           
+ax1.set_ylim(0,16) 
+"""          
 ax1.plot(fcq1obs_pf[0:32],ydat[0:32],label=r'Temperature Forcing',
     c=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #q1sim
 #allvar_mean[5,0]=0.
@@ -387,6 +391,12 @@ ax1.plot(q1obs_pf[0:32],ydat[0:32],label=r'Obsevation $Q_1$',
     c=colors[2],ls=sty[2],marker=mker[2],lw=width[2],)  #q1obs
 ax1.plot(q2obs_pf[0:32],ydat[0:32],label=r'Obsevation $Q_2$',
     c=colors[3],ls=sty[3],marker=mker[3],lw=width[3],)   #q2obs
+"""
+ax1.plot(q1sim_pf[0:32],ydat[0:32],label=r'Simulated $Q_1$',
+    c=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #q1sim
+#allvar_mean[5,0]=0.
+ax1.plot(q2sim_pf[0:32],ydat[0:32],label=r'Simulated $Q_2$',
+    c=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #q1sim
 ax1.set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
 ylabs='Height'+r' ($km$)'
 ax1.set_ylabel(ylabs,fontsize=size_title)

@@ -10,12 +10,12 @@ import matplotlib.pyplot as plt
 import calendar
 import string
 import numpy as np
-casenm='ETP'
+casenm='ETP2D2'
 dirceres='D:/MyPaper/PhD04/Data/CERES/'
-dirsim='D:/MyPaper/PhD04/Cases/ETP/201006/Simulated/'
+dirsim='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
 dirout='D:/MyPaper/PhD04/Pics/'
-simnm='rad_3hr_ETP2D1'
-ceresnm=casenm+"_2010_6_4__30d3h.txt"
+simnm='rad_3hr_ETP2D2'
+ceresnm="ETP_2010_6_4__30d3h.txt"
 nt=241
 #
 #;;; set for x axis labels
