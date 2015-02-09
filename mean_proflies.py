@@ -11,23 +11,33 @@ import string
 import numpy as np
 import os
 os.system("cls")
-casenm='ETP2D2'
-#casenm='NPC2D1'
+#casenm='ETP2D3'
+casenm='WTP2D0'
+#casenm='NPC2D2'
 iy=2010
-im=6
-jd=4
+im=8
+jd=2
 nt=121
 nz=52
 starid=4  # this parameter can discard the dirst day
-dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
-#dirin='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/'
+if casenm[0:3]=='ETP':
+    dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
+    dirq12='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/'
+    nameq1q2="ETP06.99"
+    nameforcing="ETP06_lsforcing.37"
+if casenm[0:3]=='WTP':    
+    dirin='D:/MyPaper/PhD04/Cases/WTP/20100624_0723/Simulated/'
+    dirq12='D:/MyPaper/PhD04/Cases/WTP/20100624_0723/'
+    nameq1q2="WTP06.99"
+    nameforcing="WTP06_lsforcing.37"
+if casenm[0:3]=='NPC':
+    dirin='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/'
+    dirq12='D:/MyPaper/PhD04/Cases/NPC/20100802/'
+    nameq1q2="NPC.99"
+    nameforcing="NPC_lsforcing.37"
+
 dirpic='D:/MyPaper/PhD04/Pics/'
-dirq12='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/'
-#dirq12='D:/MyPaper/PhD04/Cases/NPC/20100802/'
-nameq1q2="ETP06.99"
-nameforcing="ETP06_lsforcing.37"
-#nameq1q2="NPC.99"
-#nameforcing="NPC_lsforcing.37"
+
 #################################
 mpl.rcParams['ytick.labelsize'] = 24
 mpl.rcParams['xtick.labelsize'] = 24
@@ -52,8 +62,8 @@ linesplit=[]
 f=open(fpath)
 ff=f.readlines()  ## first line in obs file is legend 
 for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
+    lines=string.lstrip(line)
+    linesplit.append(lines[:-1].split(' '))
 for lnstrs in linesplit:
     for strs in lnstrs:
         if strs!='':
@@ -89,8 +99,8 @@ linesplit=[]
 f=open(fpath)
 ff=f.readlines()  ## first line in obs file is legend 
 for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
+    lines=string.lstrip(line)
+    linesplit.append(lines[:-1].split(' '))
 for lnstrs in linesplit:
     for strs in lnstrs:
         if strs!='':
@@ -178,8 +188,8 @@ linesplit=[]
 f=open(fpath)
 ff=f.readlines()  ## first line in obs file is legend 
 for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
+    lines=string.lstrip(line)
+    linesplit.append(lines[:-1].split(' '))
 for lnstrs in linesplit:
     for strs in lnstrs:
         if strs!='':
@@ -210,6 +220,7 @@ for iz in range(0,nz):
             temp=temp+eddyvar[ir,it,iz]/(nt-1-starid) 
         eddyvar_mean[ir,iz]=temp   
 eddyvar_mean[:,0]=0.0
+"""
 eddyvar_mean[:,1]=0.0
 eddyvar_mean[:,2]=0.0
 #eddyvar_mean[:,3]=0.0
@@ -219,6 +230,7 @@ eddyvar_mean[0,2]=0.0
 eddyvar_mean[1,2]=0.0
 eddyvar_mean[0,3]=0.0
 eddyvar_mean[1,3]=0.0
+"""
 ########## obs q1 q2
 fpath=dirq12+nameq1q2
 onedim1=[]
@@ -226,8 +238,8 @@ linesplit=[]
 f=open(fpath)
 ff=f.readlines()  ## first line in obs file is legend 
 for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
+    lines=string.lstrip(line)
+    linesplit.append(lines[:-1].split(' '))
 for lnstrs in linesplit:
     for strs in lnstrs:
         if strs!='':
@@ -257,8 +269,8 @@ linesplit=[]
 f=open(fpath)
 ff=f.readlines()  ## first line in obs file is legend 
 for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
+    lines=string.lstrip(line)
+    linesplit.append(lines[:-1].split(' '))
 for lnstrs in linesplit:
     for strs in lnstrs:
         if strs!='':
@@ -299,6 +311,8 @@ width=lnwidcolor
 fig,ax0 = plt.subplots(nrows=1,ncols=1,figsize=(8,15))
 allvar_mean[4,1]=0.
 allvar_mean[4,0]=0.
+plt.ylim(0,16)
+plt.xlim(0,0.08)
 ax0.plot(allvar_mean[4,0:32],ydat[0:32],label=allnms[4],
     c=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #qc
 #allvar_mean[5,0]=0.
@@ -318,10 +332,9 @@ ax0.plot(totalwater[0:32],ydat[0:32],label='Total water content',
 ax0.set_title('Case '+casenm+' Water content profiles'+ r' $g$ $kg^{-1}$',fontsize=36)
 ylabs='Height'+r' $km$'
 ax0.set_ylabel(ylabs,fontsize=30)
+ax0.set_xticks(([0,0.02,0.04,0.06,0.08]))
 ax0.legend()
 #
-plt.ylim(0,16)
-plt.xlim(0,0.08,0.02)
 plt.show()                     
 plt.savefig(dirpic+casenm+'_qaqbqcqr_profiles2.pdf')          
 #plt.show()
@@ -342,12 +355,14 @@ q1sim_pf[:]=eddyvar_mean[0,:]+eddyvar_mean[2,:]+eddyvar_mean[4,:] ++q1cm[:] \
 q2sim_pf[:]=eddyvar_mean[1,:]+eddyvar_mean[3,:]+eddyvar_mean[5,:] + q2cm[:]
 q1sim_pf[0]=0.0
 q1sim_pf[0]=0.0
+"""
 q1sim_pf[1]=0.0
 q1sim_pf[1]=0.0
 q2sim_pf[0]=0.0
 q2sim_pf[0]=0.0
 q2sim_pf[1]=0.0
 q2sim_pf[1]=0.0
+"""
 ####plot setup 
 lnstycolor=['-',':','-',':']
 lncolor=['orangered','orangered','yellowgreen','yellowgreen']
@@ -364,6 +379,7 @@ width=lnwidcolor
 size_title=16     
 fig,([ax0,ax1,ax2],[ax3,ax4,ax5]) = plt.subplots(nrows=2,ncols=3,figsize=(18,8)) 
 ax0.set_ylim(0,16)
+ax0.set_xlim(-5,5)
 """           
 ax0.plot(q1sim_pf[0:32],ydat[0:32],label=r'Simulated $Q_1$',
     c=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #q1sim
@@ -380,7 +396,8 @@ ylabs='Height'+r' ($km$)'
 ax0.set_ylabel(ylabs,fontsize=size_title)
 #ax0.legend()
 ############forcing
-ax1.set_ylim(0,16) 
+ax1.set_ylim(0,16)
+ax1.set_xlim(-5,5) 
 """          
 ax1.plot(fcq1obs_pf[0:32],ydat[0:32],label=r'Temperature Forcing',
     c=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #q1sim
