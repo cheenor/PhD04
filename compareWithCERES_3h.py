@@ -12,12 +12,12 @@ import calendar
 import string
 import numpy as np
 from pylab import *
-#casenm='ETP2D3'
+casenm='ETP2D3'
 #casenm='WTP2D0'
-casenm='NPC2D2'
+#casenm='NPC2D2'
 iy=2010
-im=8
-jd=2
+im=6
+jd=4
 if casenm[0:3]=='ETP':
     dirceres='D:/MyPaper/PhD04/Data/CERES/'
     dirsim='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'

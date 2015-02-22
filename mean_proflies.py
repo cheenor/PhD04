@@ -11,8 +11,8 @@ import string
 import numpy as np
 import os
 os.system("cls")
-#casenm='ETP2D3'
-casenm='WTP2D0'
+casenm='ETP2D4'
+#casenm='WTP2D0'
 #casenm='NPC2D2'
 iy=2010
 im=8
@@ -182,6 +182,7 @@ for it in range(0,nt):
 #########################################################            
 ####### file 2
 filenm='eddydiffrad_'+casenm+'_All.txt'
+#filenm='NPC2D2_regrid_eddydiffrad_All.txt'    
 fpath=dirin+filenm
 onedim3=[]
 linesplit=[]
