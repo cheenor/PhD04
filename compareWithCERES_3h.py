@@ -12,7 +12,7 @@ import calendar
 import string
 import numpy as np
 from pylab import *
-casenm='ETP2D3'
+casenm='ETP2D2'
 #casenm='WTP2D0'
 #casenm='NPC2D2'
 iy=2010

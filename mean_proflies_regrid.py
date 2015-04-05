@@ -12,7 +12,7 @@ import numpy as np
 import os
 os.system("cls")
 #casenm='ETP2D1'
-casenm='ETP2D3'
+casenm='ETP2D2'
 #casenm='NPC2D2'
 #casenm='WTP2D0'
 nt=121
