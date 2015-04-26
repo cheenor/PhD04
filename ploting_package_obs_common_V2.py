@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb 03 19:53:14 2015
+Created on Wed Apr 22 21:35:25 2015
 
 @author: jhchen
 """
@@ -15,8 +15,9 @@ import matplotlib.dates as matdate
 from matplotlib.dates import DateFormatter
 import calendar
 import string
-import time 
-casenm='ETP2DY'
+import time
+import os
+casenm='ETPNEW'
 strnm='ETP06'
 dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704NEW/'
 iy=2010
@@ -67,20 +68,84 @@ for tm in dateiso:
         xdate.append(datetime.datetime.strftime(tm,"%b-%d"))
 xxx=range(0,nt)
 ###############################################################################
+def readAscii(fpath,iskp):
+    #iskp  the total line skipped of the file
+    # fpath   the full path of the file
+    # usage: onedim=readAscii(fpaht,iskp)
+    onedim=[]
+    linesplit=[]
+    f=open(fpath)
+    ff=f.readlines()[iskp:]  ## first line in obs file is legend 
+    for line in ff:
+        line=string.lstrip(line)
+        linesplit.append(line[:-1].split(' '))
+    for lnstrs in linesplit:
+        for strs in lnstrs:
+            if strs!='':
+                onedim.append(string.atof(strs))
+    del linesplit
+    f.close()
+    return onedim
+#
+def plotcontour(x,y,z,*args):
+    # x  xdata 1 dim
+    # y  ydata 1 dim
+    # z  zdata 2 dims (ny*nx)
+    # args selected parameters the order:
+    nx=len(x)
+    ny=len(y)
+    dm1=len(z[:,0])
+    dm2=len(z[0,:])
+    if nx != dm1 or ny != dm2 :
+        print 'the dimension of input data is wrong'
+        os.system("pause") 
+    nr=1
+    for aa in args:
+        if len(np.shape(aa)) ==2 :
+            if len(aa[:,0])==nx and len(aa[0,:])==ny :
+                nr=nr+1
+    fig,[axe1,axe2]=plt.subplots(nrows=nr,ncols=1,figsize=(nr*7,9))
+    plt.subplot(2,1,1)
+    axe1=plt.contour(xxx,ydat,q1obs,colors=color37,
+         linewidths=1.5,levels=lev37,linestyles=linetyp37)                           
+    #plt.title('Observation',fontsize=charsize)                       
+    plt.axis([0, nt, 0, 16])  ## x axis  y axis
+    plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
+    axx=fig.add_subplot(2,1,1)                         
+    axx.set_xticks(range(0,nt,16))
+    xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+    axx.set_xticklabels(xticklabels, size=charsize)
+    text1=r"($a$)"
+    axx.text(1.5,14,text1,fontsize=charsize+4) 
+    text1=r"Observation  $Q_1$ ($K$ $d^{-1}$)"
+    axx.text(80,14,text1,fontsize=charsize)  
+    plt.ylabel('Height'+r' ($km$)', fontdict=font)
+    plt.show() 
+    ###
+    plt.subplot(2,1,2)
+    axe2=plt.contour(xxx,ydat,q2obs,colors=color37,
+        linewidths=1.5,levels=lev37,linestyles=linetyp37)                           
+    #plt.title(casenm,fontsize=charsize)                        
+    plt.axis([0, nt, 0, 16])  ## x axis  y axis
+    plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
+    axx=fig.add_subplot(2,1,2)                         
+    axx.set_xticks(range(0,nt,16))
+    xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+    axx.set_xticklabels(xticklabels, size=charsize)
+    text1=r"($b$)"
+    axx.text(1.5,14,text1,fontsize=charsize+4) 
+    text1=r"Observation  $Q_2$ ($K$ $d^{-1}$)"
+    axx.text(80,14,text1,fontsize=charsize) 
+    plt.ylabel('Height'+r' ($km$)', fontdict=font)
+    plt.show()                     
+    plt.savefig(pic_out+casenm+'_q1q2_input.pdf')          
+    plt.show()
+    plt.close()
 #### forcing
 starid=0
 fpath=dirin+fnm[4]
-onedim1=[]
-linesplit=[]
-f=open(fpath)
-ff=f.readlines()  ## first line in obs file is legend 
-for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
-for lnstrs in linesplit:
-    for strs in lnstrs:
-        if strs!='':
-            onedim1.append(string.atof(strs))
+iskp=0
+onedim1=readAscii(fpath,iskp)
 fcq1=np.ndarray(shape=(nz,nt), dtype=float)
 fcq2=np.ndarray(shape=(nz,nt), dtype=float)
 scalefc=24*3600.
@@ -101,20 +166,12 @@ for iz in range(0,nz):
         tmp2=tmp2+fcq2[iz,it]/(nt-starid-1.)
     fcq1obs_pf[iz]=tmp1
     fcq2obs_pf[iz]=tmp2
+del onedim1
 ###############################################################################
 ########## obs q1 q2
 fpath=dirin+fnm[len(fnm)-1]
-onedim1=[]
-linesplit=[]
-f=open(fpath)
-ff=f.readlines()  ## 
-for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
-for lnstrs in linesplit:
-    for strs in lnstrs:
-        if strs!='':
-            onedim1.append(string.atof(strs))
+iskp=0
+onedim1=readAscii(fpath,iskp)
 q1obs=np.ndarray(shape=(nz,nt), dtype=float)
 q2obs=np.ndarray(shape=(nz,nt), dtype=float)
 for it in range(0,nt):
@@ -132,6 +189,7 @@ for iz in range(0,nz):
         tmp2=tmp2+q2obs[iz,it]/(nt-starid-1.)
     q1obs_pf[iz]=tmp1
     q2obs_pf[iz]=tmp2
+del onedim1
 ### Time series
 lev37=[-4,-2,-1,2,6,9]
 color37=['g','g','g','r','r','r']
@@ -179,7 +237,6 @@ plt.show()
 plt.savefig(pic_out+casenm+'_q1q2_input.pdf')          
 plt.show()
 plt.close()
-f.close()
 ###forcing
 lev37=[-6,-3,-1,1,3,6]
 color37=['g','g','g','r','r','r']
@@ -227,21 +284,11 @@ plt.show()
 plt.savefig(pic_out+casenm+'_lsforcing_input.pdf')          
 plt.show()
 plt.close()
-f.close()
 ###############################################################################
 #'OBS_Surface_input.txt' 0
 fpath=dirin+fnm[0]
-onedim1=[]
-linesplit=[]
-f=open(fpath)
-ff=f.readlines()[1:]  ## skip the first line 
-for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
-for lnstrs in linesplit:
-    for strs in lnstrs:
-        if strs!='':
-            onedim1.append(string.atof(strs))
+iskp=1
+onedim1=readAscii(fpath,iskp)
 q1inted=np.ndarray(shape=(nt), dtype=float)
 q2inted=np.ndarray(shape=(nt), dtype=float)
 nceprain=np.ndarray(shape=(nt), dtype=float)
@@ -272,19 +319,11 @@ plt.show()
 plt.savefig(pic_out+casenm+'_intedQ1Q2_Rain.pdf')          
 plt.show()
 plt.close()    
+del onedim1
 #  CN05 daily rain 
 fpath=dirin+cnname
-onedim1=[]
-linesplit=[]
-f=open(fpath)
-ff=f.readlines()  ## skip the first line 
-for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
-for lnstrs in linesplit:
-    for strs in lnstrs:
-        if strs!='':
-            onedim1.append(string.atof(strs))
+iskp=0
+onedim1=readAscii(fpath,iskp)
 cnrain=np.ndarray(shape=(nday), dtype=float)
 cntmp=np.ndarray(shape=(nday), dtype=float)
 for it in range(0,nday):      
@@ -294,17 +333,8 @@ for it in range(0,nday):
 ###############################################################################
 #File 39
 fpath=dirin+fnm[5]
-onedim1=[]
-linesplit=[]
-f=open(fpath)
-ff=f.readlines()[0:]  ## skip the first line 
-for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
-for lnstrs in linesplit:
-    for strs in lnstrs:
-        if strs!='':
-            onedim1.append(string.atof(strs))
+iskp=0
+onedim1=readAscii(fpath,iskp)
 ths=np.ndarray(shape=(nt), dtype=float)
 qvss=np.ndarray(shape=(nt), dtype=float)
 sst=np.ndarray(shape=(nt), dtype=float)
@@ -333,26 +363,106 @@ ax1.set_xticklabels(xticklabels, size=charsize)
 plt.show()                     
 plt.savefig(pic_out+casenm+'_SHLH_input.pdf')          
 plt.show()
-plt.close()    
+plt.close() 
+del onedim1 
 ###############################################################################
 #File 35
 fpath=dirin+fnm[7]
-onedim1=[]
-linesplit=[]
-f=open(fpath)
-ff=f.readlines()[0:]  ## skip the first line 
-for line in ff:
-    line=string.lstrip(line)
-    linesplit.append(line[:-1].split(' '))
-for lnstrs in linesplit:
-    for strs in lnstrs:
-        if strs!='':
-            onedim1.append(string.atof(strs))
+iskp=0
+onedim1=readAscii(fpath,iskp)
 uwnd=np.ndarray(shape=(nz,nt), dtype=float)
 vwnd=np.ndarray(shape=(nz,nt), dtype=float)
 for it in range(0,nt):
     for iz in range(0,nz):
         k=it*(2*nz+1)
-        vwnd[iz,it]=onedim1[k+iz+1]
-        vwnd[iz,it]=onedim1[k+iz+1+nz]
+        vwnd[iz,it]=onedim1[k+iz+1]*10
+        uwnd[iz,it]=onedim1[k+iz+1+nz]*10
 #        
+#lev37=[-4,-2,-1,2,6,9]
+color37=['g','g','g','r','r','r']
+linetyp37=['dotted','dotted','dotted','solid','solid','solid'] 
+charsize=20
+font = {'family' : 'serif',
+        'color'  : 'k',
+        'weight' : 'normal',
+        'size'   : 20,
+        }    
+fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
+plt.subplot(2,1,1)
+axe1=plt.contour(xxx,ydat,vwnd,colors=color37,
+linewidths=1.5,linestyles=linetyp37)                           
+#plt.title('Observation',fontsize=charsize)                       
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
+axx=fig.add_subplot(2,1,1)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($a$) V wind"
+axx.set_title(text1, loc='left',fontsize=16) 
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show() 
+###
+plt.subplot(2,1,2)
+axe2=plt.contour(xxx,ydat,uwnd,colors=color37,
+linewidths=1.5,linestyles=linetyp37)                           
+#plt.title(casenm,fontsize=charsize)                        
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
+axx=fig.add_subplot(2,1,2)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($b$) U wind"
+axx.set_title(text1, loc='left',fontsize=16)
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show()                     
+plt.savefig(pic_out+casenm+'_wind_input.pdf')          
+plt.show()
+plt.close()
+del onedim1
+#
+fpath=dirin+fnm[6]
+iskp=0
+onedim1=readAscii(fpath,iskp)
+theta=np.ndarray(shape=(nz,nt), dtype=float)
+qv=np.ndarray(shape=(nz,nt), dtype=float)
+for it in range(0,nt):
+    for iz in range(0,nz):
+        k=it*(2*nz+1)
+        theta[iz,it]=onedim1[k+iz+1]
+        qv[iz,it]=onedim1[k+iz+1+nz]*1000.
+fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
+plt.subplot(2,1,1)
+axe1=plt.contour(xxx,ydat,theta,colors=color37,
+linewidths=1.5,linestyles=linetyp37)                           
+#plt.title('Observation',fontsize=charsize)                       
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
+axx=fig.add_subplot(2,1,1)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($a$) Theta"
+axx.set_title(text1, loc='left',fontsize=16) 
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show() 
+###
+plt.subplot(2,1,2)
+axe2=plt.contour(xxx,ydat,qv,colors=color37,
+linewidths=1.5,linestyles=linetyp37)                           
+#plt.title(casenm,fontsize=charsize)                        
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
+axx=fig.add_subplot(2,1,2)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($b$) qv"
+axx.set_title(text1, loc='left',fontsize=16)
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show()                     
+plt.savefig(pic_out+casenm+'_thetaqv_input.pdf')          
+plt.show()
+plt.close()
+del onedim1

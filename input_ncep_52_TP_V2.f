@@ -51,6 +51,8 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
       character*16 celord
       character cmon*2,cday*2,fold2*30,fold1*30,fold0*30
       real XYD(npin0,19),dyn(npin0,4)
+      	character*16 celors(ntm)
+      real XYS(ntm,6)
 !---------------set the time ----------------------------------------
    	do i=1,12
 	  days(i)=31
@@ -87,7 +89,7 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
         fold0=yearstr//cmon//cday
         write(cmon,'(I2.2)')ime(ip)
         write(cday,'(I2.2)')ide(ip)
-        fold1=trim(fold0)//'_'//cmon//cday
+        fold1=trim(fold0)//'_'//cmon//cday//'NEW'
         print*,fold1,cmon,cday
 		fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
         dirout='D:\MyPaper\PhD04\Cases\'
@@ -116,7 +118,9 @@ cc SST data from NMC analysis (tsst is time in days, dsst is in deg C)
 			 write(yearstr,'(I4)')iyr
 			 write(monstr,'(I2.2)')ims(ip)
 			 fold=yearstr(3:4)//'0101-'//yearstr(3:4)//'1231\'
-      		     dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
+      		     dir='Z:\DATA\LargeScale\TP\NcepR2_Pre_1_250\'
+!             dir='Z:\DATA\LargeScale\TP\NcepR2_Pre\'
+!             dir='G:\'
 			 path=trim(dir)//trim(fold)
 			 filepath=trim(dirout)//trim(fold2)//'daystrt.txt'
 			 open(997,file=trim(filepath))
@@ -198,13 +202,18 @@ ccc sst data: convert time into hours
      +			        yearstr//trim(area(ip))//'_RAW.txt'
       			        filepath2=trim(dir)//trim(fold)//
      +			        yearstr//trim(area(ip))//'_Surface.txt'    
-	   		    call OBS(imts,ip,filepath,filepath2,ndds*4+1
-     +                            ,ndds*4,monstr,dirout,fold2)
+!	   		    call OBS(imts,ip,filepath,filepath2,ndds*4+1
+!     +                            ,ndds*4,monstr,dirout,fold2)
       			        open(90,file=trim(filepath))
 				    read(90,*)
 				    do i=1,imts*17
       				        read(90,*)
 				    enddo
+                    open(91,file=trim(filepath2))
+	              read(91,*)
+	              do i=1,imts
+                        read(91,*)
+	              enddo
 !----target 1 2 3 .....imts imts+1 ......imte.......1460-----------------
 !!!-------NCEP imitative sounding files open---------------
       			        filepath=trim(dir)//trim(fold)//trim(area(ip))//
@@ -213,6 +222,7 @@ ccc sst data: convert time into hours
       			        open(10,file=trim(filepath))
 				    read(10,*)
 				    read(10,*)
+                    read(10,*)
       			        filepath=trim(dir)//trim(fold)//trim(area(ip))//
      +                   '_Forcing.txt'
 !	TimeID 17_levels_T_forcing(K/day) 17_levels_qv_forcing(K/day)
@@ -265,34 +275,80 @@ c      enddo]
 	 				    read(50,*)
 	 			    enddo
 !---------------------------------------------------
-                   open(111,file='D:\MyPaper\PhD04\FortranProjects\
-     +input_everymonth\input_everymonthzingz.txt')
-                    do 999 itim=1,ndds*4+1   !!! why +1`, one more timestep than one month  
+                   open(111,file='input_gz.txt')
+     	            filename=trim(dirout)//trim(fold2)// 
+     +	               trim(area(ip))//monstr//'OBS_Surface_input.txt'
+                  open(36,file=trim(filename))
+	            write(36,*)'Timestep [Q1](Wm-2) [Q2](Wm-2) Rainfall(mm/hr)'
+           		  filename=trim(dirout)//trim(fold2)//
+     + 	                 trim(area(ip))//monstr//'_uv_profiles.35'
+			      open(35,file=trim(filename))	
+      		          filename=trim(dirout)//trim(fold2)//
+     + 		             trim(area(ip))//monstr//'_lsforcing.37'
+			      open(37,file=trim(filename))
+      		          filename=trim(dirout)//trim(fold2)//
+     + 		             trim(area(ip))//monstr//'_surface.39' 
+			      open(39,file=trim(filename))
+	  		  filename=trim(dirout)//trim(fold2)//
+     +	  		         trim(area(ip))//monstr//'.49'
+			      open(49,file=trim(filename))
+	  		  filename=trim(dirout)//trim(fold2)//
+     +		                 trim(area(ip))//monstr//'_thetaqv_profile.41'   !!!!!! unit theta(K)  qv g/kg 
+			      open(41,file=trim(filename))
+	 		      filename=trim(dirout)//trim(fold2)//
+     +          	 	 trim(area(ip))//monstr//'.43'
+			      open(43,file=trim(filename))
+	  		    filename=trim(dirout)//trim(fold2)//
+     +              	 trim(area(ip))//monstr//'.99'
+			      open(99,file=trim(filename))
+			        filename=trim(dirout)//trim(fold2)//
+     +              	 trim(area(ip))//monstr//'.dyn'
+			      open(999,file=trim(filename))
+                  filename=trim(dirout)//trim(fold2)//
+     +              	 trim(area(ip))//monstr//'_diagnosed_Rain.txt'
+			      open(44,file=trim(filename))
+
+                  filename=trim(dirout)//trim(fold2)//
+     +               trim(area(ip))//monstr//'Q1Q2_profiles_input.txt'
+                  open(38,file=trim(filename))
+	            write(38,*)'Timestep Q1_level5_to_17 Q2_level5_to_17'  !!!! the first level is not zero 
+!                  
+                  do 999 itim=1,ndds*4+1   !!! why +1`, one more timestep than one month  
       				        read(30,301) tmid,flh,fsh,pewr,cpewr
 !                       	print*, tmid,'30'
 301                     format(1X,I4,1X,F8.2,1X,F8.2,1X,e12.4,1X,e12.4)
 c 876  format(4i5,4f8.2)
 cc read sounding data for this time level:
-      				        read(10,*)tmid
-!                            print*,tmid,'10',days(im)*4
+      				        read(10,*)TMID
+!                           print*,tmid,imts 
 
       				        do k=1,npin0
-      					        read(10,101) press(k),gz(k),uu(k),vv(k),ww(k),
+      					        read(10,*) press(k),gz(k),uu(k),vv(k),ww(k),
      +									temp(k),the(k),vap(k),rh(k)
       				        enddo
+!                            PRINT*, PRESS,NPIN0
+!                            PAUSE
 !	print*,press(k),gz(k),uu(k),vv(k),ww(k),temp(k),
 !     +	the(k),vap(k),rh(k)
 c 176  format(1x,7e18.8)
 cc read first level (surface)
      				        isfl=5  !!!! for TP, the 5th levle (600hPa) is the surface
-
-     				        read(40,101) press(isfl),gz(isfl),uu(isfl),vv(isfl),    !!! 4 = surface
-     +   				     ww(isfl),temp(isfl), the(isfl),vap(isfl),rh(isfl),sst
+     				        read(40,102) press(isfl),gz(isfl),uu(isfl),vv(isfl),    !!! 4 = surface
+     +   				     ww(isfl),temp(isfl), the(isfl),vap(isfl),rh(isfl)
+     +                      ,sst,VQ1, VQ2
+!          				read(40,102) pressss,gzss,uuss,vvss,    !!! 4 = surface
+!     +   				     wwss,tempss, thess,vapss,rhss
+!     +                      ,sst,VQ1, VQ2
 !	print*, press(1),gz(1),uu(1),vv(1),ww(1),temp(1),
 !     +	the(1),vap(1),rh(1)
+                        read(91,907)celors(itim),(XYS(itim,kk),kk=1,6)
+                        write(36,'(1X,4(e12.5,1X))')itim-1.0,VQ1,VQ2
+     +                    ,XYS(itim,3)*3600.0
        				    tempress=press(isfl)+tempress
        				    temptemp=temp(isfl)+temptemp
-101   format(1X,4(1X,F9.3),1X,e12.4,2(1X,F9.2),1X,e12.4,1X,F7.3,1X,F7.3)
+101   format(1X,10(1x,e12.4))
+102   format(1X,12(1X,e12.4))
+907   format(1X,A16,1X,6(1X,e12.4))
 !      				press(1)=1008.
       				        ww(isfl)=0.
 cc extrapolate first level (surface)
@@ -320,16 +376,19 @@ c 776  format(1x,5e20.8)
 	  		            read(90,906)celord,(XYD(ik,kk),kk=1,19)
 	  	            enddo
 906                     format(1X,A16,1X,19(1X,e12.4))
+                        write(38,'(8e12.4)')it*1.0,
+     +	                  (XYD(ik,11),ik=5,17),(XYD(ik,12),ik=5,17)
       			            do ik=1,17
 	    			        read(50,517)date,(dyn(ik,ir),ir=1,4)
       			            enddo  
 517                     format(1X,A16,1X,4(1X,e12.4))
-	 		            XYD(isfl,11)=0.  !!!q1 
-	 		            XYD(isfl,12)=0.   !!!q2
-			            XYD(isfl,8) =0.   !!omg_adj
+!	 		            XYD(isfl,11)=0.  !!!q1 
+!	 		            XYD(isfl,12)=0.   !!!q2
+!			            XYD(isfl,8) =0.   !!omg_adj
 !!!!!! the following codes are for TP
                         do k=1,nltp
                            ik=k+4
+                           write(111,*)k,gz(k),'GZ'
                            tlsf(k)=tlsf(ik)
                            qlsf(k)=qlsf(ik)
                            press(k)=press(ik)
@@ -342,8 +401,8 @@ c 776  format(1x,5e20.8)
                            vap(k)=vap(ik)
                            rh(k)=rh(ik)
                            XYD(k,11)=XYD(ik,11)  !!!q1 
-	 		              XYD(k,12)=XYD(ik,12)   !!!q2
-			              XYD(k,8) =XYD(ik,8)   !!omg_adj
+	 		               XYD(k,12)=XYD(ik,12)   !!!q2
+			               XYD(k,8) =XYD(ik,8)   !!omg_adj
                            do ir=1,3
                             dyn(k,ir)=dyn(ik,ir)
                            end do
@@ -378,8 +437,11 @@ compute approximated height of pressure levels:
                		        deltz=-rd/(tavi*g) * alog(press(k)/press(km))
             		        zin(k)=zin(km)+deltz
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!	      			    zin(k)=gz(k)
-                            write(111,*)k, '  zin',zin(k),'   gz',gz(k)
+	      			    zin(k)=abs(gz(k)-gz(1))
+!                            zin(k)=gz(k)
+!                            if(zin(k)<0)zin(k)=600.
+                            write(111,*)k,'zin',zin(k),
+     +                              'ori zin',zin(km)+deltz
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       		                enddo
 cc extrapolate stratosphere:
@@ -500,36 +562,11 @@ compute environmental profiles from sounding assuming no topography:
       		            ve1(iisn)=vv(iisn)
       		            we1(iisn)=ww(iisn)
       		            presst=press(iisn)
-c      q1ls(iisn)=XYD(iisn,11)
-c 	q2ls(iisn)=XYD(iisn,12)
+!                    q1ls(1)=0.0
+! 	              q2ls(1)=0.0
+!                    dtls(1)=0.0
+!       		        dqls(1)=0.0
 cc integrate upwards:
-      		            filename=trim(dirout)//trim(fold2)//
-     + 	                 trim(area(ip))//monstr//'_uv_profiles.35'
-			        open(35,file=trim(filename))	
-      		            filename=trim(dirout)//trim(fold2)//
-     + 		             trim(area(ip))//monstr//'_lsforcing.37'
-			        open(37,file=trim(filename))
-      		            filename=trim(dirout)//trim(fold2)//
-     + 		             trim(area(ip))//monstr//'_surface.39' 
-			        open(39,file=trim(filename))
-	  		    filename=trim(dirout)//trim(fold2)//
-     +	  		         trim(area(ip))//monstr//'.49'
-			        open(49,file=trim(filename))
-	  		    filename=trim(dirout)//trim(fold2)//
-     +		                 trim(area(ip))//monstr//'_thetaqv_profile.41'   !!!!!! unit theta(K)  qv g/kg 
-			        open(41,file=trim(filename))
-	 		        filename=trim(dirout)//trim(fold2)//
-     +          	 	 trim(area(ip))//monstr//'.43'
-			        open(43,file=trim(filename))
-	  		    filename=trim(dirout)//trim(fold2)//
-     +              	 trim(area(ip))//monstr//'.99'
-			        open(99,file=trim(filename))
-			        filename=trim(dirout)//trim(fold2)//
-     +              	 trim(area(ip))//monstr//'.dyn'
-			        open(999,file=trim(filename))
-                    filename=trim(dirout)//trim(fold2)//
-     +              	 trim(area(ip))//monstr//'_diagnosed_Rain.txt'
-			        open(44,file=trim(filename))
 !                   write(44,*)'TimeID Q1toRain Q2toRain'
       		            do 64 k=2,l
        			        do kk=2,npin  !!!! from 2 or
@@ -588,7 +625,11 @@ c         out2(k)=0.
 c         endif
 cccccccccccccccccccc
           		        enddo
+                        out1(1)=0.
+          		        out2(1)=0.
           		        write(37,802) time,out1,out2
+                        q1ls(1)=0.
+                        q2ls(1)=0.
           		        write(99,802) time,q1ls,q2ls
           		        write(999,802)time,outdy(:,1),outdy(:,2),
      +	   						outdy(:,3),outdy(:,4),omg_adj
@@ -646,6 +687,7 @@ cc   theta and qv profiles for selected period (fort.41)
             close(997)
             close(99)
             close(90)
+            close(91)
             close(10)
             close(20)
             close(30)
@@ -653,7 +695,9 @@ cc   theta and qv profiles for selected period (fort.41)
             close(50)
             close(33)
             close(35)
+            close(36)
             close(37)
+            close(38)
             close(39)
             close(49)
             close(43)
@@ -709,7 +753,7 @@ cc   theta and qv profiles for selected period (fort.41)
 	 fouts=trim(dout)//trim(fold)//fraw(ilen-15:ilen-7)// 
      +	 monstr//'OBS_Surface_input.txt'
        open(40,file=trim(fouts))
-	 write(40,*)'Timestep  [Q1](k/d)   [Q2](k/d)  Rainfall(mm/hr)'
+	 write(40,*)'Timestep  [Q1](Wm-2)  [Q2](Wm-2)  Rainfall(mm/hr)'
        fouts=trim(dout)//trim(fold)//fraw(ilen-15:ilen-7)//
      +  monstr//'Q1Q2_profiles_input.txt'
        open(50,file=trim(fouts))

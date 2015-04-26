@@ -263,13 +263,14 @@ PROGRAM SOUNDING
 !C 176  FORMAT(1X,7E18.8)
 !READ FIRST LEVEL (SURFACE)
           ISFL=15  !!!! FOR TP, THE 14TH LEVLE (600HPA) IS THE SURFACE
-          READ(40,101) PRESS(ISFL),GZ(ISFL),UU(ISFL),VV(ISFL),  &   !!! 4 = SURFACE
+          READ(40,102) ITTSP,PRESS(ISFL),GZ(ISFL),UU(ISFL),VV(ISFL),  &   !!! 4 = SURFACE
      &       WW(ISFL),TEMP(ISFL), THE(ISFL),VAP(ISFL),VQ1,VQ2
 ! PRINT*, PRESS(1),GZ(1),UU(1),VV(1),WW(1),TEMP(1),
 !     + THE(1),VAP(1),RH(1)
           TEMPRESS=PRESS(ISFL)+TEMPRESS
           TEMPTEMP=TEMP(ISFL)+TEMPTEMP
-101   FORMAT(1X,I4,10(1X,E12.4))
+101   FORMAT(1X,8(1X,e12.4))
+102   FORMAT(1X,I4,10(1X,e12.4))
 !             PRESS(1)=1008.
           WW(ISFL)=0.
 ! EXTRAPOLATE FIRST LEVEL (SURFACE)
@@ -282,8 +283,8 @@ PROGRAM SOUNDING
 
 ! READ LS FORCING DATA FOR THIS TIME LEVEL:
           TLSF(ISFL)=0.   ! 4=SURDACE
-          QLSF(ISFL)=0TMID.
-          READ(20,201),(TLSF(K),K=1,NPIN0),     &
+          QLSF(ISFL)=0.
+          READ(20,201)TMID,(TLSF(K),K=1,NPIN0),     &
      &                     (QLSF(K),K=1,NPIN0)
 201       FORMAT(1X,I4,74(1X,E12.4))
 
@@ -305,7 +306,7 @@ C 776  FORMAT(1X,5E20.8)
           XYD(ISFL,8) =0.   !!OMG_ADJ
 !!!!!! THE FOLLOWING CODES ARE FOR TP
           DO K=1,NLTP
-            IK=K+4
+            IK=K+ISFL-1
             TLSF(K)=TLSF(IK)
             QLSF(K)=QLSF(IK)
             PRESS(K)=PRESS(IK)
@@ -353,7 +354,7 @@ C      TLSF(K)=TLSF(K) ! TEMPERATURE FORCING IN K/DAY
             DELTZ=-RD/(TAVI*G) * ALOG(PRESS(K)/PRESS(KM))
             ZIN(K)=ZIN(KM)+DELTZ
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!                 ZIN(K)=GZ(K)
+                 ZIN(K)=GZ(K)/9.8
             WRITE(111,*)K, '  ZIN',ZIN(K),'   GZ',GZ(K)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           ENDDO
@@ -363,8 +364,8 @@ C      TLSF(K)=TLSF(K) ! TEMPERATURE FORCING IN K/DAY
 !      ZIN(NPIN0+3)=42.5E3
 !         PRINT*,ZIN(16),ZIN(17),ZIN(18)
 ! ZIN(16)=21.E3
-          ZIN(14)=35.E3
-          ZIN(15)=42.5E3
+!          ZIN(14)=35.E3
+!          ZIN(15)=42.5E3
 ! STOP
           TEMP00=TEMP(NLTP)
           Z00=ZIN(NLTP)
@@ -374,15 +375,15 @@ C      TLSF(K)=TLSF(K) ! TEMPERATURE FORCING IN K/DAY
 ! GET RH AT K=NPIN0:
           RH00=RH(NLTP)/100.
 !          PRINT*,' RH AT K=NPIN0: ',RH00
-          DO K=NLTP-3,NLTP   !NPIN0-3,NPIN0
-            DEN=PRESS(K)*1.E2/(RD*TEMP(K))
-            ESAT=611.*               &
-     &           EXP(HLAT/RV * (1./273.16 - 1./TEMP(K)))
-            QVS00=ESAT/(RV*DEN*TEMP(K))
-            RH(K)=0.1*RH(K-1)
-            VAP(K)=RH(K)/100.*QVS00*1.E3
-            VAP(K)=VAP(K)*1E-3  !!!!! UNIT  MUST FOLLOW THE INPUT DATA
-          ENDDO
+!          DO K=NLTP-3,NLTP   !NPIN0-3,NPIN0
+!            DEN=PRESS(K)*1.E2/(RD*TEMP(K))
+!            ESAT=611.*               &
+!     &           EXP(HLAT/RV * (1./273.16 - 1./TEMP(K)))
+!            QVS00=ESAT/(RV*DEN*TEMP(K))
+!            RH(K)=0.1*RH(K-1)
+!            VAP(K)=RH(K)/100.*QVS00*1.E3
+!            VAP(K)=VAP(K)*1E-3  !!!!! UNIT  MUST FOLLOW THE INPUT DATA
+!          ENDDO
           DO K=NLTP+1,NPIN
             PRESS(K)=P00*EXP(-COE*(ZIN(K)-Z00))
 !                            IF(K==NPIN) PRINT*,PRESS(K),P00,ZIN(K),Z00,K
@@ -418,48 +419,47 @@ C WRITE INITIAL SOUNDING TO FORT.33 IF ITIM IS THE STARTING TIME:
             KKK=1
             WRITE(33,701) (PRESS(K),K=KKK,NPIN00)
 701         FORMAT(5X,16H  DATA PRESS  / /  &
-     &        5X,3H1  ,5(F7.2,1H,)/   &
-     &        5X,3H1  ,5(F7.2,1H,)/   &
-!     1        5X,3H1  ,7(F7.2,1H,)/
-!     1        5X,3H1  ,7(F7.2,1H,)/
-!     1        5X,3H1  ,7(F7.2,1H,)/
-     &        5X,3H1  ,4(F7.2,1H,),F7.2,1H/) 
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,2(F7.2,1H,),F7.2,1H/) 
               WRITE(33,702) (TEMP(K)-273.16,K=KKK,NPIN00)
 702           FORMAT(5X,15H  DATA TEMP  / /   &
-     &        5X,3H1  ,5(F7.2,1H,)/ &
-     &        5X,3H1  ,5(F7.2,1H,)/ &                     
-!     1        5X,3H1  ,7(F7.2,1H,)/
-!     1        5X,3H1  ,7(F7.2,1H,)/
-!     1        5X,3H1  ,7(F7.2,1H,)/
-     &        5X,3H1  ,4(F7.2,1H,),F7.2,1H/) 
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,2(F7.2,1H,),F7.2,1H/)  
               WRITE(33,703) (VAP(K)*1000,K=KKK,NPIN00)
 703           FORMAT(5X,14H  DATA VAP  / / &
-     &        5X,3H1  ,4(E10.3,1H,)/ &
-     &        5X,3H1  ,4(E10.3,1H,)/ &
-     &        5X,3H1  ,4(E10.3,1H,)/ &
-!     &        5X,3H1  ,5(E10.3,1H,)/
-!     1        5X,3H1  ,5(E10.3,1H,)/
-!     1        5X,3H1  ,5(E10.3,1H,)/
-!     1        5X,3H1  ,5(E10.3,1H,)/
-!     1        5X,3H1  ,5(E10.3,1H,)/
-     &        5X,3H1  ,2(E10.3,1H,),E10.3,1H/) 
+     &        5X,3H1  ,5(E10.3,1H,)/ &
+     &        5X,3H1  ,5(E10.3,1H,)/ &
+     &        5X,3H1  ,5(E10.3,1H,)/ &
+     &        5X,3H1  ,5(E10.3,1H,)/ &
+!     &        5X,3H1  ,5(E10.3,1H,)/ &
+!     &        5X,3H1  ,5(E10.3,1H,)/ &
+!     &        5X,3H1  ,5(E10.3,1H,)/ &
+!     &        5X,3H1  ,5(E10.3,1H,)/ &
+     &        5X,3H1  ,3(E10.3,1H,),E10.3,1H/) 
               WRITE(33,704) (UU(K),K=KKK,NPIN00)
 704           FORMAT(5X,12H  DATA U  / / &
-     &        5X,3H1  ,5(F7.2,1H,)/ &
-     &        5X,3H1  ,5(F7.2,1H,)/ &
-!     1        5X,3H1  ,7(F7.2,1H,)/
-!     1        5X,3H1  ,7(F7.2,1H,)/
-!     1        5X,3H1  ,7(F7.2,1H,)/
-     &        5X,3H1  ,4(F7.2,1H,),F7.2,1H/) 
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,2(F7.2,1H,),F7.2,1H/) 
               WRITE(33,705) (VV(K),K=KKK,NPIN00)
 705           FORMAT(5X,12H  DATA V  / / &
-     &        5X,3H1  ,5(F7.2,1H,)/ &
-     &        5X,3H1  ,5(F7.2,1H,)/ &
- !    1        5X,3H1  ,7(F7.2,1H,)/
- !    1        5X,3H1  ,7(F7.2,1H,)/
- !    1        5X,3H1  ,7(F7.2,1H,)/
-     &        5X,3H1  ,4(F7.2,1H,),F7.2,1H/) 
-
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+!     &        5X,3H1  ,7(F7.2,1H,)/   &
+     &        5X,3H1  ,2(F7.2,1H,),F7.2,1H/) 
 ! FLAG TO WRITE OTHER DATA
               ITIMS=ITIM
               IWRITE=1
@@ -583,7 +583,7 @@ C        SST=COE2*DSST(NSTSST) + (1.-COE2)*DSST(NSTSST-1)
                 DEN=PRESS(1)*1.E2/(RD*TEMP(1))
                 ESAT=611.*EXP(HLAT/RV * (1./273.16 - 1./SST))
                 QVSS=ESAT/(RV*DEN*SST)
-                WRITE(39,803) TIME,THS,QVSS,SST,FLH,FSH   !!! WHAT ARE THE UNITS?
+                WRITE(39,803) TIME,THS,QVSS,SST  !!! WHAT ARE THE UNITS?
                 WRITE(49,903) TIME,SST,THS,QVSS
                 TMPQ1=0.0
                 TMPQ2=0.0
@@ -599,8 +599,8 @@ C        SST=COE2*DSST(NSTSST) + (1.-COE2)*DSST(NSTSST-1)
      &                             *3600*1000   !!! CONVERT TO MM/HR
                 WRITE(44,803)TIME,TMPQ1,Q1TORAIN,TMPQ2,Q2TORAIN
 
-803                   FORMAT(6E16.5)
-903                   FORMAT(4E16.5)
+803             FORMAT(6E16.5)
+903             FORMAT(4E16.5)
                 PL3(ITIM-ITIMS+1)=SST
 !  THETA AND QV PROFILES FOR SELECTED PERIOD (FORT.41)
                 DO K=1,L
@@ -687,7 +687,7 @@ C        SST=COE2*DSST(NSTSST) + (1.-COE2)*DSST(NSTSST-1)
   WRITE(50,*)'TIMESTEP Q1_LEVEL5_TO_17 Q2_LEVEL5_TO_17'  !!!! THE FIRST LEVEL IS NOT ZERO 
 !
   DO IT=1,NTDAT
-      WRITE(40,1014)IT*1.0,XYS(IT,9),XYS(IT,10),XYS(IT,3),
+      WRITE(40,1014)IT*1.0,XYS(IT,9),XYS(IT,10),XYS(IT,3)
       WRITE(50,417)IT*1.0,(XYD(IT,KK,10),KK=14,37),   &
 &        (XYD(IT,KK,11),KK=14,37)
   ENDDO 
