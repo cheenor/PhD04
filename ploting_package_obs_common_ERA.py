@@ -17,6 +17,7 @@ import calendar
 import string
 import time 
 casenm='ETPCTR_ERA'
+topstr='' #'_250'
 strnm='ETP_20100604_30d'
 dirin='D:/MyPaper/PhD04/Cases/ERA/FORCING/ETP/'
 iy=2010
@@ -28,10 +29,11 @@ nday=30
 pic_out='D:/MyPaper/PhD04/Pics/'
 fnm1=['_Q1Q2_ERA.38','_ERA.43','_ERA.49','_lsforcing_ERA.37',
      '_surface_ERA.39','_thetaqv_profile_ERA.41','_uv_profiles_ERA.35',
-     '_ERA.99','_SHLH_ERA.43']
+     '_ERA.99','_SHLH_ERA.43','_OmegaComps_ERA.42']
 fnm=[]
 for strs in fnm1:
-     fnm.append(strnm+strs)    
+    l=len(strs)
+    fnm.append(strnm+strs[0:l-3]+topstr+strs[l-3:])
 cnname="ETP20100604_030.txt"
 nv=[3,3,3,5,2,5,2,2,2]    # number variables of every file
 ndim=[1,52,1,52,52,1,52,52,52]  # is the varlables has the vertical dimension
@@ -123,7 +125,7 @@ for iz in range(0,nz):
 del onedim1
 ###############################################################################
 ########## obs q1 q2
-fpath=dirin+fnm[len(fnm)-2]
+fpath=dirin+fnm[7]
 iskp=0
 onedim1=readAscii(fpath,iskp)
 q1obs=np.ndarray(shape=(nz,nt), dtype=float)
@@ -251,7 +253,7 @@ for it in range(0,nt):
     q2inted[it]=onedim1[k+1]
 del onedim1
 #
-fpath=dirin+fnm[len(fnm)-1]
+fpath=dirin+fnm[8]
 iskp=0
 onedim1=readAscii(fpath,iskp)
 train=np.ndarray(shape=(nt*2-1), dtype=float)
@@ -431,3 +433,127 @@ plt.savefig(pic_out+casenm+'_thetaqv_input.pdf')
 plt.show()
 plt.close()
 del onedim1
+# OMEGA
+lev37=[-6,-4,-2,-1,0,1,2,4,6]
+color37=['g','g','g','g','b','r','r','r','r']
+linetyp37=['dotted','dotted','dotted','dotted','solid','solid','solid','solid','solid'] 
+fpath=dirin+fnm[9]
+iskp=0
+onedim1=readAscii(fpath,iskp)
+omegaa=np.ndarray(shape=(nz,nt), dtype=float)
+omegao=np.ndarray(shape=(nz,nt), dtype=float)
+q1a=np.ndarray(shape=(nz,nt), dtype=float)
+q1v=np.ndarray(shape=(nz,nt), dtype=float)
+q2a=np.ndarray(shape=(nz,nt), dtype=float)
+q2v=np.ndarray(shape=(nz,nt), dtype=float)
+for it in range(0,nt):
+    for iz in range(0,nz):
+        k=it*(6*nz+1)
+        omegaa[iz,it]=onedim1[k+iz+1]*36
+        omegao[iz,it]=onedim1[k+iz+1+nz]*36
+        q1a[iz,it]=onedim1[k+iz+1+nz*2]
+        q1v[iz,it]=onedim1[k+iz+1+nz*3]
+        q2a[iz,it]=onedim1[k+iz+1+nz*4]
+        q2v[iz,it]=onedim1[k+iz+1+nz*5]
+fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
+plt.subplot(2,1,1)
+axe1=plt.contour(xxx,ydat,omegaa,colors=color37,levels=lev37,
+    linewidths=1.5,linestyles=linetyp37)                           
+#plt.title('Observation',fontsize=charsize)                       
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
+axx=fig.add_subplot(2,1,1)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($a$) Omega adjust"
+axx.set_title(text1, loc='left',fontsize=16) 
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show() 
+###
+plt.subplot(2,1,2)
+axe2=plt.contour(xxx,ydat,omegao,colors=color37,levels=lev37,
+    linewidths=1.5,linestyles=linetyp37)                           
+#plt.title(casenm,fontsize=charsize)                        
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
+axx=fig.add_subplot(2,1,2)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($b$) Omega origin"
+axx.set_title(text1, loc='left',fontsize=16)
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show()                     
+plt.savefig(pic_out+casenm+'_omega_compare.pdf')          
+plt.show()
+plt.close()
+del onedim1
+#############################################################################
+fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
+plt.subplot(2,1,1)
+axe1=plt.contour(xxx,ydat,q1a,colors=color37,levels=lev37,
+    linewidths=1.5,linestyles=linetyp37)                           
+#plt.title('Observation',fontsize=charsize)                       
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
+axx=fig.add_subplot(2,1,1)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($a$) Q1 advection"
+axx.set_title(text1, loc='left',fontsize=16) 
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show() 
+###
+plt.subplot(2,1,2)
+axe2=plt.contour(xxx,ydat,q1v,colors=color37,levels=lev37,
+    linewidths=1.5,linestyles=linetyp37)                           
+#plt.title(casenm,fontsize=charsize)                        
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
+axx=fig.add_subplot(2,1,2)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($b$) Q1 vertical"
+axx.set_title(text1, loc='left',fontsize=16)
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show()                     
+plt.savefig(pic_out+casenm+'_q1_comps.pdf')          
+plt.show()
+plt.close()
+#############################################################################
+fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
+plt.subplot(2,1,1)
+axe1=plt.contour(xxx,ydat,q2a,colors=color37,levels=lev37,
+    linewidths=1.5,linestyles=linetyp37)                           
+#plt.title('Observation',fontsize=charsize)                       
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
+axx=fig.add_subplot(2,1,1)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($a$) Q2 advection"
+axx.set_title(text1, loc='left',fontsize=16) 
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show() 
+###
+plt.subplot(2,1,2)
+axe2=plt.contour(xxx,ydat,q2v,colors=color37,levels=lev37,
+    linewidths=1.5,linestyles=linetyp37)                           
+#plt.title(casenm,fontsize=charsize)                        
+plt.axis([0, nt, 0, 16])  ## x axis  y axis
+plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
+axx=fig.add_subplot(2,1,2)                         
+axx.set_xticks(range(0,nt,16))
+xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+axx.set_xticklabels(xticklabels, size=charsize)
+text1=r"($b$) Q2 vertical"
+axx.set_title(text1, loc='left',fontsize=16)
+plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.show()                     
+plt.savefig(pic_out+casenm+'_q2_comps.pdf')          
+plt.show()
+plt.close()

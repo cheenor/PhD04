@@ -24,7 +24,8 @@ CC BELOW ARE ARRAYS DEFINED AT CLARKS MODEL LEVELS:
       DATA RD,CP,G,RV,HLAT /287.,1005.,9.81,461.,2.5E6/
       DIMENSION TME1(L),THE1(L),QVE1(L),UE1(L),VE1(L),DTLS(L),DQLS(L)
       DIMENSION OUT1(L),OUT2(L),WE1(L),Q1LS(L),Q2LS(L)
-      DIMENSION OUTDY(L,4),OMG_ADJ(L)
+      DIMENSION OUTDY(L,4),OMG_ADJ(L),OMG_ORI(L)
+      DIMENSION Q1H(L),Q1V(L),Q2H(L),Q2V(L)
 CC NPIN IS NUMBER OF LEVELS
 !      PARAMETER(NPIN0=39,NPIN=42)
       PARAMETER(NPIN0=37,NLTP=24,NPIN=24)
@@ -47,7 +48,7 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       REAL LHF(NTM),SHF(NTM)
       DATA RD,CP,G,RV,HLAT /287.,1005.,9.81,461.,2.5E6/
 !--------------------------------------------------------------------
-      CHARACTER*16 CELORD
+      CHARACTER*16 CELORD,topstr
       REAL XYD(NPIN0,19),DYN(NPIN,4)
 !---------------SET THE TIME ----------------------------------------
       IYR=2010
@@ -60,6 +61,8 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       WRITE(YEARSTR,'(I4)')IYR
       FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
       DIR='X:\Data\ERA_interim\ERA_Pre_O\'
+      topstr='' !'_150'
+!      TOPSTR=''
       DIRFLUX='X:\Data\ERA_interim\SHLH\'
       DIROUT='D:\MyPaper\PhD04\Cases\ERA\FORCING\'
       AREA(1)='ETP'
@@ -224,7 +227,8 @@ C      ENDDO]
 !        ENDDO
         FOLD2=TRIM(AREA(IP))//'\'
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_SHLH_ERA.43' 
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_SHLH_ERA'
+     +    //trim(topstr)//'.43' 
         OPEN(36,FILE=TRIM(FILENAME))
         DO ITIM=1,IMT*2+1
           READ(30,*) TMID,FLH,FSH,PEWR,CPEWR
@@ -232,28 +236,40 @@ C      ENDDO]
         ENDDO
 301     FORMAT(1X,4(1X,e12.4))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_UV_PROFILES_ERA.35'
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_UV_PROFILES_ERA'
+     +    //trim(topstr)//'.35'
         OPEN(35,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_LSFORCING_ERA.37'
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_LSFORCING_ERA'
+     +    //trim(topstr)//'.37'
         OPEN(37,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_SURFACE_ERA.39' 
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_SURFACE_ERA'
+     +    //trim(topstr)//'.39' 
         OPEN(39,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA.49'
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA'
+     +    //trim(topstr)//'.49'
         OPEN(49,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_THETAQV_PROFILE_ERA.41'   !!!!!! UNIT THETA(K)  QV G/KG 
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_THETAQV_PROFILE_ERA'
+     +    //trim(topstr)//'.41'   !!!!!! UNIT THETA(K)  QV G/KG 
         OPEN(41,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA.43'
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA'
+     +    //trim(topstr)//'.43'
         OPEN(43,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA.99'
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_OmegaComps_ERA'
+     +    //trim(topstr)//'.42'
+        OPEN(42,FILE=TRIM(FILENAME))
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA'
+     +    //trim(topstr)//'.99'
         OPEN(99,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_Q1Q2_ERA.38'
+     +    YEARSTR//MONSTR//DAYSTR//'_30d_Q1Q2_ERA'
+     +    //trim(topstr)//'.38'
         OPEN(38,FILE=TRIM(FILENAME))
 !
 !        FILENAME=TRIM(DIR)//TRIM(FOLD2)//TRIM(AREA(IP))//'.DYN'
@@ -324,6 +340,7 @@ C 776  FORMAT(1X,5E20.8)
 C PRINT*,CELORD
 C STOP
         ENDDO
+!        WRITE(42,'(8E12.4)')XYD(:,8),XYD(:,18)
 906   FORMAT(1X,I4,18(1X,E12.4))
 !!!!!! THE FOLLOWING CODES ARE FOR TP
         DO K=1,NLTP
@@ -342,6 +359,9 @@ C STOP
             XYD(K,10)=XYD(IK,10)  !!!Q1 
             XYD(K,11)=XYD(IK,11)   !!!Q2
             XYD(K,8) =XYD(IK,8)   !!OMG_ADJ
+            DO IR=12,18
+            XYD(K,IR) =XYD(IK,IR)   !!OMG_ADJ
+            ENDDO
 !            DO IR=1,3
 !              DYN(K,IR)=DYN(IK,IR)
 !            END DO
@@ -423,7 +443,8 @@ CCC
 ! FROM 1000 OR SURFACE
 C WRITE INITIAL SOUNDING TO FORT.33 IF ITIM IS THE STARTING TIME:
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//
-     +      YEARSTR//MONSTR//DAYSTR//'_30d.33'
+     +      YEARSTR//MONSTR//DAYSTR//'_30d'
+     +    //trim(topstr)//'.33'
         OPEN(33,FILE=TRIM(FILENAME))
 !      IF(ITIM.EQ.17) THEN
         IF(ITIM.EQ.1) THEN
@@ -508,7 +529,12 @@ CC INTEGRATE UPWARDS:
           DQLS(K)=COE2*QLSF(IISN+1) + (1.-COE2)*QLSF(IISN)
           Q1LS(K)=COE2*XYD(IISN+1,10) + (1.-COE2)*XYD(IISN,10)
           Q2LS(K)=COE2*XYD(IISN+1,11) + (1.-COE2)*XYD(IISN,11)
-          OMG_ADJ(K)=COE2*XYD(IISN+1,8) + (1.-COE2)*XYD(IISN,8) 
+          OMG_ADJ(K)=COE2*XYD(IISN+1,8) + (1.-COE2)*XYD(IISN,8)
+          OMG_ORI(K)=COE2*XYD(IISN+1,18) + (1.-COE2)*XYD(IISN,18)
+          Q1H(K)=COE2*XYD(IISN+1,15) + (1.-COE2)*XYD(IISN,15)
+          Q1V(K)=COE2*XYD(IISN+1,16) + (1.-COE2)*XYD(IISN,16)
+          Q2V(K)=COE2*XYD(IISN+1,13) + (1.-COE2)*XYD(IISN,13)
+          Q2H(K)=COE2*XYD(IISN+1,12) + (1.-COE2)*XYD(IISN,12)
 !          DO IDY=1,4
 !            OUTDY(K,IDY)=COE2*DYN(IISN+1,IDY) + (1.-COE2)*DYN(IISN,IDY)
 !          ENDDO
@@ -526,6 +552,7 @@ CC   VELOCITY PROFILES FOR SELECTED PERIOD (FORT.35); NOTE ROTATION
             OUT2(K)= UE1(K)/SVEL
           ENDDO
           WRITE(35,801) TIME,OUT1,OUT2
+          WRITE(42,801) TIME,OMG_ADJ,OMG_ORI,Q1H, Q1V, Q2H, Q2V
 801       FORMAT(10F8.3)
 CC   PROFILES FOR L-S FORCING TERMS (FORT.37)
           DAY=24.*3600.
@@ -600,6 +627,7 @@ CC   THETA AND QV PROFILES FOR SELECTED PERIOD (FORT.41)
       close(39)
       close(49)
       close(43)
+      CLOSE(42)
       close(41)
       close(999)
 1014  CONTINUE  
