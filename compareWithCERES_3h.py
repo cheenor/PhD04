@@ -12,30 +12,30 @@ import calendar
 import string
 import numpy as np
 from pylab import *
-casenm='ETPCTR_EC'
+casenm='WTPCTR_EC'
 #casenm='WTP2D0'
 #casenm='NPC2D2'
-iy=2010
-im=6
-jd=4
 if casenm[0:3]=='ETP':
     dirceres='D:/MyPaper/PhD04/Data/CERES/'
     dirsim='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
     simnm='rad_3hr_'+casenm
     ceresnm="ETP_2010_6_4__30d3h.txt"
     ncepnm="ETP_2010_6_4__30d6h_NCEP.txt"
+    iy,im,jd=2010,6,4
 if casenm[0:3]=='WTP':    
     dirceres='D:/MyPaper/PhD04/Data/CERES/'
     dirsim='D:/MyPaper/PhD04/Cases/WTP/20100624_0723/Simulated/'
     simnm='rad_3hr_'+casenm
     ceresnm="WTP_2010_6_24__30d3h.txt"
     ncepnm="WTP_2010_6_24__30d6h_NCEP.txt"
+    iy,im,jd=2010,6,24  
 if casenm[0:3]=='NPC':
     dirceres='D:/MyPaper/PhD04/Data/CERES/'
-    dirsim='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/'
+    dirsim='D:/MyPaper/PhD04/Cases/NPC/20100725/Simulated/'
     simnm='rad_3hr_'+casenm
-    ceresnm="NPC_2010_8_2__30d3h.txt"
-    ncepnm="NPC_2010_8_2__30d6h_NCEP.txt"
+    ceresnm="NPC_2010_7_25__30d3h.txt"
+    ncepnm="NPC_2010_7_25__30d6h_NCEP.txt"
+    iy,im,jd=2010,7,25
 dirout='D:/MyPaper/PhD04/Pics/'
 nt=241
 #

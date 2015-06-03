@@ -21,7 +21,8 @@ CC BELOW ARE ARRAYS DEFINED AT CLARKS MODEL LEVELS:
       DATA RD,CP,G,RV,HLAT /287.,1005.,9.81,461.,2.5E6/
       DIMENSION TME1(L),THE1(L),QVE1(L),UE1(L),VE1(L),DTLS(L),DQLS(L)
       DIMENSION OUT1(L),OUT2(L),WE1(L),Q1LS(L),Q2LS(L)
-      DIMENSION OUTDY(L,4),OMG_ADJ(L)
+      DIMENSION OUTDY(L,4),OMG_ADJ(L), OMG_ORI(L)
+      DIMENSION Q1H(L),Q1V(L),Q2H(L),Q2V(L)
 CC NPIN IS NUMBER OF LEVELS
 !      PARAMETER(NPIN0=39,NPIN=42)
       PARAMETER(NPIN0=37,NPIN=NPIN0)
@@ -33,11 +34,12 @@ CC
 CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       PARAMETER(NSST=9)
       CHARACTER*100 DIR,FILEPATH,PATH,FOLD,FILENAME,FILEPATH2
-      CHARACTER*100 DIRFLUX,DIROUT
-      CHARACTER*4 YEARSTR,AREA(4)
+      CHARACTER*100 DIRFLUX,DIROUT,FOLD2
+      CHARACTER*4 YEARSTR,AREA(4),topstr
       CHARACTER*16 DATE
-      CHARACTER*2 MONSTR,DAYSTR
+      CHARACTER MONSTR*2,DAYSTR*2
       INTEGER IMS(4),IDS(4),IME(4),IDE(4),DAYS(12),TMID
+      INTEGER NISFL(4),AYEAR(4)
       DIMENSION TSST(NSST),DSST(NSST)
 !--------------------------------------------------------------------
       PARAMETER(NTM=124)
@@ -47,25 +49,26 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       CHARACTER*16 CELORD
       REAL XYD(NPIN,19),DYN(NPIN,4)
 !---------------SET THE TIME ----------------------------------------
-      IYR=2010
       IMS(1)=4  ;IME(1)=5
-      IMS(2)=6  ;IME(2)=7
-      IMS(3)=7  ;IME(3)=8
-      IMS(4)=8  ;IME(4)=8
-      IDS(1)=3  ;IDE(1)=3
-      IDS(2)=24  ;IDE(2)=23
-      IDS(3)=26  ;IDE(3)=24
-      IDS(4)=1  ;IDE(4)=31
-      WRITE(YEARSTR,'(I4)')IYR
-      FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
+      IMS(2)=6 ;IME(2)=7
+      IMS(3)=8  ;IME(3)=8
+      IMS(4)=7  ;IME(4)=8
+      IDS(1)=1  ;IDE(1)=1
+      IDS(2)=5  ;IDE(2)=5
+      IDS(3)=1  ;IDE(3)=31
+      IDS(4)=6  ;IDE(4)=5
       DIR='X:\Data\ERA_interim\ERA_EA\'
+      topstr=''
       DIRFLUX='X:\Data\ERA_interim\SHLH\'
-      DIROUT='X:\Data\ERA_interim\ERA_EA\'
-      AREA(1)='PRD'
-      AREA(2)='MLYR'
-      AREA(3)='NPC'
-      AREA(4)='NEC'
-      PATH=TRIM(DIR)//TRIM(FOLD)
+      DIROUT='D:\MyPaper\PhD04\Cases\ERA\FORCING\'
+      AREA(1)='PRD' ;AYEAR(1)=2012
+      AREA(2)='MLYR' ;AYEAR(2)=2010
+      AREA(3)='NPC';AYEAR(3)=2010
+      AREA(4)='NEC';AYEAR(4)=2012
+      NISFL(1)=1  ! this is depend on the surface pressure
+      NISFL(2)=2
+      NISFL(3)=3
+      NISFL(4)=2
       DO I=1,12
         DAYS(I)=31
       ENDDO
@@ -83,8 +86,6 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       ELSEIF(MOD(IYR,400)==0)THEN
         DAYS(2)=29
       ENDIF
-      FILEPATH=TRIM(DIR)//TRIM(FOLD)//'DAYSTRT.TXT'
-      OPEN(997,FILE=TRIM(FILEPATH))
 !-----------------------------------
 CC
 C       PRINT*,'  KTEST ??'
@@ -140,6 +141,10 @@ CCC SST DATA: CONVERT TIME INTO HOURS
 !     *,STATUS='OLD')
 !----------------------------------------------------------
       DO 1014 IP=1,4   ! AREA LOOPS
+        IYR=AYEAR(IP)
+        WRITE(YEARSTR,'(I4)')IYR
+        FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
+        PATH=TRIM(DIR)//TRIM(FOLD)
         TEMPRESS=0
         TEMPTEMP=0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -156,8 +161,13 @@ CCC SST DATA: CONVERT TIME INTO HOURS
         ENDDO    
         IMTE=IMTE*4+IDE(IP)*4
         IMT=IMTE-IMTS 
-        PRINT*,IMT   
+        PRINT*,IMT  
+        FOLD2=TRIM(AREA(IP))//'\'
+        FILEPATH=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(ip))//YEARSTR//
+     +       'DAYSTRT.TXT'
+        OPEN(997,FILE=TRIM(FILEPATH)) 
         WRITE(997,*)IMTS, IP
+
 !-------------------------------------------------------------
         FILEPATH=TRIM(DIR)//TRIM(FOLD)//
      +    YEARSTR//TRIM(AREA(IP))//'_RAW.TXT'
@@ -199,6 +209,11 @@ CCC SST DATA: CONVERT TIME INTO HOURS
 ! TIMEID LATENTHEAT(W/M^2) SENSIBLEHEAT(W/M^2)  PRECIPIPITABLE_WATER_FOR_ENTIRE_ATMOSPHERE(KG/M^2)
         OPEN(30,FILE=TRIM(FILEPATH))
         READ(30,*)
+        FILEPATH=TRIM(DIRFLUX)//YEARSTR//TRIM(AREA(IP))//
+     +           '_SST_SKT.TXT'
+! TIMEID LATENTHEAT(W/M^2) SENSIBLEHEAT(W/M^2)  PRECIPIPITABLE_WATER_FOR_ENTIRE_ATMOSPHERE(KG/M^2)
+        OPEN(11,FILE=TRIM(FILEPATH))
+        READ(11,*)
 !        READ(30,*)
 !        READ(30,*)
 !!!
@@ -219,6 +234,7 @@ C      ENDDO]
         ENDDO
         DO I=1,IMTS
           READ(20,*)
+          READ(11,*)
         ENDDO
         DO I=1,IMTS
           READ(40,*)
@@ -226,39 +242,55 @@ C      ENDDO]
 !        DO I=1,IMTS*NPIN0
 !          READ(50,*)
 !        ENDDO
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//
-     +       '_SHLH_'//MONSTR//DAYSTR//'30DAYS_ERA.39' 
-        OPEN(69,FILE=TRIM(FILENAME))
-        DO ITIM=1,IMT*2 !NTDAT  
+        FOLD2=TRIM(AREA(IP))//'\'
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_SHLH_ERA'
+     +    //trim(topstr)//'.43' 
+        OPEN(36,FILE=TRIM(FILENAME))
+        DO ITIM=1,IMT*2+1
           READ(30,*) TMID,FSH,FLH,PEWR,CPEWR
-          WRITE(69,103)FSH,FLH,PEWR,CPEWR
-        ENDDO 
-103     FORMAT(1X,4(1X,e12.4))   
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//
-     +       '_UV_PROFILES_'//MONSTR//DAYSTR//'30DAYS_ERA.35'
+          WRITE(36,301)FLH,FSH,PEWR,CPEWR
+        ENDDO
+301     FORMAT(1X,4(1X,e12.4))
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_UV_PROFILES_ERA'
+     +    //trim(topstr)//'.35'
         OPEN(35,FILE=TRIM(FILENAME))
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//
-     +       '_LSFORCING_'//MONSTR//DAYSTR//'30DAYS_ERA.37'
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_LSFORCING_ERA'
+     +    //trim(topstr)//'.37'
         OPEN(37,FILE=TRIM(FILENAME))
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//
-     +       '_SURFACE_'//MONSTR//DAYSTR//'30DAYS_ERA.39' 
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_SURFACE_ERA'
+     +    //trim(topstr)//'.39' 
         OPEN(39,FILE=TRIM(FILENAME))
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//'_'//
-     +   MONSTR//DAYSTR//'30DAYS_ERA.49'
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_ERA'
+     +    //trim(topstr)//'.49'
         OPEN(49,FILE=TRIM(FILENAME))
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//
-     +      '_THETAQV_PROFILE_'//MONSTR//DAYSTR//'30DAYS_ERA.41'   !!!!!! UNIT THETA(K)  QV G/KG 
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_THETAQV_PROFILE_ERA'
+     +    //trim(topstr)//'.41'   !!!!!! UNIT THETA(K)  QV G/KG 
         OPEN(41,FILE=TRIM(FILENAME))
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//'_'
-     +      //MONSTR//DAYSTR//'30DAYS_ERA.43'
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_ERA'
+     +    //trim(topstr)//'.43'
         OPEN(43,FILE=TRIM(FILENAME))
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//'_'//
-     +      MONSTR//DAYSTR//'30DAYS_ERA.99'
-        OPEN(99,FILE=TRIM(FILENAME))        
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_OmegaComps_ERA'
+     +    //trim(topstr)//'.42'
+        OPEN(42,FILE=TRIM(FILENAME))
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_ERA'
+     +    //trim(topstr)//'.99'
+        OPEN(99,FILE=TRIM(FILENAME))
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_Q1Q2_ERA'
+     +    //trim(topstr)//'.38'
+        OPEN(38,FILE=TRIM(FILENAME))      
+!--------------------------------------------------- 
 !---------------------------------------------------
-        DO 999 ITIM=1,IMT !NTDAT  
-          READ(30,*) TMID,FSH,FLH,PEWR,CPEWR
-! PRINT*, TMID,FLH,FSH,PEWR,CPEWR
+        DO 999 ITIM=1,IMT+1  !NTDAT  
 !301   FORMAT(1X,I4,1X,F8.2,1X,F8.2,1X,E12.4,1X,E12.4)
 C 876  FORMAT(4I5,4F8.2)
 CC READ SOUNDING DATA FOR THIS TIME LEVEL:
@@ -266,22 +298,28 @@ CC READ SOUNDING DATA FOR THIS TIME LEVEL:
         DO K=1,NPIN0
           READ(10,101) PRESS(K),GZ(K),UU(K),VV(K),WW(K),TEMP(K),
      +      THE(K),VAP(K) !,RH(K)
+          GZ(K)=GZ(K)/9.8
         ENDDO
 ! PRINT*,PRESS(K),GZ(K),UU(K),VV(K),WW(K),TEMP(K),
 !     + THE(K),VAP(K),RH(K)
 C 176  FORMAT(1X,7E18.8)
 CC READ FIRST LEVEL (SURFACE)
-        READ(40,102) ITTSP,PRESS(1),GZ(1),UU(1),VV(1),WW(1),TEMP(1),
-     +    THE(1),VAP(1),VQ1,VQ2
-        PRESS(1)=PRESS(1)/100.   ! CONVERT PA TO HPA
+        ISFL=NISFL(IP)
+        NLTP=NPIN0-ISFL+1
+        IF (IP.NE.4)THEN
+        READ(40,102) ITTSP,PRESS(ISFL),GZ(ISFL),UU(ISFL),VV(ISFL),     !!! 4 = SURFACE
+     +       WW(ISFL),TEMP(ISFL), THE(ISFL),VAP(ISFL),VQ1,VQ2
+        PRESS(ISFL)=PRESS(ISFL)/100.   ! CONVERT PA TO HPA
+        ENDIF
 ! PRINT*, PRESS(1),GZ(1),UU(1),VV(1),WW(1),TEMP(1),
 !     + THE(1),VAP(1),RH(1)
-        TEMPRESS=PRESS(1)+TEMPRESS
-        TEMPTEMP=TEMP(1)+TEMPTEMP
+        TEMPRESS=PRESS(ISFL)+TEMPRESS
+        TEMPTEMP=TEMP(ISFL)+TEMPTEMP
 101   FORMAT(1X,8(1X,e12.4))
 102   FORMAT(1X,I4,10(1X,e12.4))
+        WRITE(38,'(1X,E12.4,1X,E12.4)')VQ1,VQ2
 !      PRESS(1)=1008.
-        WW(1)=0.
+        WW(ISFL)=0.
 !        DO IK=1,17
 !          READ(50,517)DATE,(DYN(IK,IR),IR=1,4)
 !        ENDDO  
@@ -295,8 +333,8 @@ C     UU(1)=COE2*UU(3) + (1.-COE2)*UU(2)
 C     VV(1)=COE2*VV(3) + (1.-COE2)*VV(2)
 
 CC READ LS FORCING DATA FOR THIS TIME LEVEL:
-        TLSF(1)=0.
-        QLSF(1)=0.
+        TLSF(ISFL)=0.
+        QLSF(ISFL)=0.
         DO K=NPIN0+1,NPIN
           TLSF(K)=0.
           QLSF(K)=0.
@@ -307,8 +345,8 @@ CC READ LS FORCING DATA FOR THIS TIME LEVEL:
 
 C      READ(20,776) (QLSF(K),K=2,NPIN0)
 
-        TLSF(1)=0.
-        QLSF(1)=0.
+        TLSF(ISFL)=0.
+        QLSF(ISFL)=0.
 C 776  FORMAT(1X,5E20.8)
 !--------------READ THE Q1 AND Q2 WHCIH IS WRITTEN BY CHENJINGHUA 
         DO IK=1,NPIN0
@@ -317,9 +355,32 @@ C PRINT*,CELORD
 C STOP
         ENDDO
 906   FORMAT(1X,I4,18(1X,E12.4))
-          XYD(1,10)=0.  !!!Q1 
-          XYD(1,11)=0.   !!!Q2
-          XYD(1,8) =0.   !!OMG_ADJ
+      READ(11,*)ISSTSKT,SEASURTMP,SKINTMP !SEASURTMP=SST SKINTMP=SKT   
+!---------END OF READING DATA
+! THIS FOLLOWING LOOP RESRORE THE DATA FROM THE REAL SURFACE OTHER THAN 1000HPA
+        DO K=1,NPIN0-ISFL+1
+            IK=K+ISFL-1
+            TLSF(K)=TLSF(IK)
+            QLSF(K)=QLSF(IK)
+            PRESS(K)=PRESS(IK)
+            GZ(K)=GZ(IK)
+            UU(K)=UU(IK)
+            VV(K)=VV(IK)                          
+            WW(K)=WW(IK)
+            TEMP(K)=TEMP(IK)
+            THE(K)=THE(IK)
+            VAP(K)=VAP(IK)
+            RH(K)=RH(IK)
+            XYD(K,10)=XYD(IK,10)  !!!Q1 
+            XYD(K,11)=XYD(IK,11)   !!!Q2
+            XYD(K,8) =XYD(IK,8)   !!OMG_ADJ
+            DO IR=12,18
+            XYD(K,IR) =XYD(IK,IR)   !!OMG_ADJ
+            ENDDO
+!            DO IR=1,3
+!              DYN(K,IR)=DYN(IK,IR)
+!            END DO
+        END DO
 CONVERT FROM TEMPERATURE (DEG C OR K) INTO POTENTIAL TEMPERATURE
         DO K=1,NPIN0
           TEMP(K)=TEMP(K) ! +273.16
@@ -344,11 +405,11 @@ COMPUTE APPROXIMATED HEIGHT OF PRESSURE LEVELS:
           ENDIF
           DELTZ=-RD/(TAVI*G) * ALOG(PRESS(K)/PRESS(KM))
           ZIN(K)=ZIN(KM)+DELTZ
+          WRITE(81,*)K
+          WRITE(81,*)'A',ZIN(K)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!          PRINT*,ZIN(K),'A'
-          ZIN(K)=GZ(K)/9.8
-          WRITE(55,*)K,ZIN(K)
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          ZIN(K)=GZ(K)-GZ(1)
+          WRITE(81,*)'B',ZIN(K)
         ENDDO
 CC EXTRAPOLATE STRATOSPHERE:
 !      ZIN(NPIN0+1)=21.E3
@@ -358,49 +419,51 @@ CC EXTRAPOLATE STRATOSPHERE:
 ! ZIN(16)=21.E3
 !        ZIN(18)=35.E3
 !        ZIN(19)=42.5E3
-! STOP
-        TEMP00=TEMP(NPIN0)
-        Z00=ZIN(NPIN0)
-        P00=PRESS(NPIN0)
+! STOP        
+        TEMP00=TEMP(NLTP)
+        Z00=ZIN(NLTP)
+        P00=PRESS(NLTP)
         DEN00=P00*1.E2/(RD*TEMP00)
-        COE=G/(RD*TEMP00) 
+        COE=G/(RD*TEMP00)  
 CC GET RH AT K=NPIN0:
-        RH00=RH(NPIN0)/100.
+!        RH00=RH(NPIN0)/100.
 CC          PRINT*,' RH AT K=NPIN0: ',RH00
-        DO K=NPIN0-3,NPIN0
-          DEN=PRESS(K)*1.E2/(RD*TEMP(K))
-          ESAT=611.*EXP(HLAT/RV * (1./273.16 - 1./TEMP(K)))
-          QVS00=ESAT/(RV*DEN*TEMP(K))
-          RH(K)=0.1*RH(K-1)
-          VAP(K)=RH(K)/100.*QVS00*1.E3
-          VAP(K)=VAP(K)  !!!!! UNIT  MUST FOLLOW THE INPUT DATA
-        ENDDO
-        DO K=NPIN0+1,NPIN
-          PRESS(K)=P00*EXP(-COE*(ZIN(K)-Z00))
-          TEMP(K)=TEMP(NPIN0)
-          THET(K)=TEMP(K)*(1.E3/PRESS(K))**(RD/CP)
-          DEN=PRESS(K)*1.E2/(RD*TEMP(K))
-          ESAT=611.*EXP(HLAT/RV * (1./273.16 - 1./TEMP(K)))
-          QVS00=ESAT/(RV*DEN*TEMP(K))
+!        DO K=NPIN0-3,NPIN0
+!          DEN=PRESS(K)*1.E2/(RD*TEMP(K))
+!          ESAT=611.*EXP(HLAT/RV * (1./273.16 - 1./TEMP(K)))
+!          QVS00=ESAT/(RV*DEN*TEMP(K))
+!          RH(K)=0.1*RH(K-1)
+!          VAP(K)=RH(K)/100.*QVS00*1.E3
+!          VAP(K)=VAP(K)  !!!!! UNIT  MUST FOLLOW THE INPUT DATA
+!        ENDDO
+!        DO K=NPIN0+1,NPIN
+!          PRESS(K)=P00*EXP(-COE*(ZIN(K)-Z00))
+!          TEMP(K)=TEMP(NPIN0)
+!          THET(K)=TEMP(K)*(1.E3/PRESS(K))**(RD/CP)
+!          DEN=PRESS(K)*1.E2/(RD*TEMP(K))
+!          ESAT=611.*EXP(HLAT/RV * (1./273.16 - 1./TEMP(K)))
+!          QVS00=ESAT/(RV*DEN*TEMP(K))
 C     VAP(K)=0.1*RH00*QVS00*1.E3
 C     RH(K)=0.1*RH00*100.
-          RH(K)=0.1*RH(K-1)
-          VAP(K)=RH(K)/100.*QVS00*1.E3
-          VAP(K)=VAP(K)  !!!!! UNIT  MUST FOLLOW THE INPUT DATA
-          UU(K)=UU(NPIN0)
-          VV(K)=VV(NPIN0)
-          WW(K)=WW(NPIN0)
-        ENDDO
+!          RH(K)=0.1*RH(K-1)
+!          VAP(K)=RH(K)/100.*QVS00*1.E3
+!          VAP(K)=VAP(K)  !!!!! UNIT  MUST FOLLOW THE INPUT DATA
+!          UU(K)=UU(NPIN0)
+!          VV(K)=VV(NPIN0)
+!          WW(K)=WW(NPIN0)
+!        ENDDO
 CCC
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! FROM 1000 OR SURFACE
 C WRITE INITIAL SOUNDING TO FORT.33 IF ITIM IS THE STARTING TIME:
-        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//'_'//
-     +   MONSTR//DAYSTR//'30DAYS_ERA.33'
+        FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//
+     +      YEARSTR//MONSTR//DAYSTR//'_031d'
+     +    //trim(topstr)//'.33'
         OPEN(33,FILE=TRIM(FILENAME))
 !      IF(ITIM.EQ.17) THEN
         IF(ITIM.EQ.1) THEN
-          NPIN00=NPIN
+          NPIN00=NLTP
+          IF (IP==1) THEN ! 37
           WRITE(33,701) (PRESS(K),K=1,NPIN00)
 701    FORMAT(5X,16H  DATA PRESS  / /
      1        5X,3H1  ,7(F7.2,1H,)/
@@ -444,6 +507,97 @@ C WRITE INITIAL SOUNDING TO FORT.33 IF ITIM IS THE STARTING TIME:
      1        5X,3H1  ,7(F7.2,1H,)/
      1        5X,3H1  ,7(F7.2,1H,)/
      1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/) 
+!-------------36----------------------------------
+          ELSEIF(IP==2 .OR. IP==4) THEN ! 36
+            WRITE(33,711) (PRESS(K),K=1,NPIN00)
+711    FORMAT(5X,16H  DATA PRESS  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,6(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/)
+            WRITE(33,712) (TEMP(K)-273.16,K=1,NPIN00) 
+712    FORMAT(5X,15H  DATA TEMP  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,6(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/)
+            WRITE(33,713) (VAP(K)*1000.,K=1,NPIN00) 
+713    FORMAT(5X,14H  DATA VAP  / /
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,4(E10.3,1H,)/
+!     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,1(E10.3,1H,),E10.3,1H/)
+            WRITE(33,714) (UU(K),K=1,NPIN00) 
+714    FORMAT(5X,12H  DATA U  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,6(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/)
+            WRITE(33,715) (VV(K),K=1,NPIN00) 
+715    FORMAT(5X,12H  DATA V  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,6(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/) 
+          ELSE               ! 35
+!--------------------35 --------------------------
+            WRITE(33,721) (PRESS(K),K=1,NPIN00)
+721    FORMAT(5X,16H  DATA PRESS  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,5(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/)
+            WRITE(33,722) (TEMP(K)-273.16,K=1,NPIN00) 
+722    FORMAT(5X,15H  DATA TEMP  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,5(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/)
+            WRITE(33,723) (VAP(K)*1000.,K=1,NPIN00) 
+723    FORMAT(5X,14H  DATA VAP  / /
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,4(E10.3,1H,)/
+     1        5X,3H1  ,4(E10.3,1H,)/
+!     1        5X,3H1  ,5(E10.3,1H,)/
+     1        5X,3H1  ,1(E10.3,1H,),E10.3,1H/)
+            WRITE(33,724) (UU(K),K=1,NPIN00) 
+724    FORMAT(5X,12H  DATA U  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,5(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/)
+            WRITE(33,725) (VV(K),K=1,NPIN00) 
+725    FORMAT(5X,12H  DATA V  / /
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,7(F7.2,1H,)/
+     1        5X,3H1  ,5(F7.2,1H,)/
+     1        5X,3H1  ,1(F7.2,1H,),F7.2,1H/)
+          ENDIF      
 CCC FLAG TO WRITE OTHER DATA
           ITIMS=ITIM
           IWRITE=1
@@ -460,14 +614,13 @@ COMPUTE ENVIRONMENTAL PROFILES FROM SOUNDING ASSUMING NO TOPOGRAPHY:
         Q1LS(1)=XYD(1,11)
         Q2LS(1)=XYD(1,12)
 CC INTEGRATE UPWARDS:
-
 !
 !        FILENAME=TRIM(DIROUT)//TRIM(FOLD)//TRIM(AREA(IP))//'.DYN'
 !        OPEN(998,FILE=TRIM(FILENAME))
 !        FILENAME=TRIM(DIR)//TRIM(FOLD)//TRIM(AREA(IP))//'.DYN.417'
 !        OPEN(417,FILE=TRIM(FILENAME))  
         DO 64 K=2,L
-          DO KK=2,NPIN
+          DO KK=2,NLTP ! depends on the ISFL
             IISN=KK-1
 !    PRINT*,ZIN(KK),Z(K),K,KK
             IF(ZIN(KK).GE.Z(K)) GO TO 665
@@ -484,15 +637,22 @@ CC INTEGRATE UPWARDS:
           WE1(K)=COE2*WW(IISN+1) + (1.-COE2)*WW(IISN)
           DTLS(K)=COE2*TLSF(IISN+1) + (1.-COE2)*TLSF(IISN)
           DQLS(K)=COE2*QLSF(IISN+1) + (1.-COE2)*QLSF(IISN)
-          Q1LS(K)=COE2*XYD(IISN+1,11) + (1.-COE2)*XYD(IISN,11)
-          Q2LS(K)=COE2*XYD(IISN+1,12) + (1.-COE2)*XYD(IISN,12)
-          OMG_ADJ(K)=COE2*XYD(IISN+1,8) + (1.-COE2)*XYD(IISN,8) 
+          Q1LS(K)=COE2*XYD(IISN+1,10) + (1.-COE2)*XYD(IISN,10)
+          Q2LS(K)=COE2*XYD(IISN+1,11) + (1.-COE2)*XYD(IISN,11)
+          OMG_ADJ(K)=COE2*XYD(IISN+1,8) + (1.-COE2)*XYD(IISN,8)
+          OMG_ORI(K)=COE2*XYD(IISN+1,18) + (1.-COE2)*XYD(IISN,18)
+          Q1H(K)=COE2*XYD(IISN+1,15) + (1.-COE2)*XYD(IISN,15)
+          Q1V(K)=COE2*XYD(IISN+1,16) + (1.-COE2)*XYD(IISN,16)
+          Q2V(K)=COE2*XYD(IISN+1,13) + (1.-COE2)*XYD(IISN,13)
+          Q2H(K)=COE2*XYD(IISN+1,12) + (1.-COE2)*XYD(IISN,12) 
 !          DO IDY=1,4
 !            OUTDY(K,IDY)=COE2*DYN(IISN+1,IDY) + (1.-COE2)*DYN(IISN,IDY)
 !          ENDDO
         
  64     CONTINUE
 CC SCALE AND WRITE TO FILES:
+           write(900,*)TEMP(1:NLTP)
+           write(900,*)VAP(1:NLTP)
         IF(IWRITE.EQ.1) THEN
           ITIMS=1
           TIME = FLOAT(ITIM-ITIMS)*6.
@@ -504,6 +664,7 @@ CC   VELOCITY PROFILES FOR SELECTED PERIOD (FORT.35); NOTE ROTATION
             OUT2(K)= UE1(K)/SVEL
           ENDDO
           WRITE(35,801) TIME,OUT1,OUT2
+          WRITE(42,801) TIME,OMG_ADJ,OMG_ORI,Q1H, Q1V, Q2H, Q2V
 801       FORMAT(10F8.3)
 CC   PROFILES FOR L-S FORCING TERMS (FORT.37)
           DAY=24.*3600.
@@ -537,15 +698,18 @@ C     ENDDO
 CCCCCCC INTERPOLATE OCEAN TEMP:
 C      COE2=(TIME2-TSST(NSTSST-1))/(TSST(NSTSST)-TSST(NSTSST-1))
 C        SST=COE2*DSST(NSTSST) + (1.-COE2)*DSST(NSTSST-1)
-          SST=TEMP(1)
+          SST=TME1(1)
           THS=SST*(THE1(1)+THE1(2))/(TME1(1)+TME1(2))
           DEN=PRESS(1)*1.E2/(RD*TEMP(1))
           ESAT=611.*EXP(HLAT/RV * (1./273.16 - 1./SST))
           QVSS=ESAT/(RV*DEN*SST)
+          THS=THE1(1)
+          QVSS=QVE1(1)
+          SST=SKINTMP
           WRITE(39,803) TIME,THS,QVSS,SST   !,FLH,FSH   !!! WHAT ARE THE UNITS?
-          WRITE(49,903) TIME,SST,THS,QVSS
+          WRITE(49,903) TIME,SST,THS,QVSS,SKINTMP
 803       FORMAT(4E16.5)
-903       FORMAT(4E16.5)
+903       FORMAT(5E16.5)
           PL3(ITIM-ITIMS+1)=SST
 CC   THETA AND QV PROFILES FOR SELECTED PERIOD (FORT.41)
           DO K=1,L
@@ -553,13 +717,36 @@ CC   THETA AND QV PROFILES FOR SELECTED PERIOD (FORT.41)
             OUT2(K)=QVE1(K)
           ENDDO
           WRITE(41,804) TIME,OUT1,OUT2
-          WRITE(43,804) TIME,OUT1,OUT2,TME1
+          WRITE(43,804) TIME,OUT1,OUT2,TME1,UE1,VE1,WE1
 804       FORMAT(8E13.5)
         ENDIF
 999   CONTINUE         
-      WRITE(997,*)TEMPRESS/125. ,IP
-      WRITE(997,*)TEMPTEMP/125., IP
-1014  CONTINUE  
+      WRITE(997,*)TEMPRESS/(IMT+1.),IP,IMT+1
+      WRITE(997,*)TEMPTEMP/(IMT+1.),IP,IMT+1
+      TEMPRESS=0.0
+      TEMPTEMP=0.0
+      close(99)
+      close(90)
+      close(91)
+      close(10)
+      close(20)
+      close(30)
+      close(40)
+      close(50)
+      close(33)
+      close(35)
+      close(36)
+      close(37)
+      close(38)
+      close(39)
+      close(49)
+      close(43)
+      CLOSE(42)
+      close(41)
+      close(999)
+      close(997) 
+1014  CONTINUE 
+
       STOP
       END 
 !

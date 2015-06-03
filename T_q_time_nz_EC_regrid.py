@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Mon Feb 16 13:05:23 2015
+Created on Sun May 17 21:50:42 2015
 
 @author: jhchen
 """
@@ -13,11 +13,11 @@ import datetime
 mpl.rcParams['ytick.labelsize'] = 20
 mpl.rcParams['xtick.labelsize'] = 20
 
-casenm='ETPCTR_EC'
+casenm='NECCTR_EC'
 #casenm='WTP2D0'
 #casenm='NPC2D2'
 nt=121
-nz=52
+nz=33
 starid=4  # this parameter can discard the first day
 dirs='D:/MyPaper/PhD04/Cases/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
@@ -33,7 +33,7 @@ if casenm[0:3]=='WTP':
     iy,im,jd=2010,6,24    
 if casenm[0:3]=='NPC':
     area=casenm[0:3]
-    folds='/20100725_0723/Simulated/'
+    folds='/20100725/Simulated/'
     datestr='20100725_031d'    
     iy,im,jd=2010,7,25
 if casenm[0:3]=='PRD':
@@ -52,9 +52,9 @@ if casenm[0:3]=='NEC':
     datestr='20100801_031d'    
     iy,im,jd=2010,8,1 
 dirin=dirs+area+folds
-dirobs=diro+area+'/'
-f43=area+'_'+datestr+"_ERA.43"
-nameforcing=area+'_'+datestr+"_LSFORCING_ERA.37"
+dirobs=dirin          #diro+area+'/'
+f43=area+'_'+datestr+"_regrid_ERA.43"
+nameforcing=area+'_'+datestr+"_LSFORCING_regrid_ERA.37"
 dirpic='D:/MyPaper/PhD04/Pics/'
 #fpath=dirin+'micro_202_ETP2D3'
 #fff=np.fromfile(fpath,dtype=float)
@@ -83,9 +83,11 @@ ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
 ydat=[]
 ylevs=[1000, 925, 850, 700, 600, 500, 400, 300, 250, 
        200, 150, 100, 70, 50, 30, 20, 10]
-for yd in ydat_r:
-    ydat.append(yd*0.001)
-del ydat_r
+#for yd in ydat_r:
+#    ydat.append(yd*0.001)
+#del ydat_r
+for yd in range(0,nz):
+    ydat.append(yd*0.5)
 ###############################################################################
 fpath=dirin+casenm+'_All.txt'
 onedim1=[]
@@ -108,10 +110,12 @@ smqr=np.ndarray(shape=(nz,nt),dtype=float)
 smqa=np.ndarray(shape=(nz,nt),dtype=float)
 smqb=np.ndarray(shape=(nz,nt),dtype=float)
 smrh=np.ndarray(shape=(nz,nt),dtype=float)
-smqv=np.ndarray(shape=(nz,nt),dtype=float)
-smtc=np.ndarray(shape=(nz,nt),dtype=float)
+smfqv=np.ndarray(shape=(nz,nt),dtype=float)
+smftc=np.ndarray(shape=(nz,nt),dtype=float)
 smrat=np.ndarray(shape=(nz,nt),dtype=float)
-iskp=12*nz
+smtc=np.ndarray(shape=(nz,nt),dtype=float)
+smtco=np.ndarray(shape=(nz,nt),dtype=float)
+iskp=13*nz
 for it in range(0,nt):
     itts=it*iskp
     itte=itts+nz
@@ -142,13 +146,16 @@ for it in range(0,nt):
     smrh[0:nz,it]=onedim1[itts:itte]
     itts=itte
     itte=itts+nz
-    smqv[0:nz,it]=onedim1[itts:itte]
+    smfqv[0:nz,it]=onedim1[itts:itte]
     itts=itte
     itte=itts+nz
-    smtc[0:nz,it]=onedim1[itts:itte]
+    smftc[0:nz,it]=onedim1[itts:itte]
     itts=itte
     itte=itts+nz
     smrat[0:nz,it]=onedim1[itts:itte]
+    itts=itte
+    itte=itts+nz
+    smtc[0:nz,it]=onedim1[itts:itte]
 ###############################################################################
 ##  open obs  files
 del onedim1,linesplit
@@ -167,42 +174,34 @@ for lnstrs in linesplit:
 obstha=np.ndarray(shape=(nz,nt),dtype=float)
 obsqv=np.ndarray(shape=(nz,nt),dtype=float)
 obstmp=np.ndarray(shape=(nz,nt),dtype=float)
-obsrh=np.ndarray(shape=(nz,nt),dtype=float)
+#obsrh=np.ndarray(shape=(nz,nt),dtype=float)
 obsu=np.ndarray(shape=(nz,nt),dtype=float)
 obsv=np.ndarray(shape=(nz,nt),dtype=float)
 obsw=np.ndarray(shape=(nz,nt),dtype=float)           
-iskp=7*nz+1
+iskp=6*nz+1
 for it in range(0,nt):
-    itts=it*iskp+1
-    itte=itts+nz            
-    obstha[0:nz,it]=onedim1[itts:itte]      
-    itts=itte
-    itte=itts+nz            
-    obsqv[0:nz,it]=onedim1[itts:itte]    
-    itts=itte
-    itte=itts+nz            
-    obstmp[0:nz,it]=onedim1[itts:itte]       
-    itts=itte
-    itte=itts+nz            
-    obsrh[0:nz,it]=onedim1[itts:itte]       
-    itts=itte
-    itte=itts+nz            
-    obsu[0:nz,it]=onedim1[itts:itte]       
-    itts=itte
-    itte=itts+nz            
-    obsv[0:nz,it]=onedim1[itts:itte]       
-    itts=itte
-    itte=itts+nz            
-    obsw[0:nz,it]=onedim1[itts:itte]       
-obsqv=obsqv*1000. ## kg/kg to g/kg
+    for iz in range(0,nz):
+        k=iskp*it+1+iz            
+        obstha[iz,it]=onedim1[k]
+        k=iskp*it+1+iz+nz*1            
+        obsqv[iz,it]=onedim1[k]*1000. #convert kg/kg to g/kg  
+        k=iskp*it+1+iz+nz*2         
+        obstmp[iz,it]=onedim1[k]  
+        k=iskp*it+1+iz+nz*3          
+        obsu[iz,it]=onedim1[k]  
+        k=iskp*it+1+iz+nz*4           
+        obsv[iz,it]=onedim1[k]  
+        k=iskp*it+1+iz+nz*5          
+        obsw[iz,it]=onedim1[k]
+        smtco[iz,it]=(smt[iz,it]-obstha[iz,it])/(obstha[iz,it]/obstmp[iz,it])
 ###############################################################################
-levs1=[-6,-3,4,8,12,15]
-colors1=['g','g','r','r','r','r']
-linetype1=['dotted','dotted','solid','solid','solid','solid'] 
+levs1=[-15,-12,-6,-3,4,8,12,15]
+colors1=['g','g','g','g','r','r','r','r']
+linetype1=['dotted','dotted','dotted','dotted','solid','solid','solid','solid'] 
 levs2=[-3,-1,1,2,3,4]
 colors2=['g','g','r','r','r','r']
 linetype2=['dotted','dotted','solid','solid','solid','solid']
-titlename=[r"Potential Temperature Bias ($K$)",r"Water Vapor Mixing Ratio Bias ($g$ $kg^{-1}$) "]
+titlename=[r"Temperature Bias ($K$)",r"Water Vapor Mixing Ratio Bias ($g$ $kg^{-1}$) "]
 font = {'family' : 'serif',
         'color'  : 'k',
         'weight' : 'normal',
@@ -210,8 +209,9 @@ font = {'family' : 'serif',
         }     
 fig,(axe1,axe2)=plt.subplots(nrows=2,ncols=1,figsize=(15,8))
 plt.subplot(2,1,1)
-zdat=smt-obstha
-zdat[0,:]=0.0   ## the first level is below surface ground
+#zdat=smtc+273.16-obstmp
+zdat=smtco   #-obstmp
+##zdat[0,:]=0.0   ## the first level is below surface ground
 axe1=plt.contour(xdat,ydat,zdat,colors=colors1,
     linewidths=1.5,levels=levs1,linestyles=linetype1)                           
 plt.title(titlename[0],fontsize=16)                          

@@ -16,17 +16,17 @@ nm(2)='2400_China_Pre_1961_2010_Full_daily_05x05.dat'
 nm(1)='2400_China_Tm_1961_2010_Full_daily_05x05.dat'
 !---------------------------------------------------------
 !!!! ETP
-yy(1)=2010; mm(1)=6; dd(1)=4; ndd(1)=30; rgns(1)='ETP'
+yy(1)=2012; mm(1)=5; dd(1)=20; ndd(1)=31; rgns(1)='ETP'
 !!!! WTP
-yy(2)=2010; mm(2)=6; dd(2)=24; ndd(2)=30; rgns(2)='WTP'
+yy(2)=2010; mm(2)=7; dd(2)=14; ndd(2)=31; rgns(2)='WTP'
 !!!! PRD
-yy(3)=2010; mm(3)=6; dd(3)=1; ndd(3)=30; rgns(3)='PRD'
+yy(3)=2012; mm(3)=4; dd(3)=1; ndd(3)=31; rgns(3)='PRD'
 !!!! MLYR
-yy(4)=2010; mm(4)=6; dd(4)=1; ndd(4)=30; rgns(4)='MLYR'
+yy(4)=2010; mm(4)=6; dd(4)=5; ndd(4)=31; rgns(4)='MLYR'
 !!!! NPC
-yy(5)=2010; mm(5)=8; dd(5)=2; ndd(5)=30; rgns(5)='NPC'
+yy(5)=2010; mm(5)=8; dd(5)=1; ndd(5)=31; rgns(5)='NPC'
 !!!! NEC
-yy(6)=2010; mm(6)=6; dd(6)=1; ndd(6)=30; rgns(6)='NEC'
+yy(6)=2012; mm(6)=7; dd(6)=6; ndd(6)=31; rgns(6)='NEC'
 
 do i=1,12
    day(i)=30

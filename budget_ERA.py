@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Tue Feb 10 11:39:30 2015
+Created on Fri May 08 11:33:54 2015
 
 @author: jhchen
 """
@@ -14,30 +14,47 @@ os.system("cls")
 casenm='ETPCTR_EC'
 #casenm='WTP2D0'
 #casenm='NPC2D2'
-iy=2010
-im=8
-jd=2
 nt=121
 nz=52
 starid=4  # this parameter can discard the dirst day
+dirs='D:/MyPaper/PhD04/Cases/'
+diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 if casenm[0:3]=='ETP':
-    dirin='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/Simulated/'
-    dirq12='D:/MyPaper/PhD04/Cases/ETP/20100604_0704/'
-    nameq1q2="ETP06.99"
-    nameforcing="ETP06_lsforcing.37"
-if casenm[0:3]=='WTP':    
-    dirin='D:/MyPaper/PhD04/Cases/WTP/20100624_0723/Simulated/'
-    dirq12='D:/MyPaper/PhD04/Cases/WTP/20100624_0723/'
-    nameq1q2="WTP06.99"
-    nameforcing="WTP06_lsforcing.37"
+    area=casenm[0:3]
+    folds='/20100604_0704/Simulated/'
+    datestr='20100604_031d'    
+    iy,im,jd=2010,6,4
+if casenm[0:3]=='WTP':
+    area=casenm[0:3]
+    folds='/20100624_0723/Simulated/'
+    datestr='20100624_031d'    
+    iy,im,jd=2010,6,24    
 if casenm[0:3]=='NPC':
-    dirin='D:/MyPaper/PhD04/Cases/NPC/20100802/Simulated/'
-    dirq12='D:/MyPaper/PhD04/Cases/NPC/20100802/'
-    nameq1q2="NPC.99"
-    nameforcing="NPC_lsforcing.37"
-
+    area=casenm[0:3]
+    folds='/20100725/Simulated/'
+    datestr='20100725_031d'    
+    iy,im,jd=2010,7,25
+if casenm[0:3]=='PRD':
+    area=casenm[0:3]
+    folds='/20100402/Simulated/'
+    datestr='20100402_031d'    
+    iy,im,jd=2010,4,2 
+if casenm[0:3]=='MLY':
+    area=casenm[0:4]
+    folds='/20100624/Simulated/'
+    datestr='20100624_031d'    
+    iy,im,jd=2010,6,24 
+if casenm[0:3]=='NEC':
+    area=casenm[0:3]
+    folds='/20100801/Simulated/'
+    datestr='20100801_031d'    
+    iy,im,jd=2010,8,1 
 dirpic='D:/MyPaper/PhD04/Pics/'
-
+dirin=dirs+area+folds
+dirobs=diro+area+'/'
+f43=area+'_'+datestr+"_ERA.43"
+nameforcing=area+'_'+datestr+"_LSFORCING_ERA.37"
+nameq1q2=area+'_'+datestr+"_ERA.99"
 #################################
 mpl.rcParams['ytick.labelsize'] = 24
 mpl.rcParams['xtick.labelsize'] = 24
@@ -91,95 +108,6 @@ for iz in range(0,nz):
             temp=temp+allvar[ir,it,iz]/(nt-starid-1.) 
         allvar_mean[ir,iz]=temp   
 del allvar
-############### simulation Q1 Q2 phase change
-"""
-filenm=casenm+'_micro_202_6hour.txt'
-fpath=dirin+filenm
-onedim2=[]
-linesplit=[]
-f=open(fpath)
-ff=f.readlines()  ## first line in obs file is legend 
-for line in ff:
-    lines=string.lstrip(line)
-    linesplit.append(lines[:-1].split(' '))
-for lnstrs in linesplit:
-    for strs in lnstrs:
-        if strs!='':
-            onedim2.append(string.atof(strs))
-nl=len(onedim2)
-micro=np.ndarray(shape=(5,nt,nz), dtype=float) # 1 condensation 2 evaporation 
-#3 deposition 4 sublimation 5 fus freezing and melting
-for it in range(0,nt):
-    for iv in range(0,5):
-        for iz in range(0,nz):
-            izv=it*nz*5+iv*nz+iz
-            micro[iv,it,iz]=onedim2[izv]
-q1c=np.ndarray(shape=(nt,nz), dtype=float) # 1 condensation 2 evaporation
-q2c=np.ndarray(shape=(nt,nz), dtype=float) # 1 condensation 2 evaporation
-lv=2.5e6
-lf=2.835e6
-ls=2.835e6
-cp=1850.
-scq1=lv/cp
-scq2=lf/cp
-scq3=lf/cp
-scq4=lv/cp
-scq1=1.
-scq2=1.
-scq3=1.
-scq4=1.
-"""
-#scq1=0.25
-#scq2=0.25
-#scq3=0.25
-#scq4=0.25
-"""
-for it in range(0,nt):
-    for iz in range(0,nz):
-        
-        q1c[it,iz]=(micro[0,it,iz]-micro[1,it,iz])*scq1      \
-                    +  micro[4,it,iz]*scq2                   \
-                    + (micro[2,it,iz]-micro[3,it,iz])*scq3  
-        q2c[it,iz]=( micro[0,it,iz]-micro[1,it,iz]      \
-                    + (micro[2,it,iz]-micro[3,it,iz]) )*scq4 
-                   
-        q1c[it,iz]=(micro[0,it,iz]+micro[1,it,iz])*scq1      \
-                    +  micro[4,it,iz]*scq2                   \
-                    + (micro[2,it,iz]+micro[3,it,iz])*scq3  
-        q2c[it,iz]=( micro[0,it,iz]+micro[1,it,iz]      \
-                    + (micro[2,it,iz]+micro[3,it,iz]) )*scq4 
-q1c[it,0]=0.0
-q2c[it,0]=0.0
-q1cm=np.ndarray(shape=(nz), dtype=float) # 1 condensation 2 evaporation
-micro_com=np.ndarray(shape=(5,nz), dtype=float) 
-q2cm=np.ndarray(shape=(nz), dtype=float) # 1 condensation 2 evaporation
-for iz in range(0,nz):
-    temp1=0.0
-    temp2=0.0
-    for it in range(starid,nt-1): #### abandon the firt and the last timestep 
-        temp1=temp1+q1c[it,iz]/(nt-starid-1.) 
-        temp2=temp2+q2c[it,iz]/(nt-starid-1.)
-    q1cm[iz]=temp1
-    q2cm[iz]=temp2
-for iz in range(0,nz):    
-    for iv in range(0,5):
-        tmp3=0.0
-        for it in range(starid,nt-1):
-            tmp3=tmp3+micro[iv,it,iz]/(nt-starid-1.)
-        micro_com[iv,iz]= tmp3
-q1cm[0]=0.0
-q2cm[0]=0.0
-q1cm2=np.ndarray(shape=(nt), dtype=float) # 1 condensation 2 evaporation
-q2cm2=np.ndarray(shape=(nt), dtype=float) # 1 condensation 2 evaporation 
-for it in range(0,nt):
-    temp1=0.0
-    temp2=0.0
-    for iz in range(1,nz): 
-        temp1=temp1+q1c[it,iz]
-        temp2=temp2+q2c[it,iz]
-    q1cm2[it]=temp1
-    q2cm2[it]=temp2    
-"""
 ########## obs q1 q2
 #########################################################            
 ####### file 2
@@ -279,7 +207,7 @@ for it in range(0,nt):
     q1cm2[it]=temp1
     q2cm2[it]=temp2    
 ########## obs q1 q2
-fpath=dirq12+nameq1q2
+fpath=dirobs+nameq1q2
 onedim1=[]
 linesplit=[]
 f=open(fpath)
@@ -310,7 +238,7 @@ for iz in range(0,nz):
     q2obs_pf[iz]=tmp2
 #########################################################
 #### forcing
-fpath=dirq12+nameforcing
+fpath=dirobs+nameforcing
 onedim1=[]
 linesplit=[]
 f=open(fpath)

@@ -42,6 +42,7 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       CHARACTER*2 MONSTR,DAYSTR
       CHARACTER*16 DATE
       INTEGER IMS(4),IDS(4),IME(4),IDE(4),DAYS(12),TMID
+      INTEGER AYEAR(2)
       DIMENSION TSST(NSST),DSST(NSST)
 !--------------------------------------------------------------------
       PARAMETER(NTM=124)
@@ -51,13 +52,13 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       CHARACTER*16 CELORD,topstr
       REAL XYD(NPIN0,19),DYN(NPIN,4)
 !---------------SET THE TIME ----------------------------------------
-      IYR=2010
-      IMS(1)=6  ;IME(1)=7
-      IMS(2)=6  ;IME(2)=7
-      IDS(1)=4  ;IDE(1)=4
-      IDS(2)=24  ;IDE(2)=23
-      DAYS(1)=30
-      DAYS(2)=30
+
+      IMS(1)=5  ;IME(1)=6
+      IMS(2)=7  ;IME(2)=8
+      IDS(1)=20  ;IDE(1)=19
+      IDS(2)=14 ;IDE(2)=13
+      DAYS(1)=31
+      DAYS(2)=31
       WRITE(YEARSTR,'(I4)')IYR
       FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
       DIR='X:\Data\ERA_interim\ERA_Pre_O\'
@@ -65,9 +66,8 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
 !      TOPSTR=''
       DIRFLUX='X:\Data\ERA_interim\SHLH\'
       DIROUT='D:\MyPaper\PhD04\Cases\ERA\FORCING\'
-      AREA(1)='ETP'
-      AREA(2)='WTP'
-      PATH=TRIM(DIR)//TRIM(FOLD)
+      AREA(1)='ETP' ; AYEAR(1)=2012
+      AREA(2)='WTP' ; AYEAR(2)=2010
       DO I=1,12
         DAYS(I)=31
       ENDDO
@@ -85,8 +85,6 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       ELSEIF(MOD(IYR,400)==0)THEN
         DAYS(2)=29
       ENDIF
-      FILEPATH=TRIM(DIR)//TRIM(FOLD)//'DAYSTRT.TXT'
-      OPEN(997,FILE=TRIM(FILEPATH))
 !-----------------------------------
 CC
 C       PRINT*,'  KTEST ??'
@@ -142,6 +140,13 @@ CCC SST DATA: CONVERT TIME INTO HOURS
 !     *,STATUS='OLD')
 !----------------------------------------------------------
       DO 1014 IP=1,2   ! AREA LOOPS
+        IYR=AYEAR(IP)
+        WRITE(YEARSTR,'(I4)')IYR
+        FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
+        PATH=TRIM(DIR)//TRIM(FOLD)
+        FOLD2=TRIM(AREA(IP))//'\'
+        FILEPATH=TRIM(DIROUT)//TRIM(FOLD2)//YEARSTR//'DAYSTRT.TXT'
+        OPEN(997,FILE=TRIM(FILEPATH))
         TEMPRESS=0
         TEMPTEMP=0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -200,6 +205,11 @@ CCC SST DATA: CONVERT TIME INTO HOURS
      +              '_lhsh_rain.TXT'
 ! TIMEID LATENTHEAT(W/M^2) SENSIBLEHEAT(W/M^2)  PRECIPIPITABLE_WATER_FOR_ENTIRE_ATMOSPHERE(KG/M^2)
         OPEN(30,FILE=TRIM(FILEPATH))
+        READ(30,*)
+        FILEPATH=TRIM(DIRFLUX)//YEARSTR//TRIM(AREA(IP))//
+     +              '_SST_SKT.TXT'
+        OPEN(11,FILE=TRIM(FILEPATH))
+        READ(11,*)   ! SKIP THE FIRST LINE
 !!!
 !        FILEPATH=TRIM(DIR)//TRIM(FOLD)//YEARSTR//TRIM(AREA(IP))//'_DYN.TXT'
 ! TIMEID LATENTHEAT(W/M^2) SENSIBLEHEAT(W/M^2)  PRECIPIPITABLE_WATER_FOR_ENTIRE_ATMOSPHERE(KG/M^2)
@@ -218,6 +228,7 @@ C      ENDDO]
         ENDDO
         DO I=1,IMTS
           READ(20,*)
+          READ(11,*)
         ENDDO
         DO I=1,IMTS
           READ(40,*)
@@ -227,48 +238,48 @@ C      ENDDO]
 !        ENDDO
         FOLD2=TRIM(AREA(IP))//'\'
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_SHLH_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_SHLH_ERA'
      +    //trim(topstr)//'.43' 
         OPEN(36,FILE=TRIM(FILENAME))
         DO ITIM=1,IMT*2+1
-          READ(30,*) TMID,FLH,FSH,PEWR,CPEWR
-          WRITE(36,301) FLH,FSH,PEWR,CPEWR
+          READ(30,*) TMID,FSH,FLH,PEWR,CPEWR
+          WRITE(36,301)FLH,FSH,PEWR,CPEWR
         ENDDO
 301     FORMAT(1X,4(1X,e12.4))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_UV_PROFILES_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_UV_PROFILES_ERA'
      +    //trim(topstr)//'.35'
         OPEN(35,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_LSFORCING_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_LSFORCING_ERA'
      +    //trim(topstr)//'.37'
         OPEN(37,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_SURFACE_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_SURFACE_ERA'
      +    //trim(topstr)//'.39' 
         OPEN(39,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_ERA'
      +    //trim(topstr)//'.49'
         OPEN(49,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_THETAQV_PROFILE_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_THETAQV_PROFILE_ERA'
      +    //trim(topstr)//'.41'   !!!!!! UNIT THETA(K)  QV G/KG 
         OPEN(41,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_ERA'
      +    //trim(topstr)//'.43'
         OPEN(43,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_OmegaComps_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_OmegaComps_ERA'
      +    //trim(topstr)//'.42'
         OPEN(42,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_ERA'
      +    //trim(topstr)//'.99'
         OPEN(99,FILE=TRIM(FILENAME))
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//'_'//
-     +    YEARSTR//MONSTR//DAYSTR//'_30d_Q1Q2_ERA'
+     +    YEARSTR//MONSTR//DAYSTR//'_031d_Q1Q2_ERA'
      +    //trim(topstr)//'.38'
         OPEN(38,FILE=TRIM(FILENAME))
 !
@@ -302,7 +313,7 @@ CC READ FIRST LEVEL (SURFACE)
 !     + THE(1),VAP(1),RH(1)
         PRESS(ISFL)=PRESS(ISFL)/100.
         TEMPRESS=PRESS(ISFL)+TEMPRESS
-        TEMPTEMP=TEMPSS+TEMPTEMP
+        TEMPTEMP=TEMP(ISFL)+TEMPTEMP
 101   FORMAT(1X,8(1X,e12.4))
 102   FORMAT(1X,I4,10(1X,e12.4))
         WRITE(38,'(1X,E12.4,1X,E12.4)')VQ1,VQ2
@@ -342,6 +353,8 @@ C STOP
         ENDDO
 !        WRITE(42,'(8E12.4)')XYD(:,8),XYD(:,18)
 906   FORMAT(1X,I4,18(1X,E12.4))
+        READ(11,*)ISSTSKT,SEASURTMP,SKINTMP  ! SEASURTMP=SST, SKINTMP=SKT
+!!-------------END OF READING DATA-------------------------------------------##
 !!!!!! THE FOLLOWING CODES ARE FOR TP
         DO K=1,NLTP
             IK=K+ISFL-1
@@ -443,7 +456,7 @@ CCC
 ! FROM 1000 OR SURFACE
 C WRITE INITIAL SOUNDING TO FORT.33 IF ITIM IS THE STARTING TIME:
         FILENAME=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(IP))//
-     +      YEARSTR//MONSTR//DAYSTR//'_30d'
+     +      YEARSTR//MONSTR//DAYSTR//'_031d'
      +    //trim(topstr)//'.33'
         OPEN(33,FILE=TRIM(FILENAME))
 !      IF(ITIM.EQ.17) THEN
@@ -591,10 +604,12 @@ C        SST=COE2*DSST(NSTSST) + (1.-COE2)*DSST(NSTSST-1)
           DEN=PRESS(1)*1.E2/(RD*TEMP(1))
           ESAT=611.*EXP(HLAT/RV * (1./273.16 - 1./SST))
           QVSS=ESAT/(RV*DEN*SST)
+          THS=THE1(1)
+          QVSS=QVE1(1)
           WRITE(39,803) TIME,THS,QVSS,SST  !!! WHAT ARE THE UNITS?
-          WRITE(49,903) TIME,SST,THS,QVSS
+          WRITE(49,903) TIME,SST,THS,QVSS,SKINTMP
 803       FORMAT(4E16.5)
-903       FORMAT(4E16.5)
+903       FORMAT(5E16.5)
           PL3(ITIM-ITIMS+1)=SST
 CC   THETA AND QV PROFILES FOR SELECTED PERIOD (FORT.41)
           DO K=1,L
@@ -606,11 +621,10 @@ CC   THETA AND QV PROFILES FOR SELECTED PERIOD (FORT.41)
 804       FORMAT(8E13.5)
         ENDIF
 999   CONTINUE         
-      WRITE(997,*)TEMPRESS/(IMT+1.),IP
-      WRITE(997,*)TEMPTEMP/(IMT+1.),IP
+      WRITE(997,*)TEMPRESS/(IMT+1.),IP,IMT+1
+      WRITE(997,*)TEMPTEMP/(IMT+1.),IP,IMT+1
       TEMPRESS=0.0
       TEMPTEMP=0.0
-      close(997)
       close(99)
       close(90)
       close(91)
@@ -631,6 +645,7 @@ CC   THETA AND QV PROFILES FOR SELECTED PERIOD (FORT.41)
       close(41)
       close(999)
 1014  CONTINUE  
+      close(997)
       STOP
       END 
 !

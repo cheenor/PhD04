@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Tue Apr 21 11:23:46 2015
+Created on Thu May 07 23:43:21 2015
 
 @author: jhchen
 """
-import matplotlib
+import matplotlib as mpl
+#mpl.use("TkAgg")  #Qt4Agg  ,   ps ,  TkAgg
 import numpy as np
 import matplotlib.cm as cm
 import datetime
@@ -15,38 +16,56 @@ import matplotlib.dates as matdate
 from matplotlib.dates import DateFormatter
 import calendar
 import string
-import time 
-casenm='ETPCTR2_ERA'
+import time
+import os
+#plt.rc('text', usetex=True)
+#mpl.rcParams['ps.usedistiller'] = None
+#mpl.rcParams['interactive'] = True
+#mpl.rcParams['ps.fonttype'] = 42
+#mpl.rcParams['ps.useafm'] = True
+casenm='NECCTR2_ERA'
 if casenm[0:3]=='ETP' :
     datestr="20120520_031"
     iy,im,jd=2012,5,20
     nt,nday=125,31
     namestr=casenm[0:3]
+    marktr=r"($a$)"
+    yearstr="%d"%iy
 elif casenm[0:3]=='WTP' :
-    datestr="20100624_031"
-    iy,im,jd=2010,6,24
+    datestr="20100714_031"
+    iy,im,jd=2010,7,14
     nt,nday=125,31
     namestr=casenm[0:3]
+    marktr=r"($b$)"
+    yearstr="%d"%iy
 elif casenm[0:3]=='PRD' :
-    datestr="20100402_031"
-    iy,im,jd=2010,4,2
+    datestr="20120401_031"
+    iy,im,jd=2012,4,1
     nt,nday=125,31
     namestr=casenm[0:3]
+    marktr=r"($c$)"
+    yearstr="%d"%iy
 elif casenm[0:3]=='MLY' :
-    datestr="20100624_031"
-    iy,im,jd=2010,6,24
+    datestr="20100605_031"
+    iy,im,jd=2010,6,5
     nt,nday=125,31
     namestr=casenm[0:4]
+    marktr=r"($d$)"
+    yearstr="%d"%iy
 elif casenm[0:3]=='NPC' :
-    datestr="20100725_031"
-    iy,im,jd=2010,7,25
+    datestr="20100802_031"
+    iy,im,jd=2010,8,2
     nt,nday=125,31
     namestr=casenm[0:3]
+    marktr=r"($e$)"
+    yearstr="%d"%iy
 elif casenm[0:3]=='NEC' :
-    datestr="20080801_031"
-    iy,im,jd=2008,8,1
+    datestr="20120706_031"
+    iy,im,jd=2012,7,6
     nt,nday=125,31
     namestr=casenm[0:3]
+    marktr=r"($f$)"
+    yearstr="%d"%iy
 topstr='' #'_250'
 strnm=namestr+'_'+datestr+'d'
 dirin='D:/MyPaper/PhD04/Cases/ERA/FORCING/'+namestr+'/'
@@ -150,32 +169,6 @@ for iz in range(0,nz):
     fcq2obs_pf[iz]=tmp2
 del onedim1
 ###############################################################################
-fpath=dirin+fnm[1]
-iskp=0
-onedim1=readAscii(fpath,iskp)
-obstha=np.ndarray(shape=(nz,nt),dtype=float)
-obsqv=np.ndarray(shape=(nz,nt),dtype=float)
-obstmp=np.ndarray(shape=(nz,nt),dtype=float)
-#obsrh=np.ndarray(shape=(nz,nt),dtype=float)
-obsu=np.ndarray(shape=(nz,nt),dtype=float)
-obsv=np.ndarray(shape=(nz,nt),dtype=float)
-obsw=np.ndarray(shape=(nz,nt),dtype=float)           
-iskp=6*nz+1
-for it in range(0,nt):
-    for iz in range(0,nz):
-        k=iskp*it+1+iz            
-        obstha[iz,it]=onedim1[k]
-        k=iskp*it+1+iz+nz*1            
-        obsqv[iz,it]=onedim1[k]*1000. #convert kg/kg to g/kg  
-        k=iskp*it+1+iz+nz*2         
-        obstmp[iz,it]=onedim1[k]  
-        k=iskp*it+1+iz+nz*3          
-        obsu[iz,it]=onedim1[k]  
-        k=iskp*it+1+iz+nz*4           
-        obsv[iz,it]=onedim1[k]  
-        k=iskp*it+1+iz+nz*5          
-        obsw[iz,it]=onedim1[k]
-###############################################################################
 ########## obs q1 q2
 fpath=dirin+fnm[7]
 iskp=0
@@ -199,19 +192,31 @@ for iz in range(0,nz):
     q2obs_pf[iz]=tmp2
 del onedim1
 ### Time series
-lev37=[-6,-4,-2,2,6,9]
-color37=['g','g','g','r','r','r']
-linetyp37=['dotted','dotted','dotted','solid','solid','solid'] 
+lev37=[-15,-9,-6,-3,3,6,9,15]
+color37=['limegreen','palegreen','lightsage','w','w',
+         'w','lightsalmon','salmon','tomato','r']
+levq1=[-15,-9,-6,-3,3,6,9,15]
+colorq1=['r','r','r','r','r','r','r','r']
+linetypq1=['dotted','dotted','dotted','dotted','solid','solid','solid','solid'] 
+levq2=[-12,-9,-6,-3,3,6,9,12]
+colorq2=['limegreen','palegreen','lightsage','w','w',
+         'w','lightsalmon','salmon','tomato','r']   #['g','g','g','g','g','g','g','g']
+linetypq2=['dotted','dotted','dotted','dotted','solid','solid','solid','solid']
 charsize=20
 font = {'family' : 'serif',
         'color'  : 'k',
         'weight' : 'normal',
         'size'   : 20,
         }    
+#
 fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
 plt.subplot(2,1,1)
-axe1=plt.contour(xxx,ydat,q1obs,colors=color37,
-linewidths=1.5,levels=lev37,linestyles=linetyp37)                           
+#axe1=plt.contourf(xxx,ydat,q1obs,colors=color37,levels=lev37, extent='both')
+#linewidths=1.5,linestyles=linetyp37)
+axe1=plt.contourf(xxx,ydat,q2obs,colors=colorq2,levels=levq2) #, 
+#    linewidths=1.5,linestyles=linetypq2) 
+axe1=plt.contour(xxx,ydat,q1obs,colors=colorq1,levels=levq1, 
+    linewidths=1.5,linestyles=linetypq1)                        
 #plt.title('Observation',fontsize=charsize)                       
 plt.axis([0, nt, 0, 16])  ## x axis  y axis
 plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
@@ -227,11 +232,11 @@ plt.ylabel('Height'+r' ($km$)', fontdict=font)
 plt.show() 
 ###
 plt.subplot(2,1,2)
-axe2=plt.contour(xxx,ydat,q2obs,colors=color37,
-linewidths=1.5,levels=lev37,linestyles=linetyp37)                           
+axe2=plt.contourf(xxx,ydat,q2obs,colors=color37,levels=lev37)
+#linewidths=1.5,linestyles=linetyp37)                           
 #plt.title(casenm,fontsize=charsize)                        
 plt.axis([0, nt, 0, 16])  ## x axis  y axis
-plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
+#plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
 axx=fig.add_subplot(2,1,2)                         
 axx.set_xticks(range(0,nt,16))
 xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
@@ -246,52 +251,54 @@ plt.savefig(pic_out+casenm+'_q1q2_input.pdf')
 plt.show()
 plt.close()
 ###forcing
-lev37=[-6,-4,-2,2,4,6]
+lev37=[-6,-3,-1,1,3,6]
 color37=['g','g','g','r','r','r']
 linetyp37=['dotted','dotted','dotted','solid','solid','solid'] 
+levq1=[-14,-10,-6,-3,3,6,10,14]
+#colorq1=['r','r','r','r','r','r','r','r']
+colorq1=['b','dodgerblue','deepskyblue','aqua','w',
+         'lightsalmon','salmon','tomato','r']
+linetypq1=['dotted','dotted','dotted','dotted','solid','solid','solid','solid'] 
+levq2=[-12,-8,-5,-2,2,5,8,12]
+colorq2=['darkgreen','darkgreen','darkgreen','darkgreen',
+        'darkgreen','darkgreen','darkgreen','darkgreen']
+#colorq2=['darkred','darkred','darkred','darkred',
+#         'darkred','darkred','darkred','darkred']
+linetypq2=['dotted','dotted','dotted','dotted','solid','solid','solid','solid']
 charsize=20
 font = {'family' : 'serif',
         'color'  : 'k',
         'weight' : 'normal',
         'size'   : 20,
         } 
-fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
-plt.subplot(2,1,1)
-axe1=plt.contour(xxx,ydat,fcq1,colors=color37,
-linewidths=1.5,levels=lev37,linestyles=linetyp37)                           
+fig,axe1=plt.subplots(nrows=1,ncols=1,figsize=(15,6))
+plt.subplot(1,1,1)
+axe1=plt.contourf(xxx,ydat,fcq1,colors=colorq1,
+                  levels=levq1,extend='both')
+plt.colorbar(orientation='horizontal',extend='both',
+    extendfrac='auto',  spacing='uniform') 
+axe1=plt.contour(xxx,ydat,fcq2,colors=colorq2,
+linewidths=1,levels=levq2,linestyles=linetypq2)                           
 #plt.title('Observation',fontsize=charsize)                       
 plt.axis([0, nt, 0, 16])  ## x axis  y axis
 plt.clabel(axe1,inline=1,fmt='%1d',fontsize=charsize-2)                                                 
-axx=fig.add_subplot(2,1,1)                         
+axx=fig.add_subplot(1,1,1)                         
 axx.set_xticks(range(0,nt,16))
 xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
 axx.set_xticklabels(xticklabels, size=charsize)
-text1=r"($a$)"
-axx.text(1.5,14,text1,fontsize=charsize+4) 
-text1=r"Temperature forcing ($K$ $d^{-1}$)"
-axx.text(80,14,text1,fontsize=charsize)  
+text1=marktr
+axx.text(1.5,16.3,text1,fontsize=charsize+2) 
+text1=r"Temperature ($K$ $d^{-1}$) and miosture ($g$ $kg^{-1}$ $d^{-1}$) forcing"
+#axx.text(80,14,text1,fontsize=charsize) 
+plt.title(text1,fontsize=charsize+4) 
 plt.ylabel('Height'+r' ($km$)', fontdict=font)
-plt.show() 
-###
-plt.subplot(2,1,2)
-axe2=plt.contour(xxx,ydat,fcq2,colors=color37,
-linewidths=1.5,levels=lev37,linestyles=linetyp37)                           
-#plt.title(casenm,fontsize=charsize)                        
-plt.axis([0, nt, 0, 16])  ## x axis  y axis
-plt.clabel(axe2,inline=1,fmt='%1d',fontsize=charsize-2)                       
-axx=fig.add_subplot(2,1,2)                         
-axx.set_xticks(range(0,nt,16))
-xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
-axx.set_xticklabels(xticklabels, size=charsize)
-text1=r"($b$)"
-axx.text(1.5,14,text1,fontsize=charsize+4) 
-text1=r"Moisture forcing ($g$ $kg^{-1}$ $d^{-1}$)"
-axx.text(80,14,text1,fontsize=charsize) 
-plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.xlabel(yearstr, fontdict=font)
 plt.show()                     
-plt.savefig(pic_out+casenm+'_lsforcing_input.pdf')          
+plt.savefig(pic_out+casenm+'_lsforcing_input.png',dpi=300)        
 plt.show()
 plt.close()
+#filename=pic_out+casenm+'_lsforcing_input.eps'
+#os.system("pdfcrop %s %s" % (filename, filename)) 
 ###############################################################################
 #'OBS_Surface_input.txt' 0
 fpath=dirin+fnm[0]
@@ -344,9 +351,9 @@ plt.show()
 plt.close()    
 del onedim1
 #  CN05 daily rain 
-fpath=dircnrain+cnname
-iskp=0
-onedim1=readAscii(fpath,iskp)
+#fpath=dircnrain+cnname
+#iskp=0
+#onedim1=readAscii(fpath,iskp)
 cnrain=np.ndarray(shape=(nday), dtype=float)
 cntmp=np.ndarray(shape=(nday), dtype=float)
 #for it in range(0,nday):      
@@ -453,7 +460,6 @@ for it in range(0,nt):
         qv[iz,it]=onedim1[k+iz+1+nz]*1000.
 fig,[axe1,axe2]=plt.subplots(nrows=2,ncols=1,figsize=(15,9))
 plt.subplot(2,1,1)
-tesdat=theta-obstha
 axe1=plt.contour(xxx,ydat,theta,colors=color37,
 linewidths=1.5,linestyles=linetyp37)                           
 #plt.title('Observation',fontsize=charsize)                       
