@@ -15,28 +15,37 @@ dirout="D:/MyPaper/PhD04/Data/CERES/"
 iyr=2010
 
 rgns=["ETP","WTP","PRD","MLYR","NPC","NEC"]
-imm =[  6,    6,    4,   6,     7,    8  ]
-idd =[  4,    24,    2,   24,  25,    1  ]
+iyrs=[2012, 2010, 2012, 2010,   2010, 2012]
+imm =[  5,    7,    4,   6,     8,    7  ]
+idd =[  20,    14,    1,   24,  2,    6  ]
 ndds=[  30,   30,   30,  30,    30,   30 ]
 lon1=[  90,   80,   110,  110,  112,  120 ]
 lon2=[  100,  90,   118,  122,  120,  130 ]
 lat1=[  27.5,  27.5,  27.5, 27, 34,   43  ]
 lat2=[  37.5,  37.5,  35,  33,  42,   49  ]
-filenm=["CERES_SYN1deg-3H_Terra-Aqua-MODIS_Ed3A_Subset_20100501-20100930.nc",
-    "CERES_SYN1deg-3H_Terra-Aqua-MODIS_Ed3A_Subset_20100501-20100930_OBS_TOA.nc"] #,
+filenm0=["CERES_SYN1deg-3H_Terra-Aqua-MODIS_Ed3A_Subset_20100401-20100930.nc",
+    "CERES_SYN1deg-3H_Terra-Aqua-MODIS_Ed3A_Subset_20100401-20100930_OBS_TOA.nc"] #,
 #    "CERES_SYN1deg-Day_Terra-Aqua-MODIS_Ed3A_Subset_201004-201010_SRF_CMP.nc"]
-ima=5
+filenm1=["CERES_SYN1deg-3H_Terra-Aqua-MODIS_Ed3A_Subset_20120401-20120930.nc",
+    "CERES_SYN1deg-3H_Terra-Aqua-MODIS_Ed3A_Subset_20120401-20120930_OBS_TOA.nc"] 
+ima=4
 ida=1
-ystr='%d'%iyr
-mstr='%d'%ima
-dstr='%d'%ida
-text=ystr+"-"+mstr+"-"+dstr
-d = datetime.datetime.strptime(text,'%Y-%m-%d')
-daynumdata=d.timetuple().tm_yday
-fpath=[dirin+filenm[0],
-       dirin+filenm[1]] #,
+#,
 #        dirin+filenm[2]]
 for i in range(0,len(rgns)):  ### len(rgns)
+    if iyrs[i] == 2010:
+        filenm=filenm0
+    elif iyrs[i] == 2012 :
+        filenm=filenm1        
+    iyr=iyrs[i]    
+    ystr='%d'%iyr
+    mstr='%d'%ima
+    dstr='%d'%ida
+    text=ystr+"-"+mstr+"-"+dstr
+    d = datetime.datetime.strptime(text,'%Y-%m-%d')
+    daynumdata=d.timetuple().tm_yday    
+    fpath=[dirin+filenm[0],
+           dirin+filenm[1]]
     ims=imm[i]
     ids=idd[i]
     ystr='%d'%iyr

@@ -8,6 +8,7 @@ Created on Wed May 27 14:43:13 2015
 from pytrmm import TRMM3B40RTFile as TRM3B40
 import os
 import datetime
+import calendar
 os.system("cls")
 dirin='E:/Data/TRMM/3b40/'
 dirout='D:/MyPaper/PhD04/Data/TRMM/3B40/'
@@ -27,7 +28,7 @@ fpath="E:/Data/TRMM/3b40/2010/06/3B40RT.2010062718.7R2.bin.gz"
 trmm_file = TRM3B40(fpath)
 fpath='E:/Data/TRMM/3b40/3b40_FileHead.txt'
 fout=open(fpath,'w')
-print(trmm_file.header())
+#print(trmm_file.header())
 ax=trmm_file.header()
 headnm=ax.keys()
 headva=ax.values()
@@ -79,8 +80,20 @@ for ig in range(0,nag):
     fout.write("\n")
     ndd=ndays[ig]
     xdate=getdatestr(ayear[ig],amon[ig],aday[ig],ndays[ig])
+    iyy=ayear[ig]    
+    imm=amon[ig]
+    jd=aday[ig]
+    monday = calendar.monthrange(iyy,imm)
     idt=0
     for idd in range(0,ndd):
+        jdd=jd+idd
+        if jdd>monday[1]:
+            imm=imm+1
+            monday = calendar.monthrange(iyy,imm)
+            jdd=1;jd=1-idd
+        yearstr="%d"%iyy
+        monstr="%2.2d"%imm
+        daystr="%2.2d"%jdd
         for ih in range(0,24,3):
             fout.write(xdate[idt]+" ")
             idt=idt+1
@@ -88,6 +101,7 @@ for ig in range(0,nag):
             filename="3B40RT."+yearstr+monstr+daystr+hourstr+".7R2.bin.gz"
             fold=yearstr+"/"+monstr+"/"
             fpath=dirin+fold+filename
+            print fpath
             if os.path.isfile(fpath):
                 trmm_file=TRM3B40(fpath)
                 precip = trmm_file.precip()
@@ -100,11 +114,14 @@ for ig in range(0,nag):
                                 if precip[iy,ix]>=0.0 :
                                     tmp=tmp+precip[iy,ix]
                                     cont=cont+1.
-                item="%f "%(tmp/cont)
+                if cont>0:
+                    item="%f "%(tmp/cont)
+                else:
+                    item='-0.1'
                 fout.write(item)
                 del trmm_file,precip
             else:
-                fout.write("-99.0")  # there is no data file
+                fout.write("-0.1")  # there is no data file
             fout.write("\n")
     fout.close()
             

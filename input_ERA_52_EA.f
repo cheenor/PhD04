@@ -54,7 +54,7 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       IMS(3)=8  ;IME(3)=8
       IMS(4)=7  ;IME(4)=8
       IDS(1)=1  ;IDE(1)=1
-      IDS(2)=5  ;IDE(2)=5
+      IDS(2)=2  ;IDE(2)=2
       IDS(3)=1  ;IDE(3)=31
       IDS(4)=6  ;IDE(4)=5
       DIR='X:\Data\ERA_interim\ERA_EA\'
@@ -140,7 +140,7 @@ CCC SST DATA: CONVERT TIME INTO HOURS
 !     *'/MNT/RAID50/HIBA/DATA_TOGA_OBS_DAT/IFA_DAT.SURFACE'
 !     *,STATUS='OLD')
 !----------------------------------------------------------
-      DO 1014 IP=1,4   ! AREA LOOPS
+      DO 1014 IP=2,2   ! AREA LOOPS
         IYR=AYEAR(IP)
         WRITE(YEARSTR,'(I4)')IYR
         FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'

@@ -114,6 +114,8 @@ else:
     regionname=casenm[0:3]
 dirout="D:/MyPaper/PhD04/Cases/Postdata/"
 dirpic="D:/MyPaper/PhD04/Pics/"
+fold="20100604_0704/Simulated/"
+fold="CTREC20120520/Simulation/"
 nd=30 # days
 dt=15 # output timestep in min
 nx=200
@@ -173,8 +175,7 @@ cels=[0.00,1.00]
 ft=np.ndarray(shape=(nz,nz), dtype=float) #(km,km)
 tr=np.ndarray(shape=(nz), dtype=float) #(km)
 #
-#
-fold="20100604_0704/Simulated/"     
+#   
 fpath=dirin+fold+casenm+"_qlqit.txt"
 iskp=0
 sg=0.
@@ -235,7 +236,7 @@ for it in range(0,nt):
 #
     frc=1./(nx*nz)
     frg=1./nx
-    frr=1./nx*nt
+    frr=1./(nx*nt)
     for k in range(0,nz):
         for ix in range(0,nx):
             tr[k]=tr[k]+frr*tc[ix,k]
@@ -331,13 +332,15 @@ for it in range(0,nt):
 #...............for overlap cloud cells
 #               ----ignore thin cells
             lc=0
+            lccc=-1
             for ii in range(0,ns[ix]):
                 if (kce[ix,ii]-kcb[ix,ii]) >= 2 :
                     lce[lc]=kce[ix,ii]
                     lcb[lc]=kcb[ix,ii]
                     lc=lc+1
+                    lccc=9
             #----ignore small gaps
-            if lc >1 : # more than one cloud layer
+            if lccc >0 : # more than one cloud layer
                 for ii in range(1,lc):
                     if lcb[ii]-lce[ii-1]<2 :
                         lce[ii-1]=lce[ii]
@@ -346,7 +349,7 @@ for it in range(0,nt):
                             lcb[ic]=lcb[ic+1]
                             lce[ic]=lce[ic+1]
             #----get frequency according to overlap cells
-            if lc >0 :
+            if lccc >0 :
                 ce=ce+frg
                 io=min(lc,no+1)
                 wa[io]=wa[io]+frg
@@ -362,17 +365,22 @@ for it in range(0,nt):
             if lc>=1 and lc<=3 :
                 lcc=lc-1
                 ww[kb,ke,lcc]=ww[kb,ke,lcc]+frg
+#        if ce ==0. :
+#            ce=0.0001
         wa[0]=1.0-ce # clear sky
+        ich=-1
         for ii in range(0,ne):
             if cels[ii] < ce and ce <=cels[ii+1] :
                 ic=ii
-        sa[ic]=sa[ic]+1.
-        for io in range(0,no+2):
-            fa[io,ic]=fa[io,ic]+wa[io]
-        for io in range(0,no):
-            for ke in range(0,nz):
-                for kb in range(0,nz):
-                    fb[kb,ke,io,ic]=fb[kb,ke,io,ic]+ww[kb,ke,io]
+                ich=1
+        if ich>0 :
+            sa[ic]=sa[ic]+1.
+            for io in range(0,no+2):
+                fa[io,ic]=fa[io,ic]+wa[io]
+            for io in range(0,no):
+                for ke in range(0,nz):
+                    for kb in range(0,nz):
+                        fb[kb,ke,io,ic]=fb[kb,ke,io,ic]+ww[kb,ke,io]
 # end loop of it
 fdc.close()
 #
@@ -406,7 +414,7 @@ for ip in range(0,npp):
             if ws[kb]>0 :
                 qs[kb,ip]=qs[kb,ip]/ws[kb]                 
 for kb in range(0,nz):
-    qs[kb,npp]=qs[kb,npp]*qs[kb,npp-1]
+    qs[kb,npp-1]=qs[kb,npp-1]*qs[kb,npp-2]
 #                                              
 for k in range(0,nz):
     for kb in range(0,nz):
@@ -431,10 +439,10 @@ itme="%s "%"<sg; Frequency of all cloud cells"
 fcells.write(itme)
 fcells.write('\n')
 for ke in range(0,nz):
-    itme="%d "%(z[ke]*10.)
+    itme="%f "%(z[ke]*10.)
     fcells.write(itme)
     for kb in range(0,nz):
-        itme="%d "%(ft[kb,ke]*100.) # for ft[kb,ke],the value of ft is cloud cover, 
+        itme="%f "%(ft[kb,ke]*100.) # for ft[kb,ke],the value of ft is cloud cover, 
                                          # z[kb] is base,z[ke]is cloud top
         fcells.write(itme)
     fcells.write('\n')
@@ -447,28 +455,28 @@ for lc in range(0,ne):
     for io in range(0,no):
         itme="%d "%(lc)
         fcells.write(itme) 
-        itme="%d "%(sa[lc]+0.01)
+        itme="%f "%(sa[lc]+0.01)
         fcells.write(itme) 
         itme="%s "%' Frequency of overlap cloud cells'
         fcells.write(itme)
-        fcells.write('\n')
         itme="%s "%'....... na= '
         fcells.write(itme)
         itme="%d "%io
         fcells.write(itme)
         itme="%s "%'area= '
         fcells.write(itme)
+        fcells.write('\n')
         for ic in range(0,no+2):
             itme="%f "%(fa[ic,lc])
             fcells.write(itme)
         fcells.write('\n')
         for ke in range(0,nz):  # sur to top
             for kb in range(0,nz):
-                itme="%d "%(fb[kb,ke,io,lc]*100.)
+                itme="%f "%(fb[kb,ke,io,lc]*100.)
                 fcells.write(itme) 
             fcells.write('\n')    
         for kb in range(0,nz):
-            itme="%d "%(z[kb]*10.)
+            itme="%f "%(z[kb]*10.)
             fcells.write(itme)
         fcells.write('\n') 
 #
@@ -476,28 +484,28 @@ itme="%s "%' ======) CEM deep convection ... samples'
 fcells.write(itme)
 fcells.write('\n')
 for k in range(0,nz):
-    itme="%d "%(z[k]*10.)
+    itme="%f "%(z[k]*10.)
     fcells.write(itme)
     for kb in range(0,20):
-        itme="%d "%(wd[k,kb]*0.1+0.01)
+        itme="%f "%(wd[k,kb]*0.1+0.01)
         fcells.write(itme)
     fcells.write('\n')     
 for kb in range(0,20):
-    itme="%d "%(z[kb]*10.)
+    itme="%f "%(z[kb]*10.)
     fcells.write(itme)
 fcells.write('\n')
 itme="%s "%' ======) CEM deep convection ... pot temperature'
 fcells.write(itme)
 fcells.write('\n')        
 for k in range(0,nz):
-    itme="%d "%(z[k]*10.)
+    itme="%f "%(z[k]*10.)
     fcells.write(itme)
     for kb in range(0,20):
-        itme="%d "%(td[k,kb])
+        itme="%f "%(td[k,kb])
         fcells.write(itme)
     fcells.write('\n')     
 for kb in range(0,20):
-    itme="%d "%(z[kb]*10.)
+    itme="%f "%(z[kb]*10.)
     fcells.write(itme)
 for ip in range(0,npp):
     itme="%s "%' ======) CEM deep convection ... profile, ip='
@@ -506,14 +514,14 @@ for ip in range(0,npp):
     fcells.write(itme)
     fcells.write('\n')         
     for k in range(0,nz):
-        itme="%d "%(z[k]*10.)
+        itme="%f "%(z[k]*10.)
         fcells.write(itme)
         for kb in range(0,20):
-            itme="%d "%(qd[k,kb,ip]*100)
+            itme="%f "%(qd[k,kb,ip]*100)
             fcells.write(itme)
         fcells.write('\n')     
     for kb in range(0,20):
-        itme="%d "%(z[kb]*10.)
+        itme="%f "%(z[kb]*10.)
         fcells.write(itme)
     fcells.write('\n')
 #
@@ -521,14 +529,14 @@ itme="%s "%' ======) CEM PBL convection ... samples'
 fcells.write(itme)
 fcells.write('\n')
 for k in range(0,nz):
-    itme="%d "%(z[k]*10.)
+    itme="%f"%(z[k]*10.)
     fcells.write(itme)
     for kb in range(0,30):
-        itme="%d "%(wp[k,kb]*0.1+0.01)
+        itme="%f "%(wp[k,kb]*0.1+0.01)
         fcells.write(itme)
     fcells.write('\n')    
 for kb in range(0,30):
-    itme="%d "%(z[kb]*10.)
+    itme="%f "%(z[kb]*10.)
     fcells.write(itme)
 fcells.write('\n') 
 for ip in range(0,npp):
@@ -538,14 +546,14 @@ for ip in range(0,npp):
     fcells.write(itme)
     fcells.write('\n')         
     for k in range(0,nz):
-        itme="%d "%(z[k]*10.)
+        itme="%f "%(z[k]*10.)
         fcells.write(itme)
         for ke in range(0,30):
-            itme="%d "%(qp[k,ke,ip]*100)
+            itme="%f "%(qp[k,ke,ip]*100)
             fcells.write(itme)
         fcells.write('\n')     
     for ke in range(0,30):
-        itme="%d "%(z[ke]*10.)
+        itme="%f "%(z[ke]*10.)
         fcells.write(itme)
     fcells.write('\n')
 #
@@ -556,17 +564,17 @@ itme="%s "%' z base  sample  profiles'
 fcells.write(itme)
 fcells.write('\n')
 for kb in range(0,nz):
-    item="%d "%(z[kb]*10.)
-    fcells.write(itme)
-    item="%d "%(ws[kb]+0.01)
-    fcells.write(itme)
-    item="%d "%(tr[kb])
-    fcells.write(itme)
-    item="%d "%(ts[kb])
-    fcells.write(itme)    
+    item="%f "%(z[kb]*10.)
+    fcells.write(item)
+    item="%f "%(ws[kb]+0.01)
+    fcells.write(item)
+    item="%f "%(tr[kb])
+    fcells.write(item)
+    item="%f "%(ts[kb])
+    fcells.write(item)    
     for ip in range(0,npp):
-        item="%d "%(qs[kb,ip]*10000.)
-        fcells.write(itme)
+        item="%f "%(qs[kb,ip]*10000.)
+        fcells.write(item)
     fcells.write('\n')
 fcells.close() 
 #------  1-d plot
@@ -641,29 +649,35 @@ if zbmin >0. :
                 ft[kb,ke]=0
                 for lc in range(0,ne):
                     for io in range(0,no):
-                        fb[ke,ke,io,ic]=0.
+                        fb[ke,ke,io,lc]=0.
 nrec=0
 #
 #plot  ----------  ft  # xdat,ydat,zdat
 font = {'family' : 'serif',
         'color'  : 'k',
         'weight' : 'normal',
-        'size'   : 20,
+        'size'   : 18,
         }  
-cloudlevs=[2,5,10,15,20,30,40,50,60,70,80,90]
+cloudlevs=[2,5,10,15,20,30,40,50,60,70,80,90,100,110]
 cloudclors=['w','lightgray','plum','darkorchid','b','dodgerblue','skyblue','aqua',
-            'lime','greenyellow','yellow','salmon','orangered','r']
-fig,axe1=plt.subplots(nrows=1,ncols=1,figsize=(8,8))
+            'lime','greenyellow','yellow','salmon','pink','orangered','r','darkred']
+fig,axe1=plt.subplots(nrows=1,ncols=1,figsize=(6,6))
 plt.subplot(1,1,1)
 #zdat[0,:]=0.0   ## the first level is below surface ground
-titlename="Frequency of cloud base and top"
-axe1=plt.contourf(z,z,ft,colors=cloudclors, levels=cloudlevs)                           
+ft0=np.ndarray(shape=(nz,nz), dtype=float) #(km,km)  For exchange the dims
+for i1 in range(0,nz):
+    for i2 in range(0,nz):
+        ft0[i1,i2]=ft[i2,i1]
+titlename=r"Frequency of all cloud cells ($10^{-2}%$)"
+axe1=plt.contourf(z,z,ft0,colors=cloudclors, levels=cloudlevs,extend='both')
+plt.colorbar(orientation='horizontal',extend='both',
+    extendfrac='auto',  spacing='uniform')                           
 plt.title(titlename,fontsize=16)                          
 plt.axis([0, 16, 0, 16])
-plt.ylabel(r'Cloud Base Height ($km$)', fontdict=font)
-plt.xlabel(r'Cloud Top Height ($km$)', fontdict=font)
+plt.xlabel(r'Cloud Base Height ($km$)', fontdict=font)
+plt.ylabel(r'Cloud Top Height ($km$)', fontdict=font)
 plt.show()
-plt.savefig(dirpic+casenm+"_CloudCellsTopBase.pdf")          
+plt.savefig(dirpic+casenm+"_CloudCellsTopBase_20120520.pdf")          
 plt.show()
 plt.close()   
 #fb

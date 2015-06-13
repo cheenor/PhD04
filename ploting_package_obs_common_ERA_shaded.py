@@ -23,7 +23,7 @@ import os
 #mpl.rcParams['interactive'] = True
 #mpl.rcParams['ps.fonttype'] = 42
 #mpl.rcParams['ps.useafm'] = True
-casenm='NECCTR2_ERA'
+casenm='MLYRCTR2_ERA'
 if casenm[0:3]=='ETP' :
     datestr="20120520_031"
     iy,im,jd=2012,5,20
@@ -46,8 +46,8 @@ elif casenm[0:3]=='PRD' :
     marktr=r"($c$)"
     yearstr="%d"%iy
 elif casenm[0:3]=='MLY' :
-    datestr="20100605_031"
-    iy,im,jd=2010,6,5
+    datestr="20100624_031"
+    iy,im,jd=2010,6,24
     nt,nday=125,31
     namestr=casenm[0:4]
     marktr=r"($d$)"

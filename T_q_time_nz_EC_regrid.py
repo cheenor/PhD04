@@ -23,38 +23,36 @@ dirs='D:/MyPaper/PhD04/Cases/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 if casenm[0:3]=='ETP':
     area=casenm[0:3]
-    folds='/20100604_0704/Simulated/'
-    datestr='20100604_031d'    
-    iy,im,jd=2010,6,4
+    datestr='20120520_031d'    
+    iy,im,jd=2012,5,20
 if casenm[0:3]=='WTP':
     area=casenm[0:3]
-    folds='/20100624_0723/Simulated/'
-    datestr='20100624_031d'    
-    iy,im,jd=2010,6,24    
+    datestr='20100714_031d'    
+    iy,im,jd=2010,7,14    
 if casenm[0:3]=='NPC':
     area=casenm[0:3]
-    folds='/20100725/Simulated/'
-    datestr='20100725_031d'    
-    iy,im,jd=2010,7,25
+    datestr='20100802_031d'    
+    iy,im,jd=2010,8,2
 if casenm[0:3]=='PRD':
     area=casenm[0:3]
-    folds='/20100402/Simulated/'
-    datestr='20100402_031d'    
-    iy,im,jd=2010,4,2 
+    datestr='20120401_031d'    
+    iy,im,jd=2012,4,1 
 if casenm[0:3]=='MLY':
     area=casenm[0:4]
-    folds='/20100624/Simulated/'
-    datestr='20100624_031d'    
-    iy,im,jd=2010,6,24 
+#    datestr='20100605_031d' 
+    datestr='20100624_031d'
+#    datestr='20100602_031d'
+#    iy,im,jd=2010,6,2 
+    iy,im,jd=2010,6,24
 if casenm[0:3]=='NEC':
     area=casenm[0:3]
-    folds='/20100801/Simulated/'
-    datestr='20100801_031d'    
-    iy,im,jd=2010,8,1 
+    datestr='20120706_031d'    
+    iy,im,jd=2012,7,6 
+folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
 dirin=dirs+area+folds
-dirobs=dirin          #diro+area+'/'
-f43=area+'_'+datestr+"_regrid_ERA.43"
-nameforcing=area+'_'+datestr+"_LSFORCING_regrid_ERA.37"
+dirobs=diro+area+'/'
+f43=area+'_'+datestr+"_ERA.43"
+nameforcing=area+'_'+datestr+"_LSFORCING_ERA.37"
 dirpic='D:/MyPaper/PhD04/Pics/'
 #fpath=dirin+'micro_202_ETP2D3'
 #fff=np.fromfile(fpath,dtype=float)

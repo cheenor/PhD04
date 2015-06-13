@@ -1,0 +1,439 @@
+PROGRAM GETDATAFORPLOTTING
+IMPLICIT NONE
+!--------PARAMETERS OF MODLE (INPUT DATA)----------------
+INTEGER, PARAMETER :: (NT=2880,NZ=34,NX=200,DT=15)  ! DT OUTPUT INTERVAL TIMESTEP
+INTEGER, PARAMETER :: (ND=30,NDT=24*60/DT)
+INTEGER, PARAMETER :: (NBIN=99)  ! BINS FOR CLOUD WATER CONTENT
+REAL QL(NT,NZ,NX),QI(NT,NZ,NX),TL(NZ)
+REAL DEN(NT,NZ),QRL(NT,NZ,NX),QRS(NT,NZ,NX)
+REAL OMG(NT,NZ,NX)
+
+! THRESHOLD VALUES SETTINGS  -----------------------------
+REAL QCC , QCE , CWP ! LOW LIMIT FOR CONVECTION CLOUD (G/KG)! LOW LIMIT FOR CLOUD ENSEMBLE (G/KG)! CLOUD WATER PATH THRESHOLD (G/M2)                   
+                                ! --IF CWP>0 THEN QC0=CWP/(D DZ) ELSE =QCC
+                                ! --QC0 IS USED FOR CLOUD IDENTIFICATION
+DATA QCC,QCE,CWP/1.0E-2,1.0E-4,0.2/
+
+REAL WATERBIN(NBIN)  ! IN G/KG
+
+
+
+!------- RESULT ARRAYS  ----------------------------------
+! MEAN PROFILES 
+REAL  MPDCQRL(NZ), MPDCQRS(NZ), MPDCQL(NZ),MPDCQI(NZ)  & ! DEEP CONVECTION
+&    ,MPDCOMG(NZ)
+REAL  MPSTQRL(NZ), MPSTQRS(NZ), MPSTQL(NZ),MPSTQI(NZ)  & !  STRATIFORM
+&    ,MPSTOMG(NZ)
+REAL  MPCRQRL(NZ), MPCRQRS(NZ), MPCRQL(NZ),MPCRQI(NZ)  & ! CIRRUS
+&    ,MPCROMG(NZ)
+REAL  MPACQRL(NZ), MPACQRS(NZ), MPACQL(NZ),MPACQI(NZ)  & ! ALLCELLS
+&    ,MPACOMG(NZ)
+! MEAN DIUNAL VALUE
+REAL  DUDCQRL(NDT,NZ), DUDCQRS(NDT,NZ), DUDCQL(NDT,NZ),DUDCQI(NDT,NZ) & ! DEEP CONVECTION
+&    ,DUDCOMG(NDT,NZ)
+REAL  DUSTQRL(NDT,NZ), DUSTQRS(NDT,NZ), DUSTQL(NDT,NZ),DUSTQI(NDT,NZ) & !  STRATIFORM
+&    ,DUSTOMG(NDT,NZ)
+REAL  DUCRQRL(NDT,NZ), DUCRQRS(NDT,NZ), DUCRQL(NDT,NZ),DUCRQI(NDT,NZ) & ! CIRRUS
+&    ,DUCROMG(NDT,NZ)
+REAL  DUACQRL(NDT,NZ), DUACQRS(NDT,NZ), DUACQL(NDT,NZ),DUACQI(NDT,NZ) & ! ALLCELLS
+&    ,DUACOMG(NDT,NZ)
+! THE PDF OF THE MAXIMUM CLOUD WATER CONTENT WITH HEIGH
+REAL  BINACMAX(NBIN,NZ), BINDCMAX(NBIN,NZ), BINSTMAX(NBIN,NZ),BINCRMAX(NBIN,NZ) 
+REAL  DEEPCON(NX/2,NZ,2)
+REAL FCDCDY(NDT,NZ),FCSTDY(NDT,NZ),FCCRDY(NDT,NZ),FCACDY(NDT,NZ)
+REAL FCDDC(NDT,NZ),FCDST(NDT,NZ),FCDCR(NDT,NZ)
+!---------------------------------------------------------
+INTEGER I,J,K,IK,IZ,L,IX
+INTEGER K1,K2,IDT,IKK
+INTEGER KB(99),KE(99),NA
+INTEGER ITDC,ITST,ITCR                 ! CONT FOR DEEP CONVECTION, STRATIFORM,CIRRUS
+INTEGER IDDC,IDST,IDCR                 ! CONT FOR DEEP CONVECTION, STRATIFORM,CIRRUS, DIUNAL CYCLE
+INTEGER IDCZ(NZ),ISTZ(NZ),ICRZ(NZ)
+INTEGER IUDC(NDT,NZ),IUDCK(NDT,NZ)
+INTEGER IUST(NDT,NZ),IUSTK(NDT,NZ)
+INTEGER IUCR(NDT,NZ),IUCRK(NDT,NZ)
+INTEGER IUAC(NDT,NZ),IUACK(NDT,NZ)
+INTEGER IMAXDC,IMAXST,IMAXAC,IMAXCR
+!=========================================================================
+REAL FRC,FRR
+REAL CM(99)
+REAL C1,C2,C3,C4,C5,C6,C7,C8,C9    ! TEMPORARY VARABLES 
+INTEGER IC1,IC2,IC3,IC4,IC5
+CHARACTER*100 FPATH,DIRIN,DIROUT
+CHARACTER FOLD*30,CASENM(6)*20,REGNM*20
+CHARACTER DATESTR(6)*8
+!
+
+CASENM(1)="ETPCTR_EC"  ; DATESTR(1)='20120520'
+CASENM(2)="WTPCTR_EC"  ; DATESTR(2)='20100714'
+CASENM(3)="NPCCTR_EC"  ; DATESTR(3)='20100802'
+CASENM(4)="NECCTR_EC"  ; DATESTR(4)='20120706'
+CASENM(5)="MLYRCTR_EC" ; DATESTR(5)='20100602'
+CASENM(6)="PRDCTR_EC"  ; DATESTR(6)='20120401'
+DIRIN="D:\MyPaper\PhD04\Cases\"
+DIROUT="D:\MyPaper\PhD04\Cases\postdata\CTREC\"
+!
+WATERBIN(1)=0.01  ! MIN
+C1=WATERBIN(1)
+IC1=1
+C3=0.01
+IC2=-1
+IC3=-1
+IC4=-1
+DO I =2, NBIN
+    C2=C1+(I-IC1)*C3
+    IF (C2>=0.1 .AND. C2 <1.1 .AND. IC2< 0)THEN
+        C1=0.1 ; IC1=I ; C3=0.1
+        IC2=1    ! MAKE SURE THE IF BLOCK JUST CALLED ONCE, SO IC1 IS RIGHT
+    ELSEIF(C2>=1. .AND. C2<10. .AND. IC3< 0)THEN
+        C1=1. ; IC1=I ; C3=0.5
+        IC3=1
+    ELSEIF(C2>=10 .AND. IC4< 0)THEN
+        C1=10. ; IC1=I ; C3=1.
+        IC4=1
+    ENDIF
+    WATERBIN(I)=C2
+ENDDO
+
+DO I =1,6
+	IF (CASENM(I)(1:3)=="MLY") THEN
+		REGNM=CASENM(I)(1:4)
+	ELSE
+		REGNM=CASENM(I)(1:3)
+	ENDIF
+	FPATH=TRIM(DIRIN)//TRIM(REGNM)//'/CTREC'//DATESTR(I)  &
+   &   //'/'//TRIM(CASENM(I))//'_OMGQRLQRS.TXT'
+	OPEN(20,FILE=TRIM(FPATH))
+!
+! -------- INTINITAL ARRAYS ----------------------	
+	ITDC = 0 ; ITST = 0 ; ITCR = 0
+	IDDC = 0 ; IDST = 0 ; IDCR = 0
+    MPDCQRL = 0. ; MPDCQRS = 0. ; MPDCQL = 0. ; MPDCQI = 0.   ! DEEP CONVECTION
+    MPDCOMG = 0.
+    MPSTQRL = 0. ; MPSTQRS = 0. ; MPSTQL = 0. ; MPSTQI = 0.   !  STRATIFORM
+    MPSTOMG = 0.
+    MPCRQRL = 0. ; MPCRQRS = 0. ; MPCRQL = 0. ; MPCRQI = 0.   ! CIRRUS
+    MPCROMG = 0. 
+    DUDCQRL = 0. ; DUDCQRS = 0. ; DUDCQL = 0. ; DUDCQI = 0.   ! DEEP CONVECTION
+    DUDCOMG = 0.
+    DUSTQRL = 0. ; DUSTQRS = 0. ; DUSTQL = 0. ; DUSTQI = 0.   !  STRATIFORM
+    DUSTOMG = 0.
+    DUCRQRL = 0. ; DUCRQRS = 0. ; DUCRQL = 0. ; DUCRQI = 0.   ! CIRRUS
+    DUCROMG = 0. 
+	FCDCDY  = 0. ; FCSTDY  = 0. ; FCCRDY = 0. ; FCACDY = 0.
+    BINACMAX =0. ; BINDCMAX=0.  ; BINSTMAX=0. ; BINCRMAX =0.
+    IMAXDC  = 0  ; IMAXST  = 0  ; IMAXAC = 0. ; IMAXCR=0
+    IDCZ = 0  ; ISTZ = 0 ; ICRZ = 0
+    IUDC =0   ; IUDCK= 0 ; IUSTK= 0
+    IUST = 0  ; IUCRK= 0 ; IUCR = 0
+	IDT=1
+	DO IT =1,NT
+		IF (IDT < NDT)THEN
+			IDT=IDT+1
+		ELSE
+			IDT=1
+		ENDIF
+		DO IX=1,NX
+			DO IZ=1,NZ
+				READ(20,99)QL(IK,IX),QI(IK,IX),OMG(IK,IX),   &
+		   &	  QRS(IK,IX),QRL(IK,IX)
+				TL(IK)=QL(IK,IX)+QI(IK,IX) ! TOTAL WATER CONTENT                
+			ENDDO
+!-----------FOR DEEP CONVECTIONS ---------------------------------------
+			CALL DEEPCC(TL,NZ,KB,KE,NA)
+			DO L = 1, NA
+    			IF (KB(L).LE.5 .AND. KE(L).GE.24) THEN  !! 5 AND 24 ARE THE VERTICAL LEVELS
+!----------------------- FOR PDF -----------------------------------------------
+     				K1 = KB(L)  ; K2 = KE(L)
+     				FCDCDY(IDT,K2)=FCDCDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
+                    IUDC(IDT)=IUDCK(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
+                    C1=TL(K1)
+                    IC1=K1
+    				DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
+						MPDCQRL(IKK)=MPDCQRL(IKK)+QRL(IKK,IX)
+						MPDCQRS(IKK)=MPDCQRS(IKK)+QRS(IKK,IX)
+						MPDCQL(IKK)=MPDCQL(IKK)+QL(IKK,IX)
+						MPDCQI(IKK)=MPDCQI(IKK)+QI(IKK,IX)
+						MPDCOMG(IKK)=MPDCOMG(IKK)+OMG(IKK,IX)
+						IDCZ(IKK)=IDCZ(IKK)+1
+						DUDCQRL(IDT,IKK)=DUDCQRL(IDT,IKK)+QRL(IKK,IX)
+						DUDCQRS(IDT,IKK)=DUDCQRS(IDT,IKK)+QRS(IKK,IX)
+						DUDCQL(IDT,IKK)=DUDCQL(IDT,IKK)+QL(IKK,IX)
+						DUDCQI(IDT,IKK)=DUDCQI(IDT,IKK)+QI(IKK,IX)
+						DUDCOMG(IDT,IKK)=DUDCOMG(IDT,IKK)+OMG(IKK,IX)
+                        IUDCK(IDT,IKK)=IUDCK(IDT,IKK)+1
+                        IF (TL(IKK)>C1) THEN
+                            C1=TL(IKK)
+                            IC1=IKK
+                        ENDIF
+    				ENDDO
+                    CALL GETWATERBIN(WATERBIN,NBIN,C1,IC2)
+                    BINDCMAX(IC2,IC1)=BINDCMAX(IC2,IC1)+1.
+                    IMAXDC=IMAXDC+1
+    			ENDIF
+			ENDDO
+! FOR ALL CLOUD CELLS AND OTHER CLOUD TYPES EXCEPRT THE DEEPCONVECTION 
+            NA=0
+            CALL INFCLD(TL,NZ,KB,KE,CM,NA) !KB BASE; KE TOP, NA: LAYERS OF CLOUDS
+            DO L =1, NA
+                K1 = KB(L)  ; K2 = KE(L)
+                FCACDY(IDT,K2)=FCACDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
+                IUAC(IDT)=IUACK(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
+                C1=TL(K1)
+                IC1=K1
+                DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
+                    MPACQRL(IKK)=MPACQRL(IKK)+QRL(IKK,IX)
+                    MPACQRS(IKK)=MPACQRS(IKK)+QRS(IKK,IX)
+                    MPACQL(IKK)=MPACQL(IKK)+QL(IKK,IX)
+                    MPACQI(IKK)=MPACQI(IKK)+QI(IKK,IX)
+                    MPACOMG(IKK)=MPACOMG(IKK)+OMG(IKK,IX)
+                    IACZ(IKK)=IACZ(IKK)+1
+                    DUACQRL(IDT,IKK)=DUACQRL(IDT,IKK)+QRL(IKK,IX)
+                    DUACQRS(IDT,IKK)=DUACQRS(IDT,IKK)+QRS(IKK,IX)
+                    DUACQL(IDT,IKK)=DUACQL(IDT,IKK)+QL(IKK,IX)
+                    DUACQI(IDT,IKK)=DUACQI(IDT,IKK)+QI(IKK,IX)
+                    DUACOMG(IDT,IKK)=DUACOMG(IDT,IKK)+OMG(IKK,IX)
+                    IUACK(IDT,IKK)=IUACK(IDT,IKK)+1
+                    IF (TL(IKK)>C1) THEN
+                        C1=TL(IKK)
+                        IC1=IKK
+                    ENDIF
+                ENDDO
+                CALL GETWATERBIN(WATERBIN,NBIN,C1,IC2)
+                BINACMAX(IC2,IC1)=BINACMAX(IC2,IC1)+1.
+                IMAXAC=IMAXAC+1
+                IF (K1< .AND. K2<) THEN ! STRATIFORM 
+                    FCSTDY(IDT,K2)=FCSTDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
+                    IUST(IDT)=IUSTK(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
+                    C1=TL(K1)
+                    IC1=K1
+                    DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
+                        MPSTQRL(IKK)=MPSTQRL(IKK)+QRL(IKK,IX)
+                        MPSTQRS(IKK)=MPSTQRS(IKK)+QRS(IKK,IX)
+                        MPSTQL(IKK)=MPSTQL(IKK)+QL(IKK,IX)
+                        MPSTQI(IKK)=MPSTQI(IKK)+QI(IKK,IX)
+                        MPSTOMG(IKK)=MPSTOMG(IKK)+OMG(IKK,IX)
+                        ISTZ(IKK)=ISTZ(IKK)+1
+                        DUSTQRL(IDT,IKK)=DUSTQRL(IDT,IKK)+QRL(IKK,IX)
+                        DUSTQRS(IDT,IKK)=DUSTQRS(IDT,IKK)+QRS(IKK,IX)
+                        DUSTQL(IDT,IKK)=DUSTQL(IDT,IKK)+QL(IKK,IX)
+                        DUSTQI(IDT,IKK)=DUSTQI(IDT,IKK)+QI(IKK,IX)
+                        DUSTOMG(IDT,IKK)=DUSTOMG(IDT,IKK)+OMG(IKK,IX)
+                        IUSTK(IDT,IKK)=IUSTK(IDT,IKK)+1
+                        IF (TL(IKK)>C1) THEN
+                            C1=TL(IKK)
+                            IC1=IKK
+                        ENDIF
+                    ENDDO
+                    CALL GETWATERBIN(WATERBIN,NBIN,C1,IC2)
+                    BINSTMAX(IC2,IC1)=BINSTMAX(IC2,IC1)+1.
+                    IMAXST=IMAXST+1
+                ELSEIF(K1> ) THEN  ! CIRRUS 
+                    FCCRDY(IDT,K2)=FCCRDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
+                    IUCR(IDT)=IUCRK(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
+                    C1=TL(K1)
+                    IC1=K1
+                    DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
+                        MPCRQRL(IKK)=MPCRQRL(IKK)+QRL(IKK,IX)
+                        MPCRQRS(IKK)=MPCRQRS(IKK)+QRS(IKK,IX)
+                        MPCRQL(IKK)=MPCRQL(IKK)+QL(IKK,IX)
+                        MPCRQI(IKK)=MPCRQI(IKK)+QI(IKK,IX)
+                        MPCROMG(IKK)=MPCROMG(IKK)+OMG(IKK,IX)
+                        ICRZ(IKK)=ICRZ(IKK)+1
+                        DUCRQRL(IDT,IKK)=DUCRQRL(IDT,IKK)+QRL(IKK,IX)
+                        DUCRQRS(IDT,IKK)=DUCRQRS(IDT,IKK)+QRS(IKK,IX)
+                        DUCRQL(IDT,IKK)=DUCRQL(IDT,IKK)+QL(IKK,IX)
+                        DUCRQI(IDT,IKK)=DUCRQI(IDT,IKK)+QI(IKK,IX)
+                        DUCROMG(IDT,IKK)=DUCROMG(IDT,IKK)+OMG(IKK,IX)
+                        IUCRK(IDT,IKK)=IUCRK(IDT,IKK)+1
+                        IF (TL(IKK)>C1) THEN
+                            C1=TL(IKK)
+                            IC1=IKK
+                        ENDIF
+                    ENDDO
+                    CALL GETWATERBIN(WATERBIN,NBIN,C1,IC2)
+                    BINCRMAX(IC2,IC1)=BINCRMAX(IC2,IC1)+1.
+                    IMAXCR=IMAXCR+1
+                ENDIF
+            ENDDO ! NA
+		ENDDO ! NX
+    ENDDO ! NT
+! ------- DOING THE AVERAGED  AND OUTPUT --------------------------------------
+!-----------FOR DEEP CONVECTION 
+    FPATH=TRIM(DIROUT)//TRIM(CASENM)//"_DEEPCONVECTION_GETPLOTF90.TXT"
+    CALL MEANOUTPUT(NDT,NZ,NBIN,FCDCDY,IUDC,DUDCQRL,DUDCQRS,DUDCQL,&
+        &    DUDCQI,  DUDCOMG,IUDCK, MPDCQRL,MPDCQRS,MPDCQL,MPDCQI, &
+        &    MPDCOMG,  IDCZ, BINDCMAX, IMAXDC,FPATH)
+    FPATH=TRIM(DIROUT)//TRIM(CASENM)//"_ALLCELLS_GETPLOTF90.TXT"
+    CALL MEANOUTPUT(NDT,NZ,NBIN,FCACDY,IUAC,DUACQRL,DUACQRS,DUACQL,&
+        &    DUACQI,  DUACOMG,IUACK, MPACQRL,MPACQRS,MPACQL,MPACQI, &
+        &    MPACOMG,  IACZ, BINACMAX, IMAXAC,FPATH)
+    FPATH=TRIM(DIROUT)//TRIM(CASENM)//"_STRATIFORM_GETPLOTF90.TXT"
+    CALL MEANOUTPUT(NDT,NZ,NBIN,FCSTDY,IUST,DUSTQRL,DUSTQRS,DUSTQL,&
+        &    DUSTQI,  DUSTOMG,IUSTK, MPSTQRL,MPSTQRS,MPSTQL,MPSTQI, &
+        &    MPSTOMG,  ISTZ, BINSTMAX, IMAXST,FPATH)
+    FPATH=TRIM(DIROUT)//TRIM(CASENM)//"_CIRRUS_GETPLOTF90.TXT"
+    CALL MEANOUTPUT(NDT,NZ,NBIN,FCCRDY,IUCR,DUCRQRL,DUCRQRS,DUCRQL,&
+        &    DUCRQI,  DUCROMG,IUCRK, MPCRQRL,MPCRQRS,MPCRQL,MPCRQI, &
+        &    MPCROMG,  ICRZ, BINCRMAX, IMAXCR,FPATH)
+!----------- FOR STRATIFORM     
+ENDDO ! REGIONS
+
+END PROGRAM
+!
+SUBROUTINE DEEPCC(QW,KM,KB,KE,NA) ! QW TOTAL CLOUD WATER,IM: HORIZONTAL GRID; KM : VERTICAL GRID
+!     ------------------------------
+!     ------------------------------
+!
+!     OUTPUT DEEP CONVECTION
+!
+INTEGER IM,KM,OU,I,K,L,KB(99),KE(99),NA
+REAL QW(KM),C(99),CM(99)
+INTEGER IDC,I,K,NA
+!      WRITE(OU,'(A3,1X,I4,1X,\)')'ITT', IT !  \ NOT CHANGE LINE
+DO K = 1,KM
+    IF (QW(K).GE.1.0E-3) C(K) = 1. ! THIS GRIG IS COVERED BY DEEP CONVECTION CLOUD
+    IF (QW(K).LT.1.0E-3) C(K) = 0.
+ENDDO
+CALL INFCLD(C,KM,KB,KE,CM,NA)
+RETURN
+END SUBROUTINE
+!#
+SUBROUTINE INFCLD(C,NL,KB,KE,CM,NA) !KB BASE; KE TOP, NA: LAYERS OF CLOUDS
+!     -----------------------------------
+!     -----------------------------------
+!
+!     FIND INFORMATION ABOUT ADJACENT CLOUD LAYERS
+!
+IMPLICIT NONE
+!
+INTEGER NL,KB(*),KE(*),NA,K1,K2,K
+REAL C(NL),CM(*),AA
+!
+NA = 0
+IF (C(1).GT.0.) THEN
+    K1 = 1
+    K2 = 1
+    AA = C(1)
+ELSE
+    AA = 0.
+ENDIF
+DO K = 2,NL
+    IF (C(K-1).LE.0..AND.C(K).GT.0.) THEN
+        K1 = K
+        K2 = K
+        AA = MAX(AA,C(K))
+    ELSEIF (C(K-1).GT.0..AND.C(K).GT.0.) THEN
+        K2 = K
+        AA = MAX(AA,C(K))
+    ELSEIF (C(K-1).GT.0..AND.C(K).LE.0.) THEN
+        NA = NA + 1
+        KB(NA) = K1
+        KE(NA) = K2
+        CM(NA) = AA
+        AA = 0.
+    ENDIF
+ENDDO
+IF (C(NL).GT.0.) THEN  !TOP
+    NA = NA + 1
+    KB(NA) = K1
+    KE(NA) = K2
+    CM(NA) = AA
+ENDIF
+RETURN
+END SUBROUTINE
+SUBROUTINE GETWATERBIN(BIN,NB,C1,IC)
+IMPLICIT NONE
+INTEGER NB,IC
+REAL BIN(NB),C1
+INTEGER I,K
+IC=0
+IF (BIN(NB)<=C1) THEN 
+   IC=NB
+   GOTO 100
+ENDIF
+DO I =1, NB-1
+    IF (BIN(I)<=C1 .AND. BIN(I+1)<C1) THEN
+        IC=I
+        GOTO 100
+    ENDIF
+ENDDO
+100 CONTINUE
+RETURN
+END SUBROUTINE
+SUBROUTINE MEANOUPUT(NDT,NZ,NBIN,FCDY,IU,DUQRL,DUQRS,DUQL,DUQI, &
+        &    DUOMG,IUK, MPQRL,MPQRS,MPQL,MPQI  MPOMG,  &
+        &    IZ,BINMAX, IMAX,FPATH)
+IMPLICIT NONE
+INTEGER NDT,NZ,NBIN
+INTEGER IU(NZ),IUK(NDT,NZ),IZ(NZ),IMAX(NBIN,NZ)
+REAL    FCDY(NDT,NZ),DUQRL(NDT,NZ),DUQRS(NDT,NZ),DUQL(NDT,NZ), &
+    &   DUQI(NDT,NZ),DUOMG(NDT,NZ), MPQRL(NZ) MPQRS(NZ) MPQL(NZ) &
+    &    MPQI(NZ) MPOMG(NZ), BINMAX(NBIN,NZ)
+CHARACTER FPATH*100
+INTEGER I,J,K
+!
+OPEN(10,FILE=TRIM(FPATH))
+    DO I =1,NDT
+        IF(IU(I)>0)THEN
+            DO K =1,NZ
+                FCDY(I,K)=FCDY(I,K)/IU(I)  ! FREQUENCY
+            ENDDO
+        ELSE
+            FCDY(I,:)=-9         !THERE IS NO DEEP CLOUD THIS TIME
+        ENDIF
+        WRITE(10,99)(FCDY(I,K),K=1,NZ)
+        DO K=1,NZ
+        IF (IUK(I,K)>0)THEN 
+            DUQRL(I,K)=DUQRL(I,K)/IUK(I,K)
+            DUQRS(I,K)=DUQRS(I,K)/IUK(I,K)
+            DUQL(I,K)=DUQL(I,K)/IUK(I,K)
+            DUQI(I,K)=DUQI(I,K)/IUK(I,K)
+            DUOMG(I,K)=DUOMG(I,K)/IUK(I,K)
+        ELSE
+            DUQRL(I,K)=-9
+            DUQRS(I,K)=-9
+            DUQL(I,K) =-9
+            DUQI(I,K) =-9
+            DUOMG(I,K)=-9
+        ENDIF
+        WRITE(10,99)(DUQRL(I,K),K=1,NZ)
+        WRITE(10,99)(DUQRS(I,K), K=1,NZ)
+        WRITE(10,99)(DUQL(I,K) , K=1,NZ)
+        WRITE(10,99)(DUQI(I,K) , K=1,NZ)
+        WRITE(10,99)(DUOMG(I,K), K=1,NZ)
+    ENDDO
+    DO K =1,NZ 
+        IF (IZ(K)>0)THEN 
+            MPQRL(K)=MPQRL(K)/IZ(K)
+            MPQRS(K)=MPQRS(K)/IZ(K)
+            MPQL(K)=MPQL(K)/IZ(K)
+            MPQI(K)=MPQI(K)/IZ(K)
+            MPOMG(K)=MPOMG(K)/IZ(K)
+        ELSE
+            MPQRL(K)=-9
+            MPQRS(K)=-9
+            MPQL(K) =-9
+            MPQI(K) =-9
+            MPOMG(K)=-9
+        ENDIF                      
+    ENDDO
+    WRITE(10,99)(MPQRL(K),K=1,NZ)
+    WRITE(10,99)(MPQRS(K), K=1,NZ)
+    WRITE(10,99)(MPQL(K) , K=1,NZ)
+    WRITE(10,99)(MPQI(K) , K=1,NZ)
+    WRITE(10,99)(MPOMG(K), K=1,NZ)
+    DO I=1,NBIN
+        DO K =1, NZ
+            IF(IMAX>1)THEN 
+                BINMAX(I,K)=BINMAX(I,K)/IMAX
+            ELSE
+                BINMAX(I,K)=-9
+            ENDIF
+        ENDDO
+        WRITE(10,99)(BINMAX(I,K), K=1,NZ)
+    ENDDO
+CLOSE(10)
+99 FORMAT(1X,34(1X,E12.4))
+RETURN
+END SUBROUTINE

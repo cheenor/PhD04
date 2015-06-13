@@ -13,7 +13,7 @@ import datetime
 mpl.rcParams['ytick.labelsize'] = 20
 mpl.rcParams['xtick.labelsize'] = 20
 
-casenm='NECCTR4_EC'
+casenm='MLYRCTR_EC'
 #casenm='WTP2D0'
 #casenm='NPC2D2'
 nt=121
@@ -46,13 +46,15 @@ if casenm[0:3]=='MLY':
     folds='/20100624/Simulated/'
 #    datestr='20100605_031d' 
     datestr='20100624_031d'
-#    iy,im,jd=2010,6,5 
+#    datestr='20100602_031d'
+#    iy,im,jd=2010,6,2 
     iy,im,jd=2010,6,24
 if casenm[0:3]=='NEC':
     area=casenm[0:3]
     folds='/20100801/Simulated/'
     datestr='20120706_031d'    
     iy,im,jd=2012,7,6 
+#folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
 dirin=dirs+area+folds
 dirobs=diro+area+'/'
 f43=area+'_'+datestr+"_ERA.43"
