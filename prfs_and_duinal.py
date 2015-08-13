@@ -23,7 +23,7 @@ nbin=99
 dirpic=""
 casenm=["ETPCTR_EC","WTPCTR_EC","NPCCTR_EC","NECCTR_EC","MLYRCTR_EC","PRDCTR_EC"]
 dirin="D:/MyPaper/PhD04/Cases/postdata/CTREC/"
-cloudtype=["DEEPCONVECTION","ALLCELLS","STRATIFORM","CTRRUS"]
+cloudtype=["DEEPCONVECTION","ALLCELLS","STRATIFORM","CIRRUS"]
 nty=len(cloudtype)
 nr=len(casenm)
 datestart=datetime.datetime(1993,10,16,0,0,0)
@@ -33,7 +33,7 @@ xtime=[]
 for dt in range(0,ndt):
     dateiso.append(datestart+dt*det)           
 for tm in dateiso:
-        xtime.append(datetime.datetime.strftime(tm,"%h-%m"))
+        xtime.append(datetime.datetime.strftime(tm,"%H-%m"))
 xdat=range(0,ndt)
 #
 zdat=[  0.0500000, 0.1643000, 0.3071000, 0.4786000
@@ -191,7 +191,7 @@ colors=["b","b","b"]
 sty=["solid",'dotted','solid']
 width=[1.2,1.2,2]
 mker=["","",""]
-fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(21,8))
+fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(8,21))
 ij=1   
 for i in range(0,nr):
     if casenm[0:3] == "MLY" :
@@ -217,7 +217,7 @@ plt.savefig(dirpic+casenm+'_heatingrate.png',dpi=300)
 plt.show()
 plt.close()
 #        
-fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(21,8))
+fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(8,21))
 ij=1   
 for i in range(0,nr):
     if casenm[0:3] == "MLY" :
@@ -245,7 +245,7 @@ plt.savefig(dirpic+casenm+'_meanprfs.png',dpi=300)
 plt.show()
 plt.close()          
 #
-fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(21,8))
+fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(8,21))
 ij=1   
 for i in range(0,nr):
     if casenm[0:3] == "MLY" :
@@ -269,7 +269,7 @@ plt.savefig(dirpic+casenm+'_meanomgprfs.png',dpi=300)
 plt.show()
 plt.close()                     
 #------------------------------------------------------------------------------            
-fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(21,8))
+fig,ax=plt.subplots(nrows=nr,ncols=nty,figsize=(8,21))
 maxlevs=[]
 ij=1   
 for i in range(0,nr):

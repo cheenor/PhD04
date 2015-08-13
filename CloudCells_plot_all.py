@@ -15,7 +15,7 @@ CASENMSTR=['PRDCTR_EC','MLYRCTR_EC', 'NPCCTR_EC',
            'NECCTR_EC', 'WTPCTR_EC','ETPCTR_EC']   
 orderstr=[r'($a$)',r'($b$)',r'($c$)',r'($d$)',r'($e$)',r'($f$)']
 DATESTR  =['20120401' , '20100602' , '20100802' ,
-           '20120706' , '20100603' , '20100703' ]
+           '20120706' , '20100703' , '20100603' ]
 nga=len(CASENMSTR)
 dirin="D:/MyPaper/PhD04/Cases/postdata/"
 dirpic="D:/MyPaper/PhD04/Pics/"
@@ -101,7 +101,7 @@ for iga in range(0,nga):
         plt.ylabel(r'Cloud Top Height ($km$)', fontdict=font)
     jc=jc+1
     ij=ij+1
-figtitle = r"Frequency of all cloud cells ($10^{-2}%$)"
+figtitle = r"Frequency of all cloud cells ($10^{-2}$ %)"
 fig.text(0.5, 0.95, figtitle,
     horizontalalignment='center',
     fontproperties=FontProperties(size=18))

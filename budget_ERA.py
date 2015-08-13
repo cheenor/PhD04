@@ -326,7 +326,7 @@ eddyvar_mean[1,1]=0.0
 eddyvar_mean[1,2]=0.0
 q1sim_pf=np.ndarray(shape=(nz), dtype=float)
 q2sim_pf=np.ndarray(shape=(nz), dtype=float)
-q1sim_pf[:]=eddyvar_mean[0,:]+eddyvar_mean[2,:]+eddyvar_mean[4,:] ++q1cm[:] \
+q1sim_pf[:]=eddyvar_mean[0,:]+eddyvar_mean[2,:]+eddyvar_mean[4,:] +q1cm[:] \
             +eddyvar_mean[6,:]+eddyvar_mean[7,:]
 q2sim_pf[:]=eddyvar_mean[1,:]+eddyvar_mean[3,:]+eddyvar_mean[5,:] + q2cm[:]
 q1sim_pf[0]=0.0
