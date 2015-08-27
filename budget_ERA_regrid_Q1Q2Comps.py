@@ -351,7 +351,8 @@ for iga in range(0,nga):
     mker=lnmkcolor
     width=lnwidcolor 
     size_title=18     
-    ax[iro,ic].set_ylim(0,16)           
+    ax[iro,ic].set_ylim(0,16)
+    ax[iro,ic].set_xlim(-6,6)           
     ax[iro,ic].plot(eddyvar_mean[0,:],ydat,label=r'$Q_1$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
@@ -365,7 +366,7 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_1$'# ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
-    xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
+    xmajorLocator   = MultipleLocator(3) #将y轴主刻度标签设置为2的倍数  
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
@@ -393,7 +394,8 @@ for iga in range(0,nga):
     sty=lnstycolor
     mker=lnmkcolor
     width=lnwidcolor 
-    ax[iro,ic].set_ylim(0,16)           
+    ax[iro,ic].set_ylim(0,16) 
+    ax[iro,ic].set_xlim(-6,6)           
     ax[iro,ic].plot(eddyvar_mean[1,:],ydat,label=r'$Q_2$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
@@ -404,7 +406,7 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_2$' # ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
-    xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
+    xmajorLocator   = MultipleLocator(3) #将y轴主刻度标签设置为2的倍数  
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 

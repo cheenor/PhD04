@@ -204,7 +204,7 @@ for iga in range(0,nga):
             k=iskp*it+1+iz+nz*4           
             obsv[iz,it,iga]=onedim1[k]  
             k=iskp*it+1+iz+nz*5          
-            obsw[iz,it,iga]=onedim1[k]
+            obsw[iz,it,iga]=onedim1[k]*3600./100. # convert pa/s to hpa/hr
             smtco[iz,it,iga]=(smt[iz,it,iga]-obstha[iz,it,iga])/\
                 (obstha[iz,it,iga]/obstmp[iz,it,iga])
 ###############################################################################
@@ -272,9 +272,11 @@ jc=0
 jr=0
 ij=1
 for iga in range(0,nga):
-    if jc==6:
-        jc=0
-        jr=jr+1
+#    if jc==6:
+#        jc=0
+#        jr=jr+1
+    jc=iga
+    ij=jc+1
     mker=titlestr[iga]
     xdate=xdatet[iga]
 #obstmp[iz,it]=onedim1[k] obsqv[iz,it]
@@ -310,9 +312,9 @@ for iga in range(0,nga):
     colors=['g','r']
     width=[1.5,1.5]
     ax0=plt.subplot(2,6,ij)
-    ax0.errorbar(meanobs[1:32,0],ydat[1:32],label="OBS",
+    ax0.errorbar(meanobs[1:32,0],ydat[1:32],label=r"$OBS$",
         c=colors[0],lw=width[0],xerr=obsstd[1:32,0]) #qc
-    ax0.errorbar(meansim[1:32,0],ydat[1:32],label="SIM",
+    ax0.errorbar(meansim[1:32,0],ydat[1:32],label=r"$SIM$",
         c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
 #    plt.ylabel(r'Height ($km$)', fontdict=font)
     #axx=fig.add_subplot(1,2,1) 
@@ -320,46 +322,52 @@ for iga in range(0,nga):
     #axx.text(285,16.5,text1,fontsize=14)
     plt.xlim(300,500)                        
     ax0.set_xticks(range(300,500,80))
+    ax0.set_title(mker,fontsize=20)
     #ax0.yaxis.limit_range_for_scale(0,16)
 #    ax0.set_title(r'$(a)$  Potential Tempe. ($K$)')
     leftc,widthc=.25,.5
     bottomc,heightc=.25,.5
     rightc=leftc+widthc
     topc=bottomc+heightc
-    ax0.text(rightc,topc,r'$\theta$',horizontalalignment='right',
-        verticalalignment='top')
+#    ax0.text(rightc,topc,r'$\theta$',horizontalalignment='right',
+#        verticalalignment='top',fontsize=18)
+    ax0.text(460,14.5,r'$\theta$',fontsize=20)
     axx=fig.add_subplot(2,6,ij)
     if ij==1 or ij==7:    
-        plt.ylabel(r'Height ($km$)', fontdict=font)      
+        plt.ylabel(r'Height ($km$)', fontdict=font)
+        ax0.legend(loc=(0.8,0.7),frameon=False)
     else:
         for tick in axx.yaxis.get_major_ticks():
             tick.label1On = False    
-    ij=ij+1
+    ij=ij+6
     ax1=plt.subplot(2,6,ij)
-    ax1.errorbar(meanobs[1:32,1],ydat[1:32],label="OBS",
+    ax1.errorbar(meanobs[1:32,1],ydat[1:32],label=r"$OBS$",
         c=colors[0],lw=width[0],xerr=obsstd[1:32,1]) #qc
-    ax1.errorbar(meansim[1:32,1],ydat[1:32],label="SIM",
+    ax1.errorbar(meansim[1:32,1],ydat[1:32],label=r"$SIM$",
         c=colors[1],lw=width[1],xerr=simstd[1:32,1]) #qc
 #plt.ylabel(r'Height ($km$)', fontdict=font)
 #    ax1.set_title(r'($b$) Vapor Mixing Ratio ($g$ $kg^{-1}$)')
-    ax1.text(leftc,topc,r'$q$',horizontalalignment='left',
-        verticalalignment='top')
+#    ax1.text(leftc,topc,r'$q$',horizontalalignment='left',
+#        verticalalignment='top',fontsize=18)
+    ax1.text(460.*23/500.,14.5,r'$q$',fontsize=20)
     plt.xlim(0,23)
     ax1.set_xticks(range(0,23,6))
     axx=fig.add_subplot(2,6,ij) 
     if ij==1 or ij==7:    
-        plt.ylabel(r'Height ($km$)', fontdict=font)      
+        plt.ylabel(r'Height ($km$)', fontdict=font)
+        ax1.legend(loc=(0.8,0.7),frameon=False)
+        
     else:
         for tick in axx.yaxis.get_major_ticks():
             tick.label1On = False 
-    ij=ij+1
-    jc=jc+1
+#    ij=ij+1
+#    jc=jc+1
 plt.show()
 plt.savefig(dirpic+"ALLCASE_obsVSsim_t_q_profs.png",dpi=300)          
 plt.show()
 plt.close()
 #-------------------profiles of basis
-fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(12,18))
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(12,21))
 #fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
@@ -390,19 +398,80 @@ for iga in range(0,nga):
     colors=['g','r']
     width=[2,2]
     #ax0=plt.subplot(1,2,1)
-    ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],label="Temperature",
+    ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],label=r"$T$",
         c=colors[1],lw=width[0],xerr=biasstd[1:32,0]) #qc
-    ax[jr,jc].errorbar(bias[1:32,1],ydat[1:32],label="Vapor",
-        c=colors[0],lw=width[0],xerr=biasstd[1:32,1]) #qc
+    ax[jr,jc].errorbar(bias[1:32,1],ydat[1:32],label=r"$q$",
+        c=colors[0],lw=width[0],xerr=biasstd[1:32,1]) #qc  
     ax[jr,jc].plot([0,0],[0,16],c='k',lw=1.5)
     #ax[jr,jc].errorbar(meansim[1:32,0],ydat[1:32],label="SIM",
     #    c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
+    strs=titlestr[iga]    
+    ax[jr,jc].set_xlim(-12,10) 
+    ax[jr,jc].set_title(strs,fontsize=18)
+    if jr==1 and jc==2 :
+        ax[jr,jc].legend(loc=(0.05,0.8),frameon=False)
     if jc==0:    
-        plt.ylabel(r'Height ($km$)', fontdict=font)
+        ax[jr,jc].set_ylabel(r'Height ($km$)', fontdict=font)
 #    ax[jr,jc].set_title(area)
     ij=ij+1
     jc=jc+1
 plt.show()
 plt.savefig(dirpic+"ALLCASE_BiasProfile_t_q.png",dpi=300)          
+plt.show()
+plt.close()
+#----------the origin q and tmeperature
+###############################################################################
+fig,ax=plt.subplots(nrows=3,ncols=2,figsize=(18,12))
+#fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
+color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
+wd=[2,2,2,2,2]
+jc=0
+jr=0
+ij=1
+for iga in range(0,nga):
+    if jc==2:
+        jc=0
+        jr=jr+1
+    mker=titlestr[iga]
+    xdate=xdatet[iga]
+    levs1=[-12,-9,-6,-3,3,6,9,12]
+    colors1=['g','g','g','g','r','r','r','r']
+    linetype1=['solid','solid','solid','solid','dotted','dotted','dotted','dotted'] 
+    levs2=[3,5,9,12,15,18,21]
+    colors2=['g','g','r','r','r','r']
+    linetype2=['dotted','dotted','solid','solid','solid','solid']
+    titlename=[r"Temperature Bias ($K$)",r"Water Vapor Mixing Ratio Bias ($g$ $kg^{-1}$) "]
+    font = {'family' : 'serif',
+        'color'  : 'k',
+        'weight' : 'normal',
+        'size'   : 16,
+        }     
+    plt.subplot(3,2,ij)
+    zdat=obsw[:,:,iga]
+    #zdat=smtco   #-obstmp
+    ##zdat[0,:]=0.0   ## the first level is below surface ground
+    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors='r',
+        linewidths=1.5,levels=levs1,linestyles=linetype1)                           
+#    plt.title(titlename[0],fontsize=16)                          
+    plt.axis([0, 121, 0, 16])
+    plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
+    zdat=obsqv[:,:,iga]
+    zdat[0,:]=0.0   ## the first level is below surface ground
+    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors='g',
+        linewidths=1.5,levels=levs2)#,linestyles=linetype2)  
+    plt.axis([0, 121, 0, 16])
+    plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
+    axx=fig.add_subplot(3,2,ij)
+    text1=mker  #r"($a$)"
+    axx.text(1.5,16.5,text1,fontsize=18)                        
+    axx.set_xticks(range(0,nt,16))
+    xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
+    axx.set_xticklabels(xticklabels, size=16)
+    plt.ylabel(r'Height ($km$)', fontdict=font)
+    jc=jc+1
+    ij=ij+1                
+plt.show()
+fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)
+plt.savefig(dirpic+"ALLCASE_EC_T&qv.png",dpi=300)          
 plt.show()
 plt.close()

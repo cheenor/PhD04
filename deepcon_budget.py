@@ -96,6 +96,10 @@ for iga in range(0,nga):
     for i in range(0,12):
     	j=4+3+5+i
     	q1q2com[i,:,iga]=alldat[j,:]
+    del onedim,alldat
+envdc[:,0,:]=0.
+condc[:,0,:]=0.
+q1q2com[:,0,:]=0.
 #----- Plotting ---------------------------------
 font = {'family' : 'serif',
         'color'  : 'k',
