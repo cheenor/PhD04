@@ -339,9 +339,9 @@ for iga in range(0,nga):
     lnstycolor=['-','-','-','-']
     lncolor=['orangered','orangered','yellowgreen','yellowgreen']
     lncolor=['r','darkgoldenrod','g','b','darkorchid']
-    lncolor=['deeppink','b','green','y']
+    lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
-    lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -383,9 +383,9 @@ for iga in range(0,nga):
     # Q2
     ic=ic+1
     lnstycolor=['-','-','-','-']
-    lncolor=['r','orange','lime','y']
+    lncolor=['r','g','b','k']
     lnmkcolor=['None','None','None','None','None'] 
-    lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']

@@ -263,7 +263,7 @@ plt.savefig(dirpic+"ALLCASE_T&qv_Bias.png",dpi=300)
 plt.show()
 plt.close()
 #--------------PROFILES -------------------------------------------------------
-fig,ax=plt.subplots(nrows=2,ncols=6,figsize=(12,35))
+fig,ax=plt.subplots(nrows=2,ncols=6,figsize=(15,50))
 #fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
 #color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 #color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
@@ -312,9 +312,9 @@ for iga in range(0,nga):
     colors=['g','r']
     width=[1.5,1.5]
     ax0=plt.subplot(2,6,ij)
-    ax0.errorbar(meanobs[1:32,0],ydat[1:32],label=r"$OBS$",
+    ax0.errorbar(meanobs[1:32,0],ydat[1:32],label=r"$O$",
         c=colors[0],lw=width[0],xerr=obsstd[1:32,0]) #qc
-    ax0.errorbar(meansim[1:32,0],ydat[1:32],label=r"$SIM$",
+    ax0.errorbar(meansim[1:32,0],ydat[1:32],label=r"$S$",
         c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
 #    plt.ylabel(r'Height ($km$)', fontdict=font)
     #axx=fig.add_subplot(1,2,1) 
@@ -322,7 +322,7 @@ for iga in range(0,nga):
     #axx.text(285,16.5,text1,fontsize=14)
     plt.xlim(300,500)                        
     ax0.set_xticks(range(300,500,80))
-    ax0.set_title(mker,fontsize=20)
+    ax0.set_title(mker,fontsize=18)
     #ax0.yaxis.limit_range_for_scale(0,16)
 #    ax0.set_title(r'$(a)$  Potential Tempe. ($K$)')
     leftc,widthc=.25,.5
@@ -335,27 +335,28 @@ for iga in range(0,nga):
     axx=fig.add_subplot(2,6,ij)
     if ij==1 or ij==7:    
         plt.ylabel(r'Height ($km$)', fontdict=font)
-        ax0.legend(loc=(0.8,0.7),frameon=False)
+        ax0.legend(loc=(0.4,0.7),frameon=False)
     else:
         for tick in axx.yaxis.get_major_ticks():
             tick.label1On = False    
     ij=ij+6
     ax1=plt.subplot(2,6,ij)
-    ax1.errorbar(meanobs[1:32,1],ydat[1:32],label=r"$OBS$",
-        c=colors[0],lw=width[0],xerr=obsstd[1:32,1]) #qc
-    ax1.errorbar(meansim[1:32,1],ydat[1:32],label=r"$SIM$",
+    ax1.errorbar(meanobs[1:32,1],ydat[1:32],label=r"$O$",
+        c=colors[0],lw=width[0],xerr=obsstd[1:32,1]) #
+    ax1.errorbar(meansim[1:32,1],ydat[1:32],label=r"$S$",
         c=colors[1],lw=width[1],xerr=simstd[1:32,1]) #qc
 #plt.ylabel(r'Height ($km$)', fontdict=font)
 #    ax1.set_title(r'($b$) Vapor Mixing Ratio ($g$ $kg^{-1}$)')
 #    ax1.text(leftc,topc,r'$q$',horizontalalignment='left',
 #        verticalalignment='top',fontsize=18)
-    ax1.text(460.*23/500.,14.5,r'$q$',fontsize=20)
+    ax1.text(420.*23/500.,14.5,r'$q$',fontsize=20)
+    ax1.set_title(mker,fontsize=18)
     plt.xlim(0,23)
     ax1.set_xticks(range(0,23,6))
     axx=fig.add_subplot(2,6,ij) 
     if ij==1 or ij==7:    
         plt.ylabel(r'Height ($km$)', fontdict=font)
-        ax1.legend(loc=(0.8,0.7),frameon=False)
+        ax1.legend(loc=(0.4,0.7),frameon=False)
         
     else:
         for tick in axx.yaxis.get_major_ticks():

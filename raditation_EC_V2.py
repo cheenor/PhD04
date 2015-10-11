@@ -52,7 +52,7 @@ dirout='D:/MyPaper/PhD04/Pics/'
 dirceres='D:/MyPaper/PhD04/Data/CERES/'
 nga=len(CASES)
 fig,axs = plt.subplots(nrows=2,ncols=3,figsize=(18,8))
-color_cycle=['deeppink','lime','y','indigo','b','darkorange','cyan','k','grey']
+color_cycle=['deeppink','lime','y','indigo','b','r','cyan','k','grey']
 wds=[2,2,2,2,2,2,2,2,2]
 linests=['-','--','-','--','-','--','-','--','-','--']
 linests=['-','-','-','-','-','-','-','-','-','-']
