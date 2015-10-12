@@ -22,52 +22,48 @@ import os
 #mpl.rcParams['ps.usedistiller'] = None
 #mpl.rcParams['interactive'] = True
 #mpl.rcParams['ps.fonttype'] = 42
+#mpl.rcParams('text.latex', unicode = True)
 #mpl.rcParams['ps.useafm'] = True
-casenm='MLYRCTR2_ERA'
+casenm='ETPCTR_ERA'
 if casenm[0:3]=='ETP' :
-    datestr="20120520_031"
-    iy,im,jd=2012,5,20
-    nt,nday=125,31
-    namestr=casenm[0:3]
-    marktr=r"($a$)"
-    yearstr="%d"%iy
-elif casenm[0:3]=='WTP' :
-    datestr="20100714_031"
-    iy,im,jd=2010,7,14
-    nt,nday=125,31
-    namestr=casenm[0:3]
-    marktr=r"($b$)"
-    yearstr="%d"%iy
-elif casenm[0:3]=='PRD' :
-    datestr="20120401_031"
-    iy,im,jd=2012,4,1
-    nt,nday=125,31
-    namestr=casenm[0:3]
-    marktr=r"($c$)"
-    yearstr="%d"%iy
-elif casenm[0:3]=='MLY' :
-    datestr="20100624_031"
-    iy,im,jd=2010,6,24
-    nt,nday=125,31
-    namestr=casenm[0:4]
-    marktr=r"($d$)"
-    yearstr="%d"%iy
-elif casenm[0:3]=='NPC' :
-    datestr="20100802_031"
-    iy,im,jd=2010,8,2
-    nt,nday=125,31
-    namestr=casenm[0:3]
-    marktr=r"($e$)"
-    yearstr="%d"%iy
-elif casenm[0:3]=='NEC' :
-    datestr="20120706_031"
-    iy,im,jd=2012,7,6
+    iy,im,jd=2010,6,3
     nt,nday=125,31
     namestr=casenm[0:3]
     marktr=r"($f$)"
     yearstr="%d"%iy
+elif casenm[0:3]=='WTP' :
+    iy,im,jd=2010,7,3
+    nt,nday=125,31
+    namestr=casenm[0:3]
+    marktr=r"($e$)"
+    yearstr="%d"%iy
+elif casenm[0:3]=='PRD' :
+    iy,im,jd=2012,4,1
+    nt,nday=125,31
+    namestr=casenm[0:3]
+    marktr=r"($a$)"
+    yearstr="%d"%iy
+elif casenm[0:3]=='MLY' :
+    iy,im,jd=2010,6,2
+    nt,nday=125,31
+    namestr=casenm[0:4]
+    marktr=r"($b$)"
+    yearstr="%d"%iy
+elif casenm[0:3]=='NPC' :
+    iy,im,jd=2010,8,2
+    nt,nday=125,31
+    namestr=casenm[0:3]
+    marktr=r"($c$)"
+    yearstr="%d"%iy
+elif casenm[0:3]=='NEC' :
+    iy,im,jd=2012,7,6
+    nt,nday=125,31
+    namestr=casenm[0:3]
+    marktr=r"($d$)"
+    yearstr="%d"%iy
 topstr='' #'_250'
-strnm=namestr+'_'+datestr+'d'
+datestr="%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"_031d"
+strnm=namestr+'_'+datestr
 dirin='D:/MyPaper/PhD04/Cases/ERA/FORCING/'+namestr+'/'
 dircnrain='D:/MyPaper/PhD04/Data/RainCN05/'
 cnname=namestr+datestr+".txt"
@@ -267,12 +263,15 @@ colorq2=['darkgreen','darkgreen','darkgreen','darkgreen',
 linetypq2=['dotted','dotted','dotted','dotted','solid','solid','solid','solid']
 charsize=20
 font = {'family' : 'serif',
+#         'serif' : 'Bookman',
         'color'  : 'k',
         'weight' : 'normal',
         'size'   : 20,
         } 
 fig,axe1=plt.subplots(nrows=1,ncols=1,figsize=(15,6))
 plt.subplot(1,1,1)
+#plt.rc('text', usetex=False)
+#mpl.rcParams['ps.fonttype'] = 3
 axe1=plt.contourf(xxx,ydat,fcq1,colors=colorq1,
                   levels=levq1,extend='both')
 plt.colorbar(orientation='horizontal',extend='both',
@@ -288,10 +287,10 @@ xticklabels = [xdate[nn] for nn in range(0,nt,16)]
 axx.set_xticklabels(xticklabels, size=charsize)
 text1=marktr
 axx.text(1.5,16.3,text1,fontsize=charsize+2) 
-text1=r"Temperature ($K$ $d^{-1}$) and miosture ($g$ $kg^{-1}$ $d^{-1}$) forcing"
+text1=namestr+r" Temperature ($K$ $d^{-1}$) and miosture ($g$ $kg^{-1}$ $d^{-1}$) forcing"
 #axx.text(80,14,text1,fontsize=charsize) 
 plt.title(text1,fontsize=charsize+4) 
-plt.ylabel('Height'+r' ($km$)', fontdict=font)
+plt.ylabel('Height'+r' ($km$)', fontsize=20) #fontdict=font)
 plt.xlabel(yearstr, fontdict=font)
 plt.show()                     
 plt.savefig(pic_out+casenm+'_lsforcing_input.png',dpi=300)        

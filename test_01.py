@@ -58,6 +58,18 @@ for I in range(1, nbin):
 print WATERBIN
 fig,ax0=plt.subplots(nrows=6,ncols=4,figsize=(12,8))
 """
-for i in range(0,12):
-    print i
-    i+=4
+x=np.ndarray(shape=(4,5),dtype=float)
+for i in range(0,4):
+    for j in range(0,5):
+        ij=i+1+j*4+i/3*2
+        x[i,j]=ij
+x0=x[:,1].std
+x1=x[:,1]
+x2=x1.std
+print x0,x2
+def test(x,*y):
+    print x
+    if y:
+        print y,x+y[0]
+test(1)
+test(1,2)

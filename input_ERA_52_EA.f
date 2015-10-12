@@ -54,8 +54,8 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       IMS(3)=8  ;IME(3)=8
       IMS(4)=7  ;IME(4)=8
       IDS(1)=1  ;IDE(1)=1
-      IDS(2)=2  ;IDE(2)=2
-      IDS(3)=1  ;IDE(3)=31
+      IDS(2)=5  ;IDE(2)=5
+      IDS(3)=2  ;IDE(3)=31
       IDS(4)=6  ;IDE(4)=5
       DIR='X:\Data\ERA_interim\ERA_EA\'
       topstr=''
@@ -143,6 +143,12 @@ CCC SST DATA: CONVERT TIME INTO HOURS
       DO 1014 IP=2,2   ! AREA LOOPS
         IYR=AYEAR(IP)
         WRITE(YEARSTR,'(I4)')IYR
+        DAYS(2)=28
+        IF(MOD(IYR,4)==0.AND.MOD(IYR,100)/=0)THEN
+            DAYS(2)=29 
+        ELSEIF(MOD(IYR,400)==0)THEN
+            DAYS(2)=29
+        ENDIF
         FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
         PATH=TRIM(DIR)//TRIM(FOLD)
         TEMPRESS=0
@@ -164,7 +170,7 @@ CCC SST DATA: CONVERT TIME INTO HOURS
         PRINT*,IMT  
         FOLD2=TRIM(AREA(IP))//'\'
         FILEPATH=TRIM(DIROUT)//TRIM(FOLD2)//TRIM(AREA(ip))//YEARSTR//
-     +       'DAYSTRT.TXT'
+     +       MONSTR//DAYSTR//'DAYSTRT.TXT'
         OPEN(997,FILE=TRIM(FILEPATH)) 
         WRITE(997,*)IMTS, IP
 

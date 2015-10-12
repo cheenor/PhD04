@@ -502,7 +502,7 @@ q2v=np.ndarray(shape=(nz,nt), dtype=float)
 for it in range(0,nt):
     for iz in range(0,nz):
         k=it*(6*nz+1)
-        omegaa[iz,it]=onedim1[k+iz+1]*36
+        omegaa[iz,it]=onedim1[k+iz+1]*36 # convert ps/s to hpa/hr
         omegao[iz,it]=onedim1[k+iz+1+nz]*36
         q1a[iz,it]=onedim1[k+iz+1+nz*2]
         q1v[iz,it]=onedim1[k+iz+1+nz*3]

@@ -1,21 +1,22 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun 08 07:56:28 2015
+Created on Thu Jul 02 20:02:42 2015
 
-@author: jhchen
+@author: chenjh
 """
 import matplotlib.pyplot as plt
-import matplotlib.axes as mplaxes
 import numpy as np
 import string
-from pylab import *
+from matplotlib.font_manager import FontProperties
 nz=34
 ng=5
 CASENMSTR=['PRDCTR_EC','MLYRCTR_EC', 'NPCCTR_EC',
-           'NECCTR_EC','WTPCTR_EC' , 'ETPCTR_EC']   
-astr=[r'$(a)$',r'$(b)$', r'$(c)$',r'$(d)$',r'$(e)$',r'$(f)$'] 
+           'NECCTR_EC', 'WTPCTR_EC','ETPCTR_EC']   
+orderstr=[r'($a$)',r'($b$)',r'($c$)',r'($d$)',r'($e$)',r'($f$)']
 DATESTR  =['20120401' , '20100602' , '20100802' ,
            '20120706' , '20100703' , '20100603' ]
+nga=len(CASENMSTR)
 dirin="D:/MyPaper/PhD04/Cases/postdata/"
 dirpic="D:/MyPaper/PhD04/Pics/"
 #-----------------------------------------------------------------------
@@ -34,6 +35,7 @@ def readAscii(fpath,iskp,nrl):
     onedim=[]
     linesplit=[]
     f=open(fpath)
+    print iskp,nrl
     ff=f.readlines()[iskp:nrl]  ## first line in obs file is legend 
     for line in ff:
         line=string.lstrip(line)
@@ -47,27 +49,33 @@ def readAscii(fpath,iskp,nrl):
     print len(onedim)
     return onedim
 #--------------------read data from cloudcell.f ---------------------------
-nga=len(CASENMSTR)
-cloudlevs=[3,5,10,15,20,25,30,35,40,50,60,70,80,90,100,110,130]
+#++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+            
+#plot  ----------  ft  # xdat,ydat,zdat
+font = {'family' : 'serif',
+        'color'  : 'k',
+        'weight' : 'normal',
+        'size'   : 16,
+        }  
+cloudlevs=[5,10,15,20,30,40,50,60,70,80,90,100,110,120,130]
 cloudclors=['w','lightgray','plum','darkorchid','darkviolet','b','dodgerblue','skyblue','aqua',
-            'greenyellow','lime','limegreen','yellow','darkorange','tomato','r']
-fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(12,8))
-ir=0
+            'greenyellow','lime','yellow','darkorange','chocolate','tomato','r']
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
+
+jr=0
 jc=0
 ij=1
-filestring='ALLCLOUDCELSS'
 for iga in range(0,nga):
     casenm=CASENMSTR[iga]
+    if casenm[0:3]=='MLY' :
+        areastr=casenm[0:4]
+    else:
+        areastr=casenm[0:3]
     if jc==3:
         jc=0
-        ir=ir+1
-    print ir,jc
-    if casenm[0:3]=='MLY':
-        area=casenm[0:4]
-    else:
-        area=casenm[0:3]
+        jr=jr+1
     ft=np.ndarray(shape=(nz,nz,ng),dtype=float)
-    fpath=dirin+casenm+'_'+filestring+'_FREQUENCY_f90.TXT'
+    fpath=dirin+casenm+'_ALLCLOUDCELSS_FREQUENCY_f90.TXT'
     for i in range(0,ng):
         iskp=i*(nz+2)+1
         nrl=nz+iskp
@@ -75,47 +83,33 @@ for iga in range(0,nga):
         for ke in range(0,nz):
             for kb in range(0,nz):
                 k=ke*(nz+1)+kb+1
-                ft[kb,ke,i]=onedim[k]            
-#plot  ----------  ft  # xdat,ydat,zdat
-    font = {'family' : 'serif',
-        'color'  : 'k',
-        'weight' : 'normal',
-        'size'   : 16,
-        }  
+                ft[kb,ke,i]=onedim[k]
+    plt.subplot(2,3,ij)
 #zdat[0,:]=0.0   ## the first level is below surface ground
     ft0=np.ndarray(shape=(nz,nz), dtype=float) #(km,km)  For exchange the dims
     for i1 in range(0,nz):
-        i10=nz-i1-1
-        for i2 in range(0,nz):
-            ft0[i10,i2]=ft[i2,i1,4]
-    plt.subplot(2,3,ij)        
-    ax[ir,jc]=plt.contourf(zdat,zdat,ft0,colors=cloudclors, levels=cloudlevs,extend='both')
+       i10=nz-i1-1
+       for i2 in range(0,nz):
+           ft0[i10,i2]=ft[i2,i1,4]
+    ax[jr,jc]=plt.contourf(zdat,zdat,ft0,colors=cloudclors, levels=cloudlevs,extend='both')
+    marknm=orderstr[iga]+' '+areastr
+    plt.title(marknm,fontsize=12)    
     plt.axis([0, 16, 0, 16])
-    tilstr=astr[iga]+' '+area
-    plt.title(tilstr, fontsize=16)
+    if jr==1:
+        plt.xlabel(r'Cloud Base Height ($km$)', fontdict=font)
     if jc==0:
         plt.ylabel(r'Cloud Top Height ($km$)', fontdict=font)
-    if ir==1:            
-        plt.xlabel(r'Cloud Base Height ($km$)', fontdict=font)
-    if iga in(1,2,4,5)  :
-        axx= plt.subplot(2,3,ij)
-        for tick in axx.yaxis.get_major_ticks():
-            tick.label1On = False
-    if ir==0  :
-        axx= plt.subplot(2,3,ij)
-        for tick in axx.xaxis.get_major_ticks():
-            tick.label1On = False
-#        plt.yticks() #
     jc=jc+1
     ij=ij+1
-plt.subplots_adjust(left = 0.1, wspace = 0.1, hspace = 0.2, \
-    bottom = 0.25, top = 0.90)
-cax = fig.add_axes([0.1, 0.08, 0.8, 0.04])
-fig.colorbar(ax[0,0], cax,extend='both',
-             spacing='uniform', orientation='horizontal')                                                     
-titlename=r"Frequency of all cloud cells ($10^{-2}%$)"
-plt.title(titlename,fontsize=16)
+figtitle = r"Frequency of all cloud cells ($10^{-2}$ %)"
+fig.text(0.5, 0.95, figtitle,
+    horizontalalignment='center',
+    fontproperties=FontProperties(size=18))
+#cax = fig.add_axes([0.2, 0.025, 0.6, 0.02])
+cax = fig.add_axes([0.91, 0.2, 0.03, 0.6])
+fig.colorbar(ax[0,0],cax,orientation='vertical',extend='both', # 'horizontal'
+    extendfrac='auto',  spacing='uniform')
 plt.show()
-plt.savefig(dirpic+"AllCases_CloudCellsTopBase_fortran.pdf")          
+plt.savefig(dirpic+"AllCase_CloudCellsTopBase_fortran.png",dpi=300)          
 plt.show()
 plt.close()   

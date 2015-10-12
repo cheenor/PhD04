@@ -53,20 +53,18 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       REAL XYD(NPIN0,19),DYN(NPIN,4)
 !---------------SET THE TIME ----------------------------------------
 
-      IMS(1)=5  ;IME(1)=6
+      IMS(1)=6  ;IME(1)=7
       IMS(2)=7  ;IME(2)=8
-      IDS(1)=20  ;IDE(1)=19
-      IDS(2)=14 ;IDE(2)=13
+      IDS(1)=3  ;IDE(1)=3
+      IDS(2)=3 ;IDE(2)=2
       DAYS(1)=31
       DAYS(2)=31
-      WRITE(YEARSTR,'(I4)')IYR
-      FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
       DIR='X:\Data\ERA_interim\ERA_Pre_O\'
       topstr='' !'_150'
 !      TOPSTR=''
       DIRFLUX='X:\Data\ERA_interim\SHLH\'
       DIROUT='D:\MyPaper\PhD04\Cases\ERA\FORCING\'
-      AREA(1)='ETP' ; AYEAR(1)=2012
+      AREA(1)='ETP' ; AYEAR(1)=2010
       AREA(2)='WTP' ; AYEAR(2)=2010
       DO I=1,12
         DAYS(I)=31
@@ -80,11 +78,6 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       DAYS(4)=30
       DAYS(9)=30
       DAYS(11)=30
-      IF(MOD(IYR,4)==0.AND.MOD(IYR,100)/=0)THEN
-        DAYS(2)=29 
-      ELSEIF(MOD(IYR,400)==0)THEN
-        DAYS(2)=29
-      ENDIF
 !-----------------------------------
 CC
 C       PRINT*,'  KTEST ??'
@@ -141,11 +134,20 @@ CCC SST DATA: CONVERT TIME INTO HOURS
 !----------------------------------------------------------
       DO 1014 IP=1,2   ! AREA LOOPS
         IYR=AYEAR(IP)
+        DAYS(2)=28
+        IF(MOD(IYR,4)==0.AND.MOD(IYR,100)/=0)THEN
+            DAYS(2)=29 
+        ELSEIF(MOD(IYR,400)==0)THEN
+            DAYS(2)=29
+        ENDIF
         WRITE(YEARSTR,'(I4)')IYR
+        WRITE(MONSTR,'(I2.2)')IMS(IP)
+        WRITE(DAYSTR,'(I2.2)')IDS(IP) 
         FOLD=YEARSTR(3:4)//'0101-'//YEARSTR(3:4)//'1231\'
         PATH=TRIM(DIR)//TRIM(FOLD)
         FOLD2=TRIM(AREA(IP))//'\'
-        FILEPATH=TRIM(DIROUT)//TRIM(FOLD2)//YEARSTR//'DAYSTRT.TXT'
+        FILEPATH=TRIM(DIROUT)//TRIM(FOLD2)//YEARSTR//
+     +    MONSTR//DAYSTR//'DAYSTRT.TXT'
         OPEN(997,FILE=TRIM(FILEPATH))
         TEMPRESS=0
         TEMPTEMP=0
@@ -163,8 +165,7 @@ CCC SST DATA: CONVERT TIME INTO HOURS
         IMT=IMTE-IMTS 
         PRINT*,IMT   
         WRITE(997,*)IMTS ,IP
-        WRITE(MONSTR,'(I2.2)')IMS(IP)
-        WRITE(DAYSTR,'(I2.2)')IDS(IP) 
+
 !-------------------------------------------------------------
         FILEPATH=TRIM(DIR)//TRIM(FOLD)//
      +    YEARSTR//TRIM(AREA(IP))//'_RAW.TXT'

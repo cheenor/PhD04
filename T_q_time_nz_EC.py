@@ -13,7 +13,7 @@ import datetime
 mpl.rcParams['ytick.labelsize'] = 20
 mpl.rcParams['xtick.labelsize'] = 20
 
-casenm='MLYRCTR_EC'
+casenm='WTPCTR_EC'
 #casenm='WTP2D0'
 #casenm='NPC2D2'
 nt=121
@@ -23,38 +23,39 @@ dirs='D:/MyPaper/PhD04/Cases/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 if casenm[0:3]=='ETP':
     area=casenm[0:3]
-    folds='/20100604_0704/Simulated/'
-    datestr='20120520_031d'    
+#    folds='/20100604_0704/Simulated/'
+#    datestr='20120520_031d'    
     iy,im,jd=2012,5,20
+    iy,im,jd=2010,6,3
 if casenm[0:3]=='WTP':
-    area=casenm[0:3]
-    folds='/20100624_0723/Simulated/'
-    datestr='20100714_031d'    
-    iy,im,jd=2010,7,14    
+    area=casenm[0:3]   
+    iy,im,jd=2010,7,14  
+#    iy,im,jd=2010,7,3  
 if casenm[0:3]=='NPC':
     area=casenm[0:3]
-    folds='/20100802/Simulated/'
-    datestr='20100802_031d'    
+#    folds='/20100802/Simulated/'
+#    datestr='20100802_031d'    
     iy,im,jd=2010,8,2
 if casenm[0:3]=='PRD':
     area=casenm[0:3]
-    folds='/20100402/Simulated/'
-    datestr='20120401_031d'    
+#    folds='/20100402/Simulated/'
+#    datestr='20120401_031d'    
     iy,im,jd=2012,4,1 
 if casenm[0:3]=='MLY':
     area=casenm[0:4]
     folds='/20100624/Simulated/'
 #    datestr='20100605_031d' 
-    datestr='20100624_031d'
+#    datestr='20100624_031d'
 #    datestr='20100602_031d'
-#    iy,im,jd=2010,6,2 
-    iy,im,jd=2010,6,24
+    iy,im,jd=2010,6,2
+#    iy,im,jd=2010,6,24
 if casenm[0:3]=='NEC':
     area=casenm[0:3]
-    folds='/20100801/Simulated/'
-    datestr='20120706_031d'    
+#    folds='/20100801/Simulated/'
+#    datestr='20120706_031d'    
     iy,im,jd=2012,7,6 
-#folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
+folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
+datestr="%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"_031d"
 dirin=dirs+area+folds
 dirobs=diro+area+'/'
 f43=area+'_'+datestr+"_ERA.43"
@@ -244,6 +245,125 @@ xticklabels = [xdate[nn] for nn in range(0,nt,16)]
 axx.set_xticklabels(xticklabels, size=16)
 plt.ylabel(r'Height ($km$)', fontdict=font)
 plt.show()
-plt.savefig(dirpic+casenm+"_T&qv_Bias.pdf")          
+plt.savefig(dirpic+casenm+datestr+"_T&qv_Bias2.pdf")          
+plt.show()
+plt.close()
+#--------------PROFILES -------------------------------------------------------
+#obstmp[iz,it]=onedim1[k] obsqv[iz,it]
+#smtco[iz,it]   smq
+meanobs=np.ndarray(shape=(nz,2),dtype=float)
+obsstd=np.ndarray(shape=(nz,2),dtype=float)
+meansim=np.ndarray(shape=(nz,2),dtype=float)
+simstd=np.ndarray(shape=(nz,2),dtype=float)
+for k in range(0,nz):
+    tmp1=0.
+    tmp2=0.
+    tmp3=0.
+    tmp4=0.
+    tmp=np.ndarray(shape=(nt,4),dtype=float)
+    for it in range(0,nt):
+        tmp1=tmp1+obstha[k,it]
+        tmp2=tmp2+obsqv[k,it]
+        tmp3=tmp3+smt[k,it]
+        tmp4=tmp4+smq[k,it]
+        tmp[it,0]=obstha[k,it]
+        tmp[it,1]=obsqv[k,it]
+        tmp[it,2]=smt[k,it]
+        tmp[it,3]=smq[k,it]
+    meanobs[k,0]=tmp1/nt
+    meanobs[k,1]=tmp2/nt
+    meansim[k,0]=tmp3/nt
+    meansim[k,1]=tmp4/nt
+    obsstd[k,0]=tmp[:,0].std()
+    obsstd[k,1]=tmp[:,1].std()
+    simstd[k,0]=tmp[:,2].std()
+    simstd[k,1]=tmp[:,3].std()
+#
+colors=['g','r']
+width=[1.5,1.5]
+fig,(ax0,ax1)=plt.subplots(nrows=1,ncols=2,figsize=(10,12))
+ax0=plt.subplot(1,2,1)
+ax0.errorbar(meanobs[1:32,0],ydat[1:32],label="OBS",
+    c=colors[0],lw=width[0],xerr=obsstd[1:32,0]) #qc
+ax0.errorbar(meansim[1:32,0],ydat[1:32],label="SIM",
+    c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
+plt.ylabel(r'Height ($km$)', fontdict=font)
+#axx=fig.add_subplot(1,2,1) 
+#text1=r"($a$)"
+#axx.text(285,16.5,text1,fontsize=14)
+plt.xlim(300,500)                        
+ax0.set_xticks(range(300,500,50))
+#ax0.yaxis.limit_range_for_scale(0,16)
+ax0.set_title(r'$(a)$  Potential Tempe. ($K$)')
+ax1=plt.subplot(1,2,2)
+ax1.errorbar(meanobs[1:32,1],ydat[1:32],label="OBS",
+    c=colors[0],lw=width[0],xerr=obsstd[1:32,1]) #qc
+ax1.errorbar(meansim[1:32,1],ydat[1:32],label="SIM",
+    c=colors[1],lw=width[1],xerr=simstd[1:32,1]) #qc
+#plt.ylabel(r'Height ($km$)', fontdict=font)
+ax1.set_title(r'($b$) Vapor Mixing Ratio ($g$ $kg^{-1}$)')
+ax1.set_xticks(range(0,25,4))
+#ax1.yaxis.limit_range_for_scale(0,16)
+#axx=fig.add_subplot(1,2,2) 
+#text1=r"($b$)"
+#axx.text(1,16.5,text1,fontsize=14)                        
+#axx.set_xticks(range(0,35,5))
+#axx.set_yticks(range(0,16,3))
+plt.show()
+plt.savefig(dirpic+casenm+datestr+"_obsVSsim_t_q2.pdf")          
+plt.show()
+plt.close()
+#-------------------profiles of basis
+bias=np.ndarray(shape=(nz,2),dtype=float)
+biasstd=np.ndarray(shape=(it,2),dtype=float)
+for k in range(0,nz):
+    tmp1=0.
+    tmp2=0.
+    tmp=np.ndarray(shape=(nt,2),dtype=float)
+    for it in range(0,nt):
+        tmp1=tmp1+smtc[k,it]+273.16-obstmp[k,it]
+        tmp2=tmp2+smq[k,it]-obsqv[k,it]
+        tmp[it,0]=smtc[k,it]+273.16-obstmp[k,it]
+        tmp[it,1]=smq[k,it]-obsqv[k,it]
+    bias[k,0]=tmp1/nt
+    bias[k,1]=tmp2/nt
+    biasstd[k,0]=tmp[:,0].std()
+    biasstd[k,1]=tmp[:,1].std()
+#
+colors=['k','lightgrey']
+colors=['g','r']
+width=[2,2]
+fig,ax0=plt.subplots(nrows=1,ncols=1,figsize=(6,10))
+#ax0=plt.subplot(1,2,1)
+ax0.errorbar(bias[1:32,0],ydat[1:32],label="Temperature",
+    c=colors[1],lw=width[0],xerr=biasstd[1:32,0]) #qc
+ax0.errorbar(bias[1:32,1],ydat[1:32],label="Vapor",
+    c=colors[0],lw=width[0],xerr=biasstd[1:32,1]) #qc
+ax0.plot([0,0],[0,16],c='k',lw=1.5)
+#ax0.errorbar(meansim[1:32,0],ydat[1:32],label="SIM",
+#    c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
+plt.ylabel(r'Height ($km$)', fontdict=font)
+#axx=fig.add_subplot(1,2,1) 
+#text1=r"($a$)"
+#axx.text(285,16.5,text1,fontsize=14)
+#plt.xlim(-4,4)                        
+#ax0.set_xticks(range(4,4,2))
+#ax0.yaxis.limit_range_for_scale(0,16)
+ax0.set_title(area)
+#ax1=plt.subplot(1,2,2)
+
+#ax1.errorbar(meansim[1:32,1],ydat[1:32],label="SIM",
+#    c=colors[1],lw=width[1],xerr=simstd[1:32,1]) #qc
+#plt.ylabel(r'Height ($km$)', fontdict=font)
+#ax1.set_title(r'($b$) Vapor Mixing Ratio ($g$ $kg^{-1}$)')
+#ax1.set_xticks(range(0,25,4))
+#ax1.yaxis.limit_range_for_scale(0,16)
+#axx=fig.add_subplot(1,2,2) 
+#text1=r"($b$)"
+#axx.text(1,16.5,text1,fontsize=14)                        
+#axx.set_xticks(range(0,35,5))
+#axx.set_yticks(range(0,16,3))
+plt.show()
+plt.savefig(dirpic+casenm+datestr+"_BiasProfile_t_q2.pdf")          
 plt.show()
 plt.close()

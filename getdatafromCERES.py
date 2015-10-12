@@ -15,9 +15,9 @@ dirout="D:/MyPaper/PhD04/Data/CERES/"
 iyr=2010
 
 rgns=["ETP","WTP","PRD","MLYR","NPC","NEC"]
-iyrs=[2012, 2010, 2012, 2010,   2010, 2012]
-imm =[  5,    7,    4,   6,     8,    7  ]
-idd =[  20,    14,    1,   24,  2,    6  ]
+iyrs=[2010, 2010, 2012, 2010,   2010, 2012]
+imm =[  6,    7,    4,   6,     8,    7  ]
+idd =[  3,    3,    1,   2,  2,    6  ]
 ndds=[  30,   30,   30,  30,    30,   30 ]
 lon1=[  90,   80,   110,  110,  112,  120 ]
 lon2=[  100,  90,   118,  122,  120,  130 ]
@@ -48,9 +48,9 @@ for i in range(0,len(rgns)):  ### len(rgns)
            dirin+filenm[1]]
     ims=imm[i]
     ids=idd[i]
-    ystr='%d'%iyr
-    mstr='%d'%ims
-    dstr='%d'%ids
+    ystr='%4d'%iyr
+    mstr='%2.2d'%ims
+    dstr='%2.2d'%ids
     text=ystr+"-"+mstr+"-"+dstr
     d = datetime.datetime.strptime(text,'%Y-%m-%d')
     text=ystr+"_"+mstr+"_"+dstr
