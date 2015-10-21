@@ -339,9 +339,15 @@ for iga in range(0,nga):
     lnstycolor=['-','-','-','-']
     lncolor=['orangered','orangered','yellowgreen','yellowgreen']
     lncolor=['r','darkgoldenrod','g','b','darkorchid']
+<<<<<<< HEAD
     lncolor=['deeppink','b','green','y']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+=======
+    lncolor=['r','g','b','orange','blueviolet','aqua']
+    lnmkcolor=['None','None','None','None','None'] 
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -351,7 +357,12 @@ for iga in range(0,nga):
     mker=lnmkcolor
     width=lnwidcolor 
     size_title=18     
+<<<<<<< HEAD
     ax[iro,ic].set_ylim(0,16)           
+=======
+    ax[iro,ic].set_ylim(0,16)
+    ax[iro,ic].set_xlim(-6,6)           
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     ax[iro,ic].plot(eddyvar_mean[0,:],ydat,label=r'$Q_1$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
@@ -365,7 +376,11 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_1$'# ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
+<<<<<<< HEAD
     xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
+=======
+    xmajorLocator   = MultipleLocator(3) #将y轴主刻度标签设置为2的倍数  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
@@ -382,9 +397,15 @@ for iga in range(0,nga):
     # Q2
     ic=ic+1
     lnstycolor=['-','-','-','-']
+<<<<<<< HEAD
     lncolor=['r','orange','lime','y']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+=======
+    lncolor=['r','g','b','k']
+    lnmkcolor=['None','None','None','None','None'] 
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -393,7 +414,12 @@ for iga in range(0,nga):
     sty=lnstycolor
     mker=lnmkcolor
     width=lnwidcolor 
+<<<<<<< HEAD
     ax[iro,ic].set_ylim(0,16)           
+=======
+    ax[iro,ic].set_ylim(0,16) 
+    ax[iro,ic].set_xlim(-6,6)           
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     ax[iro,ic].plot(eddyvar_mean[1,:],ydat,label=r'$Q_2$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
@@ -404,7 +430,11 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_2$' # ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
+<<<<<<< HEAD
     xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
+=======
+    xmajorLocator   = MultipleLocator(3) #将y轴主刻度标签设置为2的倍数  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 

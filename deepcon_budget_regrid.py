@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jul 08 06:57:06 2015
+Created on Thu Aug 27 09:49:17 2015
 
 @author: chenjh
 """
@@ -38,13 +38,15 @@ def readAscii(fpath,iskp):
     del linesplit
     f.close()
     return onedim
-<<<<<<< HEAD
-#-----------------------------------------------------
-=======
 #--------------------------------------·---------------
-add_suffix='_V1'
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
-nz=52
+add_suffix='_V3'
+if add_suffix[2]=='3':
+    a,b=30,50
+if add_suffix[2]=='2':
+    a,b=3,10
+if add_suffix[2]=='1':
+    a,b=3,40
+nz=33
 km=nz
 CASENM=["PRDCTR_EC","MLYRCTR_EC","NPCCTR_EC","NECCTR_EC","WTPCTR_EC","ETPCTR_EC"]
 datestr=['20120401' , '20100602' , '20100802' ,
@@ -64,8 +66,8 @@ ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
       28164.285,  29450.000,  30764.285,  32107.145,  33478.570,  34878.570,
       36307.141,  37764.285,  39250.000,  40750.000]
 ydat=[]
-for yd in ydat_r:
-    ydat.append(yd*0.001)
+for yd in range (0,33):#ydat_r:
+    ydat.append(yd*0.5)
 ql=np.ndarray(shape=(km,nga),dtype=float)
 qi=np.ndarray(shape=(km,nga),dtype=float)
 qrl=np.ndarray(shape=(km,nga),dtype=float)
@@ -79,11 +81,7 @@ for iga in range(0,nga):
         areastr=casenm[0:4]
     else:
         areastr=casenm[0:3]
-<<<<<<< HEAD
-    filename=casenm+'_DeepCons_budgetandprofs.txt'
-=======
-    filename=casenm+'_DeepCons_budgetandprof'+add_suffix+'.txt'
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+    filename=casenm+'_DeepCons_budgetandprof_regrid'+add_suffix+'.txt'
     fpath=dirin+areastr+'/CTREC'+datestr[iga]+'/Simulation/'+filename
     iskp=0
     onedim=readAscii(fpath, iskp)
@@ -105,18 +103,10 @@ for iga in range(0,nga):
     for i in range(0,12):
     	j=4+3+5+i
     	q1q2com[i,:,iga]=alldat[j,:]
-<<<<<<< HEAD
-=======
     del onedim,alldat
 envdc[:,0,:]=0.
 condc[:,0,:]=0.
 q1q2com[:,0,:]=0.
-#test
-envdc[:,1,:]=0.
-condc[:,1,:]=0.
-q1q2com[:,1,:]=0.
-#
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #----- Plotting ---------------------------------
 font = {'family' : 'serif',
         'color'  : 'k',
@@ -154,11 +144,7 @@ for iga in range(0,nga):
     jc=jc+1
 #    ij=ij+1
 plt.show()
-<<<<<<< HEAD
-plt.savefig(dirpic+"DCC_heatingprofiles_fortran.png",dpi=300)          
-=======
-plt.savefig(dirpic+'DCC_heatingprofiles_fortran'+add_suffix+'.png',dpi=300)          
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+plt.savefig(dirpic+'DCC_heatingprofiles_fortran'+add_suffix+'_regrid.png',dpi=300)          
 plt.show()
 plt.close() 
 #
@@ -194,15 +180,13 @@ for iga in range(0,nga):
 #    ij=ij+1
 plt.legend()
 plt.show()
-<<<<<<< HEAD
-plt.savefig(dirpic+"DCC_qlqi_fortran.png",dpi=300)          
-=======
-plt.savefig(dirpic+'DCC_qlqi_fortran'+add_suffix+'.png',dpi=300)          
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+plt.savefig(dirpic+'DCC_qlqi_fortran'+add_suffix+'_regrid.png',dpi=300)          
 plt.show()
 plt.close() 
 #
-fig,ax=plt.subplots(nrows=1,ncols=2,figsize=(8,24))
+matplotlib.rcParams['ytick.labelsize'] = 18
+matplotlib.rcParams['xtick.labelsize'] = 18
+fig,ax=plt.subplots(nrows=1,ncols=2,figsize=(12,12))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
 jr=0
@@ -219,8 +203,9 @@ for iga in range(0,nga):
     atr=orderstr[iga]
     lnstycolor=['-','-','-','-','-','-','-','-']
     lncolor=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
+    lncolor=['r','g','b','orange','blueviolet','aqua'] #lncolor=
     lnmkcolor=['None','None','None','None','None','None'] 
-    lnwidcolor=[3.0,3.0,3.0,3.0,3.0,3.0]  
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0,4.0]  
     lnstygrey=['-','-','-','-','-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -235,29 +220,25 @@ for iga in range(0,nga):
         +q1q2com[7,:,iga]+q1q2com[8,:,iga]+q1q2com[9,:,iga]
     q1m[:]=condc[0,:,iga]+condc[1,:,iga]+condc[2,:,iga]+condc[3,:,iga]+condc[4,:,iga] \
         + q1q2com[0,:,iga]+q1q2com[1,:,iga]+q1q2com[2,:,iga] +q1q2com[3,:,iga]                          \
-        + q1q2com[4,:,iga]+q1q2com[5,:,iga]
-    size_title=18     
+        + q1q2com[4,:,iga]+q1q2com[5,:,iga]  
     ax[0].set_ylim(0,16)           
     ax[0].plot(q1m,ydat,label=area,
         color=colors[iga],ls=sty[iga],marker=mker[iga],lw=width[iga],) #
-    ax[0].set_title(r'$Q_1$',fontsize=16)
+    ax[0].set_title(r'($a$) $Q_1$',fontsize=20)
     #allvar_mean[5,0]=0.
     ax[1].set_ylim(0,16) 
     ax[1].plot(q2m,ydat,label=area , #r'$Q_2$',
         color=colors[iga],ls=sty[iga],marker=mker[iga],lw=width[iga],)  #
-    ax[1].set_title(r'$Q_2$',fontsize=16)
+    ax[1].set_title(r'($b$) $Q_2$',fontsize=20)
     plt.legend()
-plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
-    bottom = 0.1, top = 0.90)
+#plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
+#    bottom = 0.1, top = 0.90)
 plt.show()                     
-<<<<<<< HEAD
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2.png',dpi=300)          
-=======
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2'+add_suffix+'.png',dpi=300)          
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2'+add_suffix+'_regrid.png',dpi=300)          
 plt.show()
 plt.close()
-
+matplotlib.rcParams['ytick.labelsize'] = 16
+matplotlib.rcParams['xtick.labelsize'] = 16
 #------------------------------------------------------------------------------
 fig,ax=plt.subplots(nrows=3,ncols=4,figsize=(12,35))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
@@ -278,8 +259,9 @@ for iga in range(0,nga):
     lncolor=['orangered','orangered','yellowgreen','yellowgreen']
     lncolor=['r','darkgoldenrod','g','b','darkorchid']
     lncolor=['deeppink','b','green','y']
+    lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
-    lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -289,7 +271,8 @@ for iga in range(0,nga):
     mker=lnmkcolor
     width=lnwidcolor 
     size_title=18     
-    ax[jr,jc].set_ylim(0,16)           
+    ax[jr,jc].set_ylim(0,16)
+    ax[jr,jc].set_xlim(-50,90)            
     ax[jr,jc].plot(q1q2com[0,:,iga],ydat,label=r'$Q_1$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
@@ -306,7 +289,7 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_1$'# ($K$ $day^{-1}$)'
     ax[jr,jc].set_title(titlestr,fontsize=size_title)
-    xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
+    xmajorLocator   = MultipleLocator(a) #将y轴主刻度标签设置为2的倍数  
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[jr,jc].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
@@ -323,9 +306,9 @@ for iga in range(0,nga):
     # Q2
     jc=jc+1
     lnstycolor=['-','-','-','-']
-    lncolor=['r','orange','lime','y']
+    lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
-    lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -334,7 +317,8 @@ for iga in range(0,nga):
     sty=lnstycolor
     mker=lnmkcolor
     width=lnwidcolor 
-    ax[jr,jc].set_ylim(0,16)           
+    ax[jr,jc].set_ylim(0,16) 
+    ax[jr,jc].set_xlim(-50,90)          
     ax[jr,jc].plot(q1q2com[7,:,iga],ydat,label=r'$Q_2$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
@@ -347,7 +331,7 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_2$' # ($K$ $day^{-1}$)'
     ax[jr,jc].set_title(titlestr,fontsize=size_title)
-    xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
+    xmajorLocator   = MultipleLocator(a) #将y轴主刻度标签设置为2的倍数  
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[jr,jc].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
@@ -365,15 +349,11 @@ for iga in range(0,nga):
 plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-<<<<<<< HEAD
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2Comps.png',dpi=300)          
-=======
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2Comps'+add_suffix+'.png',dpi=300)          
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2Comps'+add_suffix+'_regrid.png',dpi=300)          
 plt.show()
 plt.close()
 #
-fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(9,18))
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(10,18))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
 iro=0
@@ -396,8 +376,9 @@ for iga in range(0,nga):
     lncolor=['orangered','orangered','yellowgreen','yellowgreen']
     lncolor=['r','darkgoldenrod','g','b','darkorchid']
     lncolor=['lime','b','green','y','magenta']
+    lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
-    lnwidcolor=[3.0,3.0,3.0,3.0,3.0,3.0,3.0]  
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0,4.0,4.0]  
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -409,13 +390,14 @@ for iga in range(0,nga):
     micro_com=np.ndarray(shape=(5,km),dtype=float)
     micro_com[:,:]=condc[:,:,iga]
     size_title=18     
-    ax[iro,ic].set_ylim(0,16)           
+    ax[iro,ic].set_ylim(0,16)
+    ax[iro,ic].set_xlim(-80,130)            
     ax[iro,ic].plot(micro_com[0,:],ydat,label=r'$Cond$',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0]) #Condensation
     #allvar_mean[5,0]=0.
     ax[iro,ic].plot(micro_com[1,:],ydat,label=r'$Evap$',
         color=colors[1],ls=sty[1],marker=mker[1],lw=width[1])  #Evaporation
-    ax[iro,ic].plot(micro_com[2,:],ydat,label=r'$Dep$',
+    ax[iro,ic].plot(micro_com[2,:],ydat,label=r'$Dep+Frez$',
         color=colors[2],ls=sty[2],marker=mker[2],lw=width[2])   #Deposition
     ax[iro,ic].plot(micro_com[3,:],ydat,label=r'$Sub$',
         color=colors[3],ls=sty[3],marker=mker[3],lw=width[3])  #Sublimation
@@ -424,8 +406,8 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
-#    xmajorLocator   = MultipleLocator(0.2) #将y轴主刻度标签设置为3的倍数  
-#    ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
+    xmajorLocator   = MultipleLocator(b) #将y轴主刻度标签设置为3的倍数  
+    ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     if iro==0 and ic==2 :
         ax[iro,ic].legend(loc=(1.0,0.5),frameon=False)
     if ic==0:    
@@ -438,10 +420,6 @@ for iga in range(0,nga):
 plt.subplots_adjust(left = 0.1,right=0.85, wspace = 0.2, hspace = 0.25, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-<<<<<<< HEAD
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2CondComps.png',dpi=300)          
-=======
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2CondComps'+add_suffix+'.png',dpi=300)          
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2CondComps'+add_suffix+'_regrid.png',dpi=300)          
 plt.show()
 #plt.close()

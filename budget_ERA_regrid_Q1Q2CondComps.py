@@ -54,7 +54,11 @@ nga=len(CASE)
 dirs='D:/MyPaper/PhD04/Cases/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 dirout='D:/MyPaper/PhD04/Pics/'
+<<<<<<< HEAD
 fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(9,18))
+=======
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(12,18))
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
@@ -316,7 +320,11 @@ for iga in range(0,nga):
     lnstycolor=['-','-','-','-','-']
     lncolor=['orangered','darkgoldenrod','yellowgreen','deepskyblue','darkorchid']
     lnmkcolor=['None','None','None','None','None'] 
+<<<<<<< HEAD
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+=======
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','--',':','-',':']
     lngrey=['silver','gray','darkgray','gainsboro','k']
     lnmkgrey=['o','v','x','+','*']
@@ -340,8 +348,14 @@ for iga in range(0,nga):
     lncolor=['orangered','orangered','yellowgreen','yellowgreen']
     lncolor=['r','darkgoldenrod','g','b','darkorchid']
     lncolor=['lime','b','green','y','magenta']
+<<<<<<< HEAD
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0,3.0,3.0]  
+=======
+    lncolor=['r','g','b','orange','blueviolet','aqua']
+    lnmkcolor=['None','None','None','None','None'] 
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0,4.0,4.0]  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
@@ -351,13 +365,22 @@ for iga in range(0,nga):
     mker=lnmkcolor
     width=lnwidcolor 
     size_title=18     
+<<<<<<< HEAD
     ax[iro,ic].set_ylim(0,16)           
+=======
+    ax[iro,ic].set_ylim(0,16)
+    ax[iro,ic].set_xlim(-10,15)          
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     ax[iro,ic].plot(micro_com[0,:],ydat,label=r'$Cond$',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0]) #Condensation
     #allvar_mean[5,0]=0.
     ax[iro,ic].plot(micro_com[1,:],ydat,label=r'$Evap$',
         color=colors[1],ls=sty[1],marker=mker[1],lw=width[1])  #Evaporation
+<<<<<<< HEAD
     ax[iro,ic].plot(micro_com[2,:],ydat,label=r'$Dep$',
+=======
+    ax[iro,ic].plot(micro_com[2,:],ydat,label=r'$Dep$+$Frez$',
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
         color=colors[2],ls=sty[2],marker=mker[2],lw=width[2])   #Deposition
     ax[iro,ic].plot(micro_com[3,:],ydat,label=r'$Sub$',
         color=colors[3],ls=sty[3],marker=mker[3],lw=width[3])  #Sublimation
@@ -366,7 +389,11 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
+<<<<<<< HEAD
     xmajorLocator   = MultipleLocator(4) #将y轴主刻度标签设置为3的倍数  
+=======
+    xmajorLocator   = MultipleLocator(6) #将y轴主刻度标签设置为3的倍数  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     if iro==0 and ic==2 :
         ax[iro,ic].legend(loc=(1.0,0.5),frameon=False)

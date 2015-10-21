@@ -316,7 +316,11 @@ for iga in range(0,nga):
     lnstycolor=['-','-','-','-','-']
     lncolor=['orangered','darkgoldenrod','yellowgreen','deepskyblue','darkorchid']
     lnmkcolor=['None','None','None','None','None'] 
+<<<<<<< HEAD
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+=======
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','--',':','-',':']
     lngrey=['silver','gray','darkgray','gainsboro','k']
     lnmkgrey=['o','v','x','+','*']
@@ -341,7 +345,11 @@ for iga in range(0,nga):
 #    lncolor=['r','darkgoldenrod','g','b','darkorchid']
     lncolor=['deeppink','deeppink','green','green']
     lnmkcolor=['None','None','None','None','None'] 
+<<<<<<< HEAD
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+=======
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-',':','-',':']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']

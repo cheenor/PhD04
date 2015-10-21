@@ -48,11 +48,19 @@ CASES=['PRDCTR_EC','MLYRCTR_EC','NPCCTR_EC','NECCTR_EC','WTPCTR_EC','ETPCTR_EC']
 nt=241
 dirs='D:/MyPaper/PhD04/Cases/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
+<<<<<<< HEAD
 dirpic='D:/MyPaper/PhD04/Pics/'
 dirceres='D:/MyPaper/PhD04/Data/CERES/'
 nga=len(CASES)
 fig,axs = plt.subplots(nrows=2,ncols=3,figsize=(18,8))
 color_cycle=['deeppink','lime','y','indigo','b','darkorange','cyan','k','grey']
+=======
+dirout='D:/MyPaper/PhD04/Pics/'
+dirceres='D:/MyPaper/PhD04/Data/CERES/'
+nga=len(CASES)
+fig,axs = plt.subplots(nrows=2,ncols=3,figsize=(18,8))
+color_cycle=['deeppink','lime','y','indigo','b','r','cyan','k','grey']
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 wds=[2,2,2,2,2,2,2,2,2]
 linests=['-','--','-','--','-','--','-','--','-','--']
 linests=['-','-','-','-','-','-','-','-','-','-']
@@ -106,7 +114,11 @@ for iga in range(0,nga):
     xdate=[]    
     xdat=range(0,nt)            
     for tm in dateiso:
+<<<<<<< HEAD
         xdate.append(datetime.datetime.strftime(tm,"%b/%d")) 
+=======
+        xdate.append(datetime.datetime.strftime(tm,"%d/%b")) 
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 ###### fro daily
     det=datetime.timedelta(hours=24)            
     dateiso=[]            
@@ -115,7 +127,11 @@ for iga in range(0,nga):
     xdated=[]    
     xdatd=range(0,dnm)            
     for tm in dateiso:
+<<<<<<< HEAD
         xdated.append(datetime.datetime.strftime(tm,"%b/%d"))
+=======
+        xdated.append(datetime.datetime.strftime(tm,"%d/%b"))
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #################
     det=datetime.timedelta(hours=6)            
     dateiso=[]            
@@ -124,7 +140,11 @@ for iga in range(0,nga):
     xdatencep=[]    
     xdatncep=range(0,121)            
     for tm in dateiso:
+<<<<<<< HEAD
         xdatencep.append(datetime.datetime.strftime(tm,"%b/%d")) 
+=======
+        xdatencep.append(datetime.datetime.strftime(tm,"%d/%b")) 
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 ###### fro daily
     det=datetime.timedelta(hours=24)            
     dateiso=[]            
@@ -133,7 +153,11 @@ for iga in range(0,nga):
     xdated=[]    
     xdatd=range(0,dnm)            
     for tm in dateiso:
+<<<<<<< HEAD
         xdated.append(datetime.datetime.strftime(tm,"%b/%d"))         
+=======
+        xdated.append(datetime.datetime.strftime(tm,"%d/%b"))         
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 ########## reading files
     fpath=dirceres+ceresnm
     iskp=1
@@ -246,15 +270,26 @@ for iga in range(0,nga):
 #####------- plotting------------------------------------------------
     #color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
     #color=color_cycle[0],lw=wd[0]
+<<<<<<< HEAD
     line1=axs[ir,jc].plot(xdat[0:nt-1],rsrflw[0:nt-1],color=color_cycle[0],lw=wds[0],
         linestyle=linests[0],label=r'CERES $r_{sl}$')#[0:lcc-3])
     line2=axs[ir,jc].plot(xdat[0:nt-1],rssrflw[0:nt-1],color=color_cycle[1],
         lw=wds[1],linestyle=linests[1],label=r'CRM $r_{sl}$')
+=======
+    """
+    line1=axs[ir,jc].plot(xdat[0:nt-1],rsrflw[0:nt-1],color=color_cycle[0],lw=wds[0],
+        linestyle=linests[0],label=r'CERES $r_{sl}$')#[0:lcc-3])
+    line2=axs[ir,jc].plot(xdat[0:nt-1],rssrflw[0:nt-1],color=color_cycle[1],
+        lw=wds[1],linestyle=linests[1],label
+        =r'CRM $r_{sl}$')
+    """
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #    axs[ir,jc].plot(xdat[0:nt-1],rsrfsw[0:nt-1],color=color_cycle[2],lw=wds[2],
 #        linestyle=linests[0],label='CERRES SRF Shortwave')#[0:lcc-3])
 #    axs[ir,jc].plot(xdat[0:nt-1],rssrfsw[0:nt-1],color=color_cycle[3],lw=wds[3],
 #        linestyle=linests[3],label='SIM SRF Shortwave')
     line3=axs[ir,jc].plot(xdat[0:nt-1],rtoasw[0:nt-1],color=color_cycle[4],lw=wds[4],
+<<<<<<< HEAD
         linestyle=linests[4],label=r'CERES $r_{ts}$')#[0:lcc-3])
     line4=axs[ir,jc].plot(xdat[0:nt-1],rstoasw[0:nt-1],color=color_cycle[5],lw=wds[5],
         linestyle=linests[5],label=r'CRM $r_{ts}$')
@@ -269,6 +304,23 @@ for iga in range(0,nga):
     axs[ir,jc].set_title(tilstr, fontsize=18)
     axs[ir,jc].set_xticks(range(0,nt-1,24*4))
     xticklabels = [xdate[nn] for nn in range(0,nt-1,24*4)] 
+=======
+        linestyle=linests[4],label=r'CERES') # $r_{ts}$')#[0:lcc-3])
+    line4=axs[ir,jc].plot(xdat[0:nt-1],rstoasw[0:nt-1],color=color_cycle[5],lw=wds[5],
+        linestyle=linests[5],label=r'CRM') # $r_{ts}$')
+#ax0.set_title('Upward shorwave radiaiton at TOA '+ r' $W m^{-2}$',fontsize=16)
+    tilstr=astr+' '+area+' ('+"%4d"%iy+')'
+#    xmajorLocator   = MultipleLocator(20) #将x主刻度标签设置为20的倍数  
+#    xmajorFormatter = FormatStrFormatter('%5.1f') #设置x轴标签文本的格式  
+#    xminorLocator   = MultipleLocator(5) #将x轴次刻度标签设置为5的倍数    
+    ymajorLocator   = MultipleLocator(0.2) #将y轴主刻度标签设置为0.5的倍数  
+#    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式
+    axs[ir,jc].set_ylim(0.1,0.8)
+    axs[ir,jc].yaxis.set_major_locator(ymajorLocator) 
+    axs[ir,jc].set_title(tilstr, fontsize=18)
+    axs[ir,jc].set_xticks(range(0,nt-1,24*3))
+    xticklabels = [xdate[nn] for nn in range(0,nt-1,24*3)] 
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     axs[ir,jc].set_xticklabels(xticklabels, size=18)
     print iga
     if iga==2 :
@@ -277,8 +329,14 @@ for iga in range(0,nga):
         setp(axs[ir,jc].get_yticklabels(), visible=False) #
     jc=jc+1
 #
+<<<<<<< HEAD
 plt.show()                     
 plt.savefig(dirout+'ALLCASE_radiation.png',dpi=300)          
+=======
+plt.show()
+fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)                  
+plt.savefig(dirout+'ALLCASE_radiation_albedo.png',dpi=300)          
+>>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 plt.show()
 plt.close()
 
