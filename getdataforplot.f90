@@ -3,9 +3,9 @@ IMPLICIT NONE
 !--------PARAMETERS OF MODLE (INPUT DATA)----------------
 INTEGER, PARAMETER :: NT=2880,NZ=34,NX=200,DT=15  ! DT OUTPUT INTERVAL TIMESTEP
 INTEGER, PARAMETER :: ND=30,NDT=24*60/DT
-INTEGER, PARAMETER :: NBIN=99  ! BINS FOR CLOUD WATER CONTENT
+INTEGER, PARAMETER :: NBIN=100  ! BINS FOR CLOUD WATER CONTENT
 REAL QL(NZ,NX),QI(NZ,NX),TL(NZ)
-REAL DEN(NZ),QRL(NZ,NX),QRS(NZ,NX)
+REAL DEN(NZ),QRL(NZ,NX),QRS(NZ,NX),TC(NZ,NX)
 REAL OMG(NZ,NX),MAXOMG(NX,2)
 REAL PRECI(NX+2),PBL(NX+2),FSH(NX+2),FLH(NX+2)
 REAL RAINRATE
@@ -19,9 +19,12 @@ DATA QCC,QCE,CWP/1.0E-2,1.0E-4,0.2/
 REAL WATERBIN(NBIN)  ! IN G/KG
 !-----------------------------------------------------------
 REAL RAINBIN(35)
-REAL DUMXRAINPDF(NDT,35),DUMXRAINDC(NDT,NZ)
-INTEGER IRAIN,KK,IDUMXRAINDC(NDT)
+REAL DUMXRAINPDF(NDT,35),DUMXRAINDC(NDT,NZ),TYRAIN(2,NDT)
+REAL DUSRFHT(2,NDT)
+INTEGER IRAIN,KK,IDUMXRAINDC(NDT),ITYRAIN(2,NDT),IDUSRFHT(2,NDT)
 !----------------------------------------------------------
+REAL ZRL, SZRL
+INTEGER ISZRL
 !------- RESULT ARRAYS  ----------------------------------
 ! MEAN PROFILES 
 REAL  MPDCQRL(NZ), MPDCQRS(NZ), MPDCQL(NZ),MPDCQI(NZ)  & ! DEEP CONVECTION
@@ -36,15 +39,15 @@ REAL  MPACQRL(NZ), MPACQRS(NZ), MPACQL(NZ),MPACQI(NZ)  & ! ALLCELLS
 &    ,MPACOMG(NZ)
 ! MEAN DIUNAL VALUE
 REAL  DUDCQRL(NDT,NZ), DUDCQRS(NDT,NZ), DUDCQL(NDT,NZ),DUDCQI(NDT,NZ) & ! DEEP CONVECTION
-&    ,DUDCOMG(NDT,NZ)
+&    ,DUDCOMG(NDT,NZ), DUDCMAXOMG(NDT), DUDCMNQI(NDT), DUDCMNQL(NDT)
 REAL  ADUDCQRL(NDT,NZ), ADUDCQRS(NDT,NZ), ADUDCQL(NDT,NZ),ADUDCQI(NDT,NZ) & ! DEEP CONVECTION
-&    ,ADUDCOMG(NDT,NZ)
+&    ,ADUDCOMG(NDT,NZ), ADUDCMAXOMG(NDT), ADUDCMNQI(NDT), ADUDCMNQL(NDT)
 REAL  DUSTQRL(NDT,NZ), DUSTQRS(NDT,NZ), DUSTQL(NDT,NZ),DUSTQI(NDT,NZ) & !  STRATIFORM
-&    ,DUSTOMG(NDT,NZ)
+&    ,DUSTOMG(NDT,NZ), DUSTMAXOMG(NDT), DUSTMNQI(NDT), DUSTMNQL(NDT)
 REAL  DUCRQRL(NDT,NZ), DUCRQRS(NDT,NZ), DUCRQL(NDT,NZ),DUCRQI(NDT,NZ) & ! CIRRUS
-&    ,DUCROMG(NDT,NZ)
+&    ,DUCROMG(NDT,NZ), DUCRMAXOMG(NDT), DUCRMNQI(NDT), DUCRMNQL(NDT)
 REAL  DUACQRL(NDT,NZ), DUACQRS(NDT,NZ), DUACQL(NDT,NZ),DUACQI(NDT,NZ) & ! ALLCELLS
-&    ,DUACOMG(NDT,NZ)
+&    ,DUACOMG(NDT,NZ), DUACMAXOMG(NDT), DUACMNQI(NDT), DUACMNQL(NDT)
 ! THE PDF OF THE MAXIMUM CLOUD WATER CONTENT WITH HEIGH
 REAL  BINACMAX(NBIN,NZ), BINDCMAX(NBIN,NZ), BINSTMAX(NBIN,NZ) &
 &    ,BINCRMAX(NBIN,NZ),ABINDCMAX(NBIN,NZ) 
@@ -53,8 +56,16 @@ REAL FCDCDY(NDT,NZ),FCSTDY(NDT,NZ),FCCRDY(NDT,NZ),FCACDY(NDT,NZ) &
 &   ,AFCDCDY(NDT,NZ)
 REAL FCDDC(NDT,NZ),FCDST(NDT,NZ),FCDCR(NDT,NZ),AFCDDC(NDT,NZ)
 !--------- RAINFALL ANALYS--------------------------------------------
-REAL CON_PR(NDT,3), STR_PR(NDT,3), TAL_PR(NDT,3)
+REAL CON_PR(NDT,3), STR_PR(NDT,3), TAL_PR(NDT,3),DUPRECI(NDT)
 !---------------------------------------------------------
+REAL ZDAT(NZ),DZDAT(NZ)
+!
+REAL ICEPATH(5),WATERPATH(5),CCMAXOMG(5)
+REAL THKNSS(5,NDT)
+!
+REAL WPERCNT(5,NDT)
+INTEGER IWPERCNT(5,NDT)
+!
 INTEGER I,J,K,IK,IZ,L,IX
 INTEGER K1,K2,IDT,IKK
 INTEGER KB(99),KE(99),NA
@@ -66,31 +77,44 @@ INTEGER IUADC(NDT),IUADCK(NDT,NZ)
 INTEGER IUST(NDT),IUSTK(NDT,NZ)
 INTEGER IUCR(NDT),IUCRK(NDT,NZ)
 INTEGER IUAC(NDT),IUACK(NDT,NZ)
+INTEGER IDCLINE(NDT),ICRLINE(NDT),IACLINE(NDT),ISTLINE(NDT),AIDCLINE(NDT)
 INTEGER IMAXDC,IMAXST,IMAXAC,IMAXCR,IMAXADC
 INTEGER ICONP,ISTRP,ITALP
 INTEGER IUCONP(NDT),IUSTRP(NDT),IUTALP(NDT)
+INTEGER IUPREMX,IPRECI(NDT),ITHKNSS(5,NDT)
+INTEGER CONTCC(5,NDT)
+DATA ZDAT/ 0.0500000, 0.1643000, 0.3071000, 0.4786000            &
+    &    , 0.6786000, 0.9071000, 1.1640000, 1.4500000, 1.7640001 &
+    &    , 2.1070001, 2.4790001, 2.8789999, 3.3069999, 3.7639999 &
+    &    , 4.2500000, 4.7639999, 5.3070002, 5.8790002, 6.4790001 &
+    &    , 7.1069999, 7.7639999, 8.4499998, 9.1639996, 9.9069996 &
+    &    ,10.6800003,11.4799995,12.3100004,13.1599998,14.0500002 &
+    &    ,14.9600000,15.9099998,16.8799992,17.8799992,18.9099998/
 !=========================================================================
 REAL FRC,FRR
 REAL CM(99)
-INTEGER IT
+INTEGER IT,ICDEX(5)
 REAL C1,C2,C3,C4,C5,C6,C7,C8,C9    ! TEMPORARY VARABLES 
 INTEGER IC1,IC2,IC3,IC4,IC5
 CHARACTER*100 FPATH,DIRIN,DIROUT
 CHARACTER FOLD*30,CASENM(6)*20,REGNM*20
 CHARACTER DATESTR(6)*8
 REAL RMXTP
-INTEGER IPRE(200),IPREMX
+INTEGER IPRE(200),IPREMX,IMAXCC(5,NDT)
 !
-
 CASENM(1)="ETPCTR_EC"  ; DATESTR(1)='20100603'
 CASENM(2)="WTPCTR_EC"  ; DATESTR(2)='20100703'
 CASENM(3)="NPCCTR_EC"  ; DATESTR(3)='20100802'
 CASENM(4)="NECCTR_EC"  ; DATESTR(4)='20120706'
 CASENM(5)="MLYRCTR_EC" ; DATESTR(5)='20100602'
 CASENM(6)="PRDCTR_EC"  ; DATESTR(6)='20120401'
-DIRIN="D:\MyPaper\PhD04\Cases\"
-DIROUT="D:\MyPaper\PhD04\Cases\postdata\CTREC\"
+DIRIN="X:\WORK\PhD04\Cases\"
+DIROUT="X:\WORK\PhD04\Cases\postdata\CTREC\"
 !
+DO I=2,NZ
+    DZDAT(I)=(ZDAT(I)-ZDAT(I-1))*1000.  ! KM TO M
+ENDDO
+DZDAT(1)=DZDAT(2)
 WATERBIN(1)=0.005  ! MIN
 C1=WATERBIN(1)
 IC1=1
@@ -98,20 +122,24 @@ C3=0.005
 IC2=-1
 IC3=-1
 IC4=-1
-DO I =2, NBIN
-    C2=C1+(I-IC1)*C3
-    IF (C2>=0.005 .AND. C2 <0.5 .AND. IC2< 0)THEN
-        C1=0.005 ; IC1=I ; C3=0.05
-        IC2=1    ! MAKE SURE THE IF BLOCK JUST CALLED ONCE, SO IC1 IS RIGHT
-    ELSEIF(C2>=0.5 .AND. C2<1. .AND. IC3< 0)THEN
-        C1=0.5 ; IC1=I ; C3=0.05
-        IC3=1
-    ELSEIF(C2>=1 .AND. IC4< 0)THEN
-        C1=1. ; IC1=I ; C3=0.15
-        IC4=1
-    ENDIF
-    WATERBIN(I)=C2
+!DO I =2, NBIN
+!    C2=C1+(I-IC1)*C3
+!    IF (C2>=0.005 .AND. C2 <0.5 .AND. IC2< 0)THEN
+!        C1=0.005 ; IC1=I ; C3=0.01
+!        IC2=1    ! MAKE SURE THE IF BLOCK JUST CALLED ONCE, SO IC1 IS RIGHT
+!    ELSEIF(C2>=0.5 .AND. C2<1. .AND. IC3< 0)THEN
+!        C1=0.5 ; IC1=I ; C3=0.02
+!        IC3=1
+!    ELSEIF(C2>=1 .AND. IC4< 0)THEN
+!        C1=1. ; IC1=I ; C3=0.05
+!        IC4=1
+!    ENDIF
+!    WATERBIN(I)=C2
+!ENDDO
+DO I=2,NBIN
+   WATERBIN(I)=WATERBIN(1)+(I-1)*(5.-0.005)/(NBIN-1)
 ENDDO
+
 DO I=1,35
     RAINBIN(I)=I*1.0
 ENDDO
@@ -128,6 +156,9 @@ DO I =1,6
     FPATH=TRIM(DIRIN)//TRIM(REGNM)//'/CTREC'//DATESTR(I)  &
    &   //'/Simulation/'//'PRECI_'//TRIM(CASENM(I))//'.TXT'
     OPEN(30,FILE=TRIM(FPATH))
+    FPATH=TRIM(DIRIN)//TRIM(REGNM)//'/CTREC'//DATESTR(I)  &
+   &   //'/Simulation/'//TRIM(CASENM(I))//'_QLQIT.TXT'
+    OPEN(40,FILE=TRIM(FPATH))
 !
 ! -------- INTINITAL ARRAYS ----------------------	
 	ITDC = 0 ; ITST = 0 ; ITCR = 0 ; ITADC = 0
@@ -153,14 +184,26 @@ DO I =1,6
     CON_PR  = 0. ; STR_PR  = 0. ; TAL_PR  = 0. 
     BINACMAX =0. ; BINDCMAX=0.  ; BINSTMAX=0. ; BINCRMAX =0.
     ABINDCMAX=0.
-    DUMXRAINPDF=0.
+    DUMXRAINPDF=0.;THKNSS=0
+    TYRAIN=0. ; ITYRAIN=0
+    DUDCMAXOMG=0.; DUDCMNQI=0.; DUDCMNQL=0.;
+    ADUDCMAXOMG=0.; ADUDCMNQI=0.; ADUDCMNQL=0.;    
+    DUSTMAXOMG=0.; DUSTMNQI=0.; DUSTMNQL=0.;    
+    DUCRMAXOMG=0.; DUCRMNQI=0.; DUCRMNQL=0.;  
+    DUACMAXOMG=0.0; DUACMNQI=0.0; DUACMNQL=0.0
+    DUPRECI=0.
+    WPERCNT=0.  ; IWPERCNT=0;
+    DUSRFHT=0. ; IDUSRFHT=0  ;
     IMAXDC  = 0  ; IMAXST  = 0  ; IMAXAC = 0. ; IMAXCR=0 ; IMAXADC= 0
     IDCZ = 0  ; ISTZ = 0 ; ICRZ = 0  ; IADCZ = 0 ; IACZ=0
     IUDC =0   ; IUDCK= 0 ; IUSTK= 0  ; IUADCK= 0
     IUST = 0  ; IUCRK= 0 ; IUCR = 0  ; IUADC = 0
-    ICONP =0  ; ISTRP= 0 ; ITALP =0
-    IUCONP =0  ; IUSTRP= 0 ; IUTALP =0 ;IDUMXRAINDC=0
-	IDT=1
+    ICONP =0  ; ISTRP= 0 ; ITALP =0  ; IPREMX= 0 ; IUPREMX=0
+    IUCONP =0 ; IUSTRP= 0 ; IUTALP =0 ;IDUMXRAINDC=0
+	IDCLINE=0 ; ICRLINE=0 ; IACLINE=0 ;ISTLINE=0 ; AIDCLINE=0
+    IMAXCC=0 ;IPRECI=0    ; ITHKNSS=0
+    IDT=1
+    ZRL=0;SZRL=0;ISZRL=0
 	DO IT =1,NT
 		IF (IDT < NDT)THEN
 			IDT=IDT+1
@@ -171,15 +214,29 @@ DO I =1,6
         RMXTP=PRECI(2)*1000.*3600.
         IPREMX=1
         IPRE=0
-		DO IX=1,NX
-            MAXOMG(IX,1)= -999.
-            MAXOMG(IX,2)=  999.
+        DO IX=1,NX
             RAINRATE=PRECI(IX+1)*1000.*3600. ! CONVERT M/S TO MM/HR
             IF (RMXTP<RAINRATE) THEN
                 RMXTP= RAINRATE
                 IPREMX=IX
-            ENDIF           
-			DO IK=1,NZ
+            ENDIF
+        ENDDO
+        DO IK=1,NZ
+            READ(40,'(8E12.4)')DEN(IK),QL(IK,:),QI(IK,:),TC(IK,:)
+        ENDDO
+		DO IX=1,NX
+            MAXOMG(IX,1)= -999.
+            MAXOMG(IX,2)=  999.
+            RAINRATE=PRECI(IX+1)*1000.*3600. ! CONVERT M/S TO MM/HR 
+            IF (RAINRATE>0.001)THEN         
+			    DUPRECI(IDT)=DUPRECI(IDT)+RAINRATE
+                IPRECI(IDT)=IPRECI(IDT)+1
+            ENDIF
+            DUSRFHT(1,IDT)=DUSRFHT(1,IDT)+FSH(IX+1)
+            DUSRFHT(2,IDT)=DUSRFHT(2,IDT)+FLH(IX+1)
+            IDUSRFHT(1,IDT)=IDUSRFHT(1,IDT)+1.
+            IDUSRFHT(2,IDT)=IDUSRFHT(2,IDT)+1.
+            DO IK=1,NZ
 				READ(20,'(8E12.4)')QL(IK,IX),QI(IK,IX),OMG(IK,IX),   &
 		   &	  QRS(IK,IX),QRL(IK,IX)
 				TL(IK)=QL(IK,IX)+QI(IK,IX) ! TOTAL WATER CONTENT
@@ -211,15 +268,28 @@ DO I =1,6
             ENDIF
 !-----------FOR DEEP CONVECTIONS BY CLOUD TOP AND CLOUD BASE---------------------------------------
 			CALL DEEPCC(TL,NZ,KB,KE,NA)
+            ICEPATH(1)=0.0 ; WATERPATH(1)=0.0
+            ICDEX(1)=0
+            C1=0.
+            C2=0.
 			DO L = 1, NA
-    			IF (KB(L).LE.5 .AND. KE(L).GE.20 .AND. RAINRATE>1. ) THEN  !! 5 AND 24 ARE THE VERTICAL LEVELS
+                K1 = KB(L)  ; K2 = KE(L)
+                DO IKK=K1,K2
+                    C1=C1+DZDAT(IKK)*DEN(IKK)*QI(IKK,IX)
+                    C2=C2+DZDAT(IKK)*DEN(IKK)*QL(IKK,IX)
+                ENDDO
+    			IF (KB(L).LE.5 .AND. KE(L).GE.21 .AND. RAINRATE>0.01 ) THEN  !! 5 AND 24 ARE THE VERTICAL LEVELS
 !----------------------- FOR PDF -----------------------------------------------
      				K1 = KB(L)  ; K2 = KE(L)
      				FCDCDY(IDT,K2)=FCDCDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
                     IUDC(IDT)=IUDC(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
                     C1=TL(K1)
                     IC1=K1
-                    IPREMX(IX)=K2
+                    IF(IX==IPREMX)IUPREMX=K2
+                    CCMAXOMG(1)=999.
+                    ICDEX(1)=1
+                    THKNSS(1,IDT)= THKNSS(1,IDT)+ZDAT(K2)-ZDAT(K1)
+                    ITHKNSS(1,IDT)= ITHKNSS(1,IDT)+1
     				DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
 						MPDCQRL(IKK)=MPDCQRL(IKK)+QRL(IKK,IX)
 						MPDCQRS(IKK)=MPDCQRS(IKK)+QRS(IKK,IX)
@@ -232,33 +302,76 @@ DO I =1,6
 						DUDCQL(IDT,IKK)=DUDCQL(IDT,IKK)+QL(IKK,IX)
 						DUDCQI(IDT,IKK)=DUDCQI(IDT,IKK)+QI(IKK,IX)
 						DUDCOMG(IDT,IKK)=DUDCOMG(IDT,IKK)+OMG(IKK,IX)
+                        IF (CCMAXOMG(1)>OMG(IKK,IX))THEN
+                            CCMAXOMG(1)=OMG(IKK,IX)
+                        ENDIF
                         IUDCK(IDT,IKK)=IUDCK(IDT,IKK)+1
+                        ICEPATH(1)=ICEPATH(1)+DZDAT(IKK)*DEN(IKK)*QI(IKK,IX)
+                        WATERPATH(1)=WATERPATH(1)+DZDAT(IKK)*DEN(IKK)*QL(IKK,IX)
+!                        DUDCMAXOMG(IDT)=DUDCMAXOMG(IDT)+OMG(IKK,IX)
+!                        IMAXCC(1,IDT)=IMAXCC(1,IDT)+1
                         IF (TL(IKK)>C1) THEN
                             C1=TL(IKK)
                             IC1=IKK
                         ENDIF
     				ENDDO
+                    IF(CCMAXOMG(1)<999.)THEN
+                        DUDCMAXOMG(IDT)=DUDCMAXOMG(IDT)+CCMAXOMG(1)
+                        IMAXCC(1,IDT)=IMAXCC(1,IDT)+1
+                    ENDIF
                     CALL GETBIN(WATERBIN,NBIN,C1,IC2)
                     BINDCMAX(IC2,IC1)=BINDCMAX(IC2,IC1)+1.
                     IMAXDC=IMAXDC+1
-    			ENDIF
+                    CALL GETZEROLEVEL(TC(:,IX),NZ,ZDAT,ZRL)
+    			     SZRL=SZRL+ZRL
+                     ISZRL=ISZRL+1
+                ENDIF
 			ENDDO
+            IF (ICDEX(1)>0)THEN                
+                DUDCMNQI(IDT)=DUDCMNQI(IDT)+ICEPATH(1)
+                DUDCMNQL(IDT)=DUDCMNQL(IDT)+WATERPATH(1)
+                IDCLINE(IDT)=IDCLINE(IDT)+1
+            ENDIF
+            !------------------ PRECIPITATION ------------------------------------
+!            IF (RAINRATE>5. .OR. MAXOMG(IX,1)>10.)THEN  ! CONVETIVE RAIN    Ori. 25
+            IF (ICDEX(1)>0)THEN  ! CONVETIVE RAIN
+                TYRAIN(1,IDT)=TYRAIN(1,IDT)+RAINRATE
+                ITYRAIN(1,IDT)=ITYRAIN(1,IDT)+1 
+            ELSEIF(RAINRATE>0.001)THEN   !
+                TYRAIN(2,IDT)=TYRAIN(2,IDT)+RAINRATE
+                ITYRAIN(2,IDT)=ITYRAIN(2,IDT)+1
+            ENDIF
+!            IF (NA>0 .AND.(C1+C2)>0)THEN                
+!                WPERCNT(1,IDT)=WPERCNT(1,IDT)+(ICEPATH(1)+WATERPATH(1))/(C1+C2)
+!                IWPERCNT(1,IDT)=IWPERCNT(1,IDT)+1
+!            ENDIF
             CALL GETBIN(RAINBIN,35,RMXTP,IRAIN)
             DUMXRAINPDF(IDT,IRAIN)=DUMXRAINPDF(IDT,IRAIN)+1.
-            IF (IPREMX(IPREMX)>0)THEN
-                KK=IPREMX(IPREMX)
+            IF (IUPREMX>0)THEN
+                KK=IUPREMX
                 DUMXRAINDC(IDT,KK)=DUMXRAINDC(IDT,KK)+1
                 IDUMXRAINDC(IDT)=IDUMXRAINDC(IDT)+1
             ENDIF
 ! FOR ALL CLOUD CELLS AND OTHER CLOUD TYPES INCLUDING THE DEEPCONVECTION BUT BY PRECIPITATION ADN MAX VELOCITY
             NA=0
             CALL INFCLD(TL,NZ,KB,KE,CM,NA) !KB BASE; KE TOP, NA: LAYERS OF CLOUDS
+            ICEPATH(2)=0.0 ; WATERPATH(2)=0.0
+            ICEPATH(3)=0.0 ; WATERPATH(3)=0.0
+            ICEPATH(4)=0.0 ; WATERPATH(4)=0.0
+            ICEPATH(5)=0.0 ; WATERPATH(5)=0.0
+            ICDEX(2)=0     ; ICDEX(3) =0
+            ICDEX(4)=0     ; ICDEX(5) =0
+            IF(RAINRATE>0.001)THEN
             DO L =1, NA
                 K1 = KB(L)  ; K2 = KE(L)
                 FCACDY(IDT,K2)=FCACDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
                 IUAC(IDT)=IUAC(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
                 C1=TL(K1)
                 IC1=K1
+                CCMAXOMG(2)=999.
+                ICDEX(2)=1
+                THKNSS(2,IDT)= THKNSS(2,IDT)+ZDAT(K2)-ZDAT(K1)
+                ITHKNSS(2,IDT)= ITHKNSS(2,IDT)+1
                 DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
                     MPACQRL(IKK)=MPACQRL(IKK)+QRL(IKK,IX)
                     MPACQRS(IKK)=MPACQRS(IKK)+QRS(IKK,IX)
@@ -271,22 +384,37 @@ DO I =1,6
                     DUACQL(IDT,IKK)=DUACQL(IDT,IKK)+QL(IKK,IX)
                     DUACQI(IDT,IKK)=DUACQI(IDT,IKK)+QI(IKK,IX)
                     DUACOMG(IDT,IKK)=DUACOMG(IDT,IKK)+OMG(IKK,IX)
+                    ICEPATH(2)=ICEPATH(2)+DZDAT(IKK)*DEN(IKK)*QI(IKK,IX)
+                    WATERPATH(2)=WATERPATH(2)+DZDAT(IKK)*DEN(IKK)*QL(IKK,IX)
+!                    DUACMAXOMG(IDT)=DUACMAXOMG(IDT)+OMG(IKK,IX)
+!                    IMAXCC(2,IDT)=IMAXCC(2,IDT)+1
+                    IF (CCMAXOMG(2)>OMG(IKK,IX))THEN
+                        CCMAXOMG(2)=OMG(IKK,IX)
+                    ENDIF
                     IUACK(IDT,IKK)=IUACK(IDT,IKK)+1
                     IF (TL(IKK)>C1) THEN
                         C1=TL(IKK)
                         IC1=IKK
                     ENDIF
                 ENDDO
+                IF(CCMAXOMG(2)<999.)THEN
+                    DUACMAXOMG(IDT)=DUACMAXOMG(IDT)+CCMAXOMG(2)
+                   IMAXCC(2,IDT)=IMAXCC(2,IDT)+1
+                ENDIF
                 CALL GETBIN(WATERBIN,NBIN,C1,IC2)
                 BINACMAX(IC2,IC1)=BINACMAX(IC2,IC1)+1.
                 IMAXAC=IMAXAC+1
                 !  FOLLOWING ARE FOR DIFFERENT CLOUD TYPE
-                IF ((K1.LE.5 .AND. K2.GE.20) .OR. MAXOMG(IX,1)>10. &    !!!! k2 GE 24 OR 20 
-               &     .OR. RAINRATE>25.) THEN
+                IF ((K1.LE.5 .AND. K2.GE.21) .OR. MAXOMG(IX,1)>10. &    !!!! k2 GE 24 OR 20 
+               &     .OR. RAINRATE>10.) THEN
                     AFCDCDY(IDT,K2)=AFCDCDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
                     IUADC(IDT)=IUADC(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
                     C1=TL(K1)
                     IC1=K1
+                    CCMAXOMG(3)=999.
+                    ICDEX(3)=1
+                    THKNSS(3,IDT)= THKNSS(3,IDT)+ZDAT(K2)-ZDAT(K1)
+                    ITHKNSS(3,IDT)= ITHKNSS(3,IDT)+1
                     DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
                         AMPDCQRL(IKK)=AMPDCQRL(IKK)+QRL(IKK,IX)
                         AMPDCQRS(IKK)=AMPDCQRS(IKK)+QRS(IKK,IX)
@@ -299,20 +427,35 @@ DO I =1,6
                         ADUDCQL(IDT,IKK)=ADUDCQL(IDT,IKK)+QL(IKK,IX)
                         ADUDCQI(IDT,IKK)=ADUDCQI(IDT,IKK)+QI(IKK,IX)
                         ADUDCOMG(IDT,IKK)=ADUDCOMG(IDT,IKK)+OMG(IKK,IX)
+                        ICEPATH(3)=ICEPATH(3)+DZDAT(IKK)*DEN(IKK)*QI(IKK,IX)
+                        WATERPATH(3)=WATERPATH(3)+DZDAT(IKK)*DEN(IKK)*QL(IKK,IX)
+ !                       ADUDCMAXOMG(IDT)=ADUDCMAXOMG(IDT)+OMG(IKK,IX)
+ !                       IMAXCC(3,IDT)=IMAXCC(3,IDT)+1
+                        IF (CCMAXOMG(3)>OMG(IKK,IX))THEN
+                            CCMAXOMG(3)=OMG(IKK,IX)
+                        ENDIF
                         IUADCK(IDT,IKK)=IUADCK(IDT,IKK)+1
                         IF (TL(IKK)>C1) THEN
                             C1=TL(IKK)
                             IC1=IKK
                         ENDIF
                     ENDDO
+                    IF(CCMAXOMG(3)<999.)THEN
+                       ADUDCMAXOMG(IDT)=ADUDCMAXOMG(IDT)+CCMAXOMG(3)
+                        IMAXCC(3,IDT)=IMAXCC(3,IDT)+1
+                   ENDIF
                     CALL GETBIN(WATERBIN,NBIN,C1,IC2)
                     ABINDCMAX(IC2,IC1)=ABINDCMAX(IC2,IC1)+1.
                     IMAXADC=IMAXADC+1
-                ELSEIF (K2.LT.20) THEN ! STRATIFORM 
+                ELSEIF (K1.LT.24) THEN ! STRATIFORM 
                     FCSTDY(IDT,K2)=FCSTDY(IDT,K2)+1.  ! RECORD THE SAMPLE NUMBER WITH K2 TOP
                     IUST(IDT)=IUST(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
                     C1=TL(K1)
                     IC1=K1
+                    CCMAXOMG(4)=999.
+                    ICDEX(4)=1
+                    THKNSS(4,IDT)= THKNSS(4,IDT)+ZDAT(K2)-ZDAT(K1)
+                    ITHKNSS(4,IDT)= ITHKNSS(4,IDT)+1
                     DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
                         MPSTQRL(IKK)=MPSTQRL(IKK)+QRL(IKK,IX)
                         MPSTQRS(IKK)=MPSTQRS(IKK)+QRS(IKK,IX)
@@ -325,12 +468,23 @@ DO I =1,6
                         DUSTQL(IDT,IKK)=DUSTQL(IDT,IKK)+QL(IKK,IX)
                         DUSTQI(IDT,IKK)=DUSTQI(IDT,IKK)+QI(IKK,IX)
                         DUSTOMG(IDT,IKK)=DUSTOMG(IDT,IKK)+OMG(IKK,IX)
+                        ICEPATH(4)=ICEPATH(4)+DZDAT(IKK)*DEN(IKK)*QI(IKK,IX)
+                        WATERPATH(4)=WATERPATH(4)+DZDAT(IKK)*DEN(IKK)*QL(IKK,IX)
+!                        DUSTMAXOMG(IDT)=DUSTMAXOMG(IDT)+OMG(IKK,IX)
+!                        IMAXCC(4,IDT)=IMAXCC(4,IDT)+1
+                        IF (CCMAXOMG(4)>OMG(IKK,IX))THEN
+                            CCMAXOMG(4)=OMG(IKK,IX)
+                        ENDIF
                         IUSTK(IDT,IKK)=IUSTK(IDT,IKK)+1
                         IF (TL(IKK)>C1) THEN
                             C1=TL(IKK)
                             IC1=IKK
                         ENDIF
                     ENDDO
+                    IF(CCMAXOMG(4)<999.)THEN
+                        DUSTMAXOMG(IDT)=DUSTMAXOMG(IDT)+CCMAXOMG(4)
+                        IMAXCC(4,IDT)=IMAXCC(4,IDT)+1
+                    ENDIF
                     CALL GETBIN(WATERBIN,NBIN,C1,IC2)
                     BINSTMAX(IC2,IC1)=BINSTMAX(IC2,IC1)+1.
                     IMAXST=IMAXST+1
@@ -339,6 +493,10 @@ DO I =1,6
                     IUCR(IDT)=IUCR(IDT)+1 ! RECORD ALL THE SAMPLES AT THE TIME OF IDT
                     C1=TL(K1)
                     IC1=K1
+                    CCMAXOMG(5)=999.
+                    ICDEX(5)=1
+                    THKNSS(5,IDT)= THKNSS(5,IDT)+ZDAT(K2)-ZDAT(K1)
+                    ITHKNSS(5,IDT)= ITHKNSS(5,IDT)+1
                     DO IKK =K1,K2 !LOOP FOR MEAN PROFILES
                         MPCRQRL(IKK)=MPCRQRL(IKK)+QRL(IKK,IX)
                         MPCRQRS(IKK)=MPCRQRS(IKK)+QRS(IKK,IX)
@@ -351,42 +509,118 @@ DO I =1,6
                         DUCRQL(IDT,IKK)=DUCRQL(IDT,IKK)+QL(IKK,IX)
                         DUCRQI(IDT,IKK)=DUCRQI(IDT,IKK)+QI(IKK,IX)
                         DUCROMG(IDT,IKK)=DUCROMG(IDT,IKK)+OMG(IKK,IX)
+                        ICEPATH(5)=ICEPATH(5)+DZDAT(IKK)*DEN(IKK)*QI(IKK,IX)
+                        WATERPATH(5)=WATERPATH(5)+DZDAT(IKK)*DEN(IKK)*QL(IKK,IX)
+!                        DUCRMAXOMG(IDT)=DUCRMAXOMG(IDT)+OMG(IKK,IX)
+!                        IMAXCC(5,IDT)=IMAXCC(5,IDT)+1
+                        IF (CCMAXOMG(5)>OMG(IKK,IX))THEN
+                            CCMAXOMG(5)=OMG(IKK,IX)
+                        ENDIF
                         IUCRK(IDT,IKK)=IUCRK(IDT,IKK)+1
                         IF (TL(IKK)>C1) THEN
                             C1=TL(IKK)
                             IC1=IKK
                         ENDIF
                     ENDDO
+                    IF(CCMAXOMG(5)<999.)THEN
+                        DUCRMAXOMG(IDT)=DUCRMAXOMG(IDT)+CCMAXOMG(5)
+                        IMAXCC(5,IDT)=IMAXCC(5,IDT)+1
+                    ENDIF
                     CALL GETBIN(WATERBIN,NBIN,C1,IC2)
                     BINCRMAX(IC2,IC1)=BINCRMAX(IC2,IC1)+1.
                     IMAXCR=IMAXCR+1
                 ENDIF
             ENDDO ! NA
+            ENDIF
+            C1=WATERPATH(2)
+            C2=ICEPATH(2)
+            IF (NA>0)THEN                
+                WPERCNT(1,IDT)=WPERCNT(1,IDT)+(ICEPATH(1)+WATERPATH(1))/(C1+C2)
+                IWPERCNT(1,IDT)=IWPERCNT(1,IDT)+1
+            ENDIF
+            IF (ICDEX(2)>0)THEN
+                DUACMNQI(IDT)=DUACMNQI(IDT)+ICEPATH(2)
+                DUACMNQL(IDT)=DUACMNQL(IDT)+WATERPATH(2)
+                IACLINE(IDT)=IACLINE(IDT)+1
+            ENDIF
+            IF (NA>0)THEN                
+                WPERCNT(2,IDT)=WPERCNT(2,IDT)+(ICEPATH(2)+WATERPATH(2))/(C1+C2)
+                IWPERCNT(2,IDT)=IWPERCNT(2,IDT)+1
+            ENDIF
+            IF (ICDEX(3)>0)THEN
+                ADUDCMNQI(IDT)=ADUDCMNQI(IDT)+ICEPATH(3)
+                ADUDCMNQL(IDT)=ADUDCMNQL(IDT)+WATERPATH(3)
+                AIDCLINE(IDT)=AIDCLINE(IDT)+1
+            ENDIF
+            IF (NA>0)THEN                
+                WPERCNT(3,IDT)=WPERCNT(3,IDT)+(ICEPATH(3)+WATERPATH(3))/(C1+C2)
+                IWPERCNT(3,IDT)=IWPERCNT(3,IDT)+1
+            ENDIF
+            IF (ICDEX(4)>0)THEN
+                DUSTMNQI(IDT)=DUSTMNQI(IDT)+ICEPATH(4)
+                DUSTMNQL(IDT)=DUSTMNQL(IDT)+WATERPATH(4)
+                ISTLINE(IDT)=ISTLINE(IDT)+1
+            ENDIF
+            IF (NA>0)THEN                
+                WPERCNT(4,IDT)=WPERCNT(4,IDT)+(ICEPATH(4)+WATERPATH(4))/(C1+C2)
+                IWPERCNT(4,IDT)=IWPERCNT(4,IDT)+1
+            ENDIF
+            IF (ICDEX(5)>0)THEN
+                DUCRMNQI(IDT)=DUCRMNQI(IDT)+ICEPATH(5)
+                DUCRMNQL(IDT)=DUCRMNQL(IDT)+WATERPATH(5)
+                ICRLINE(IDT)=ICRLINE(IDT)+1
+            ENDIF
+            IF (NA>0)THEN                
+                WPERCNT(5,IDT)=WPERCNT(5,IDT)+(ICEPATH(5)+WATERPATH(5))/(C1+C2)
+                IWPERCNT(5,IDT)=IWPERCNT(5,IDT)+1
+            ENDIF
 		ENDDO ! NX
     ENDDO ! NT
 ! ------- DOING THE AVERAGED  AND OUTPUT --------------------------------------
 !-----------FOR DEEP CONVECTION 
-    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_DEEPCONVECTION_GETPLOTF90.TXT"
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_DEEPCONVECTION_GETPLOTF90_B.TXT"
     CALL MEANOUTPUT(NDT,NZ,NBIN,FCDCDY,IUDC,DUDCQRL,DUDCQRS,DUDCQL,&
         &    DUDCQI,  DUDCOMG,IUDCK, MPDCQRL,MPDCQRS,MPDCQL,MPDCQI, &
-        &    MPDCOMG,  IDCZ, BINDCMAX, IMAXDC,FPATH)
+        &    MPDCOMG,  IDCZ, BINDCMAX, IMAXDC,IDCLINE, IMAXCC(1,:), &
+        &  DUDCMAXOMG,DUDCMNQI,DUDCMNQL, DUPRECI,IPRECI, THKNSS(1,:), &
+        &   ITHKNSS(1,:), WPERCNT(1,:),IWPERCNT(1,:),TYRAIN,ITYRAIN,  &
+        &   DUSRFHT,IDUSRFHT,FPATH)
     !-----------FOR DEEP CONVECTION 
-    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_DEEPCONVECTION_A_GETPLOTF90.TXT"
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_DEEPCONVECTION_A_GETPLOTF90_B.TXT"
     CALL MEANOUTPUT(NDT,NZ,NBIN,AFCDCDY,IUADC,ADUDCQRL,ADUDCQRS,ADUDCQL,&
         &    ADUDCQI,  ADUDCOMG,IUADCK, AMPDCQRL,AMPDCQRS,AMPDCQL,AMPDCQI, &
-        &    AMPDCOMG,  IADCZ, ABINDCMAX, IMAXADC,FPATH)
-    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_ALLCELLS_GETPLOTF90.TXT"
+        &    AMPDCOMG,  IADCZ, ABINDCMAX, IMAXADC,AIDCLINE, IMAXCC(3,:), &
+        &  ADUDCMAXOMG,ADUDCMNQI,ADUDCMNQL,DUPRECI,IPRECI,        &
+        &  THKNSS(3,:), ITHKNSS(3,:),  WPERCNT(3,:),IWPERCNT(3,:),&
+        &  TYRAIN,ITYRAIN,DUSRFHT,IDUSRFHT,FPATH)
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_ALLCELLS_GETPLOTF90_B.TXT"
     CALL MEANOUTPUT(NDT,NZ,NBIN,FCACDY,IUAC,DUACQRL,DUACQRS,DUACQL,&
         &    DUACQI,  DUACOMG,IUACK, MPACQRL,MPACQRS,MPACQL,MPACQI, &
-        &    MPACOMG,  IACZ, BINACMAX, IMAXAC,FPATH)
-    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_STRATIFORM_GETPLOTF90.TXT"
+        &    MPACOMG,  IACZ, BINACMAX, IMAXAC,IACLINE, IMAXCC(2,:), &
+        &  DUACMAXOMG,DUACMNQI,DUACMNQL,DUPRECI,IPRECI,        &
+        &  THKNSS(2,:), ITHKNSS(2,:), WPERCNT(2,:),IWPERCNT(2,:),     &
+        &  TYRAIN,ITYRAIN,DUSRFHT,IDUSRFHT,FPATH)
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_STRATIFORM_GETPLOTF90_B.TXT"
     CALL MEANOUTPUT(NDT,NZ,NBIN,FCSTDY,IUST,DUSTQRL,DUSTQRS,DUSTQL,&
         &    DUSTQI,  DUSTOMG,IUSTK, MPSTQRL,MPSTQRS,MPSTQL,MPSTQI, &
-        &    MPSTOMG,  ISTZ, BINSTMAX, IMAXST,FPATH)
-    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_CIRRUS_GETPLOTF90.TXT"
+        &    MPSTOMG,  ISTZ, BINSTMAX, IMAXST,ISTLINE, IMAXCC(4,:), &
+        &  DUSTMAXOMG,DUSTMNQI,DUSTMNQL, DUPRECI,IPRECI,        &
+        &  THKNSS(4,:), ITHKNSS(4,:),  WPERCNT(4,:),IWPERCNT(4,:), &
+        &  TYRAIN,ITYRAIN,DUSRFHT,IDUSRFHT,FPATH)
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_CIRRUS_GETPLOTF90_B.TXT"
     CALL MEANOUTPUT(NDT,NZ,NBIN,FCCRDY,IUCR,DUCRQRL,DUCRQRS,DUCRQL,&
         &    DUCRQI,  DUCROMG,IUCRK, MPCRQRL,MPCRQRS,MPCRQL,MPCRQI, &
-        &    MPCROMG,  ICRZ, BINCRMAX, IMAXCR,FPATH)
+        &    MPCROMG,  ICRZ, BINCRMAX, IMAXCR,ICRLINE, IMAXCC(5,:), &
+        &  DUCRMAXOMG,DUCRMNQI,DUCRMNQL,DUPRECI,IPRECI,         &
+        &  THKNSS(5,:), ITHKNSS(5,:), WPERCNT(5,:),IWPERCNT(5,:),   &
+        &  TYRAIN,ITYRAIN,DUSRFHT,IDUSRFHT,FPATH)
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_DCCZEROLEVEL_GETPLOTF90_B.TXT"
+    IF(ISZRL>0)THEN
+        ZRL=SZRL/ISZRL
+    ENDIF
+    OPEN(10,FILE=TRIM(FPATH))
+    WRITE(10,*)ZRL
+    CLOSE(10)
 !----------- FOR STRATIFORM     
 ENDDO ! REGIONS
 
@@ -481,19 +715,28 @@ endif
 RETURN
 END SUBROUTINE
 SUBROUTINE MEANOUTPUT(NDT , NZ  , NBIN , FCDY , IU , DUQRL, &
-        &          DUQRS , DUQL, DUQI ,DUOMG ,IUK , MPQRL, MPQRS,  &
-        &          MPQL  , MPQI, MPOMG, IZ, BINMAX, IMAX , FPATH  )
+        &          DUQRS , DUQL, DUQI ,DUOMG ,IUK , MPQRL, MPQRS,    &
+        &          MPQL  , MPQI, MPOMG, IZ, BINMAX, IMAX , ILINE,    &
+        &          IMAXCC, DUMAXOMG,DUMNQI,DUMNQL, DUPRECI,IPRECI,   &
+        &          THKNSS, ITHKNSS, WPERCNT,IWPERCNT,TYRAIN,ITYRAIN, &
+        &          DUSRFHT,IDUSRFHT,FPATH )
 IMPLICIT NONE
 INTEGER NDT,NZ,NBIN
 INTEGER IU(NDT),IUK(NDT,NZ),IZ(NZ),IMAX
+INTEGER ILINE(NDT),IMAXCC(NDT),IPRECI(NDT),ITHKNSS(NDT)
+INTEGER IWPERCNT(NDT),ITYRAIN(2,NDT),IDUSRFHT(2,NDT)
 REAL    FCDY(NDT,NZ),DUQRL(NDT,NZ),DUQRS(NDT,NZ),DUQL(NDT,NZ), &
     &   DUQI(NDT,NZ),DUOMG(NDT,NZ), MPQRL(NZ), MPQRS(NZ), MPQL(NZ), &
     &   MPQI(NZ), MPOMG(NZ), BINMAX(NBIN,NZ)
+REAL DUMAXOMG(NDT),DUMNQI(NDT),DUMNQL(NDT),DUPRECI(NDT), THKNSS(NDT)
+REAL WPERCNT(NDT),TYRAIN(2,NDT),DUSRFHT(2,NDT)
 CHARACTER FPATH*100
-INTEGER I,J,K
+INTEGER I,J,K,LL
 REAL TMP,TMPU(NZ)
 !
 OPEN(10,FILE=TRIM(FPATH))
+LL=LEN(TRIM(FPATH))
+OPEN(11,FILE=FPATH(1:LL-4)//'_LINE.TXT')
 print*,NDT
 TMP=0.
 TMPU=0.
@@ -529,6 +772,52 @@ ENDDO
         WRITE(10,99)(DUQL(I,K) , K=1,NZ)
         WRITE(10,99)(DUQI(I,K) , K=1,NZ)
         WRITE(10,99)(DUOMG(I,K), K=1,NZ)
+        IF(ILINE(I)>0)THEN
+            DUMNQI(I)=DUMNQI(I)/ILINE(I)
+            DUMNQL(I)=DUMNQL(I)/ILINE(I)
+        ELSE
+            DUMNQI(I)=-1.
+            DUMNQL(I)=-1.
+        ENDIF
+        IF(IMAXCC(I)>0)THEN
+            DUMAXOMG(I)=DUMAXOMG(I)/IMAXCC(I)
+        ELSE
+            DUMAXOMG(I)=-999.
+        ENDIF
+        IF(IPRECI(I)>0)THEN
+            DUPRECI(I)=DUPRECI(I)/IPRECI(I)
+        ELSE
+            DUPRECI(I)=-999.
+        ENDIF
+        IF (ITHKNSS(I)>0)THEN
+            THKNSS(I)=THKNSS(I)/ITHKNSS(I)
+        ELSE
+            THKNSS(I)=-999.
+        ENDIF
+        IF (IWPERCNT(I)>0)THEN
+            WPERCNT(I)=WPERCNT(I)*100./IWPERCNT(I)
+        ELSE
+            WPERCNT(I)=-999.
+        ENDIF
+        IF (ITYRAIN(1,I)>0)THEN
+            TYRAIN(1,I)=TYRAIN(1,I)/ITYRAIN(1,I)
+        ELSE
+            TYRAIN(1,I)=-999.
+        ENDIF
+        IF (ITYRAIN(2,I)>0)THEN
+            TYRAIN(2,I)=TYRAIN(2,I)/ITYRAIN(2,I)
+        ELSE
+            TYRAIN(2,I)=-999.
+        ENDIF
+        IF (IDUSRFHT(1,I)>0)THEN
+            DUSRFHT(1,I)=DUSRFHT(1,I)/IDUSRFHT(1,I)
+            DUSRFHT(2,I)=DUSRFHT(2,I)/IDUSRFHT(1,I)
+        ELSE
+            DUSRFHT(1,I)=-999.
+            DUSRFHT(2,I)=-999.
+        ENDIF
+        WRITE(11,'(10(1X,E12.4))')DUMNQI(I),DUMNQL(I),DUMAXOMG(I),DUPRECI(I),THKNSS(I) &
+    &             ,WPERCNT(I),TYRAIN(1,I),TYRAIN(2,I), DUSRFHT(1,I), DUSRFHT(2,I)
     ENDDO
     DO K =1,NZ 
         IF (IZ(K)>0)THEN 
@@ -564,3 +853,28 @@ CLOSE(10)
 99 FORMAT(1X,34(1X,E12.4))
 RETURN
 END SUBROUTINE
+SUBROUTINE GETZEROLEVEL(TC,NZ,ZDAT,ZRL)
+    IMPLICIT NONE
+    INTEGER NZ
+    REAL TC(NZ),ZDAT(NZ)
+    REAL A,B,ZRL,C1,C2
+    INTEGER I,J,K
+    K=-1
+    A=TC(1)
+    IF (A<0)THEN
+    ZRL=ZDAT(1)
+    GOTO 200
+    ENDIF
+    DO I=2,NZ
+        B=TC(I)
+        IF (A>0. .AND. B<=0.)THEN
+            K=I
+            GOTO 100
+        ELSE
+            A=B
+        ENDIF
+    ENDDO
+100 C1=(TC(K-1)-0)/(TC(K-1)-TC(K))
+    ZRL=ZDAT(K-1)+C1*(ZDAT(K)-ZDAT(K-1))
+200 RETURN
+    END SUBROUTINE
