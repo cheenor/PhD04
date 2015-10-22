@@ -23,16 +23,8 @@ REAL DUMXRAINPDF(NDT,35),DUMXRAINDC(NDT,NZ),TYRAIN(2,NDT)
 REAL DUSRFHT(2,NDT)
 INTEGER IRAIN,KK,IDUMXRAINDC(NDT),ITYRAIN(2,NDT),IDUSRFHT(2,NDT)
 !----------------------------------------------------------
-<<<<<<< HEAD
-<<<<<<< HEAD
 REAL ZRL, SZRL
 INTEGER ISZRL
-=======
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
-=======
-REAL ZRL, SZRL
-INTEGER ISZRL
->>>>>>> updated 20151022
 !------- RESULT ARRAYS  ----------------------------------
 ! MEAN PROFILES 
 REAL  MPDCQRL(NZ), MPDCQRS(NZ), MPDCQL(NZ),MPDCQI(NZ)  & ! DEEP CONVECTION
@@ -211,14 +203,9 @@ DO I =1,6
 	IDCLINE=0 ; ICRLINE=0 ; IACLINE=0 ;ISTLINE=0 ; AIDCLINE=0
     IMAXCC=0 ;IPRECI=0    ; ITHKNSS=0
     IDT=1
-<<<<<<< HEAD
-<<<<<<< HEAD
+
     ZRL=0;SZRL=0;ISZRL=0
-=======
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
-=======
-    ZRL=0;SZRL=0;ISZRL=0
->>>>>>> updated 20151022
+
 	DO IT =1,NT
 		IF (IDT < NDT)THEN
 			IDT=IDT+1
@@ -629,10 +616,6 @@ DO I =1,6
         &  DUCRMAXOMG,DUCRMNQI,DUCRMNQL,DUPRECI,IPRECI,         &
         &  THKNSS(5,:), ITHKNSS(5,:), WPERCNT(5,:),IWPERCNT(5,:),   &
         &  TYRAIN,ITYRAIN,DUSRFHT,IDUSRFHT,FPATH)
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> updated 20151022
     FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_DCCZEROLEVEL_GETPLOTF90_B.TXT"
     IF(ISZRL>0)THEN
         ZRL=SZRL/ISZRL
@@ -640,11 +623,6 @@ DO I =1,6
     OPEN(10,FILE=TRIM(FPATH))
     WRITE(10,*)ZRL
     CLOSE(10)
-<<<<<<< HEAD
-=======
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
-=======
->>>>>>> updated 20151022
 !----------- FOR STRATIFORM     
 ENDDO ! REGIONS
 
@@ -901,8 +879,4 @@ SUBROUTINE GETZEROLEVEL(TC,NZ,ZDAT,ZRL)
 100 C1=(TC(K-1)-0)/(TC(K-1)-TC(K))
     ZRL=ZDAT(K-1)+C1*(ZDAT(K)-ZDAT(K-1))
 200 RETURN
-<<<<<<< HEAD
     END SUBROUTINE
-=======
-    END SUBROUTINE
->>>>>>> updated 20151022
