@@ -41,11 +41,11 @@ dt=15
 ndt=24*60/dt
 nz=34
 nbin=100
-dirpic="D:/MyPaper/PhD04/Pics/"
+dirpic="d:/mypaper/PhD04/Pics/"
 casenm=['PRDCTR_EC','MLYRCTR_EC', 'NPCCTR_EC',
            'NECCTR_EC','WTPCTR_EC' , 'ETPCTR_EC']   
 astr=[r'$(a)$',r'$(b)$', r'$(c)$',r'$(d)$',r'$(e)$',r'$(f)$']
-dirin="D:/MyPaper/PhD04/Cases/postdata/CTREC/"
+dirin="d:/mypaper/PhD04/Cases/postdata/CTREC/"
 cloudtype=["DEEPCONVECTION","ALLCELLS","STRATIFORM","CIRRUS","DEEPCONVECTION_A"]
 nty=len(cloudtype)
 nr=len(casenm)
@@ -86,6 +86,7 @@ THKNSS=np.ndarray(shape=(ndt,nty,nr),dtype=float)
 WPERCNT=np.ndarray(shape=(ndt,nty,nr),dtype=float)
 TYRAIN=np.ndarray(shape=(2,ndt,nty,nr),dtype=float)
 SRFHT=np.ndarray(shape=(2,ndt,nty,nr),dtype=float)
+ZRL=np.ndarray(shape=(nr),dtype=float)
 #  could water bin must be same as that in getdataforplot.f90
 WATERBIN=np.ndarray(shape=(nbin),dtype=float)
 WATERBIN[0]=0.005  # MIN
@@ -199,6 +200,10 @@ for rg in range(0,nr):
             else:
                 SRFHT[1,i,ty,rg]=NaN
         del onedim
+    fpath=dirin+casenm[rg]+"_DCCZEROLEVEL_GETPLOTF90_B.txt"
+    iskp=0 ; nrl=1
+    onedim=readAscii(fpath,iskp,nrl)
+    ZRL[rg]=onedim[0]
 #----------- end of reading data--------------------------------------------                
 cloudlevs=[2,5,10,15,20,30,40,50,60,70,80,90,100,110]
 cloudclors=['w','lightgray','plum','darkorchid','b','dodgerblue','skyblue','aqua',
@@ -462,7 +467,7 @@ for i in range(0,nr):
         ir=ir+1
     j=0  # for deep convection          
     plt.subplot(2,3,ij)   # plot ax[i,j]
-    ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i]*100.,cmap=cm.jet, extend='both')
+    ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i]*100.,cmap=cm.binary, extend='both')
 #        ax[ij]=plt.contourf(xdat,zdat,BINMAX[:,:,j,i],cmap=cm.Greys, levels=maxlevs,extend='both')  levels=maxlevs,          
     marknm=astr[i]+' '+regioname
     plt.title(marknm,fontsize=14)                          
@@ -470,6 +475,7 @@ for i in range(0,nr):
     if ij in (1,4):
         plt.ylabel(r'Height ($km$)', fontdict=font)     
     axx=fig.add_subplot(2,3,ij)
+    axx.plot((0,5),(ZRL[i],ZRL[i]),c='w',lw=1.5)
     ymajorLocator   = MultipleLocator(4)
     axx.yaxis.set_major_locator(ymajorLocator)                                         
     if ir==1:
@@ -480,6 +486,9 @@ for i in range(0,nr):
     if ij in(1,2,3)  :
         for tick in axx.xaxis.get_major_ticks():
             tick.label1On = False      
+    if ij in(3,6):
+        zrtxt='Freezing'+'\n'+'level'
+        axx.text(5.1,ZRL[i],zrtxt,fontsize=16)
     plt.show()
     ij=ij+1 
     jc=jc+1   
@@ -503,7 +512,7 @@ jc=0
 j=0 # for deep convection        
 i=4
 plt.subplot(2,3,ij)   # plot ax[i,j]
-ax[0,0]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,colors=cloudclors, levels=cloudlevs,extend='both')
+ax[0,0]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,cmap=cm.binary, levels=cloudlevs,extend='both')
 marknm=r'($a$)'+' WTP'
 #plt.title(marknm,fontsize=14)
 axx=fig.add_subplot(2,3,ij)                         
@@ -523,7 +532,7 @@ for tick in axx.xaxis.get_major_ticks():
 ij=ij+1
 i=5
 plt.subplot(2,3,ij)
-ax[0,1]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,colors=cloudclors, levels=cloudlevs,extend='both')
+ax[0,1]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,cmap=cm.binary, levels=cloudlevs,extend='both')
 marknm=r'($b$)'+' ETP'
 axx=fig.add_subplot(2,3,ij)                         
 axx.set_xticks(range(0,ndt,12)) 
@@ -636,7 +645,7 @@ fig.colorbar(ax[0,0], cax,extend='both',
 titlename=r"Frequency of Cloud Top for Convections ($10^{-2}%$)"
 plt.title(titlename,fontsize=14)
 plt.show()
-plt.savefig(dirpic+'deepcon_ETPWTP_du.png',dpi=300)        
+plt.savefig(dirpic+'deepcon_ETPWTP_du_Gray.png',dpi=300)        
 plt.show()
 plt.close()
 #

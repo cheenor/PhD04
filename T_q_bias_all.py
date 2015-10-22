@@ -6,7 +6,9 @@ Created on Wen Aug 05 11:16:43 2015
 @author: jhchen
 """
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 import matplotlib as mpl
+from pylab import *
 import string
 import numpy as np
 import datetime
@@ -151,7 +153,7 @@ for iga in range(0,nga):
     xdate=[]    
     xdat=range(0,nt)            
     for tm in dateiso:
-        xdate.append(datetime.datetime.strftime(tm,"%b/%d")) 
+        xdate.append(datetime.datetime.strftime(tm,"%d/%b")) 
     xdatet.append(xdate)
 ###################################################################
     fpath=dirin+casenm+'_All.txt'
@@ -457,8 +459,8 @@ for iga in range(0,nga):
         biasstd[k,1]=tmp[:,1].std()
 #
     colors=['k','lightgrey']
-    colors=['g','r']
-    width=[2,2]
+#    colors=['g','r']
+    width=[1.5,4]
     #ax0=plt.subplot(1,2,1)
 <<<<<<< HEAD
     ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],label="Temperature",
@@ -472,15 +474,17 @@ for iga in range(0,nga):
         plt.ylabel(r'Height ($km$)', fontdict=font)
 =======
     ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],label=r"$T$",
-        c=colors[1],lw=width[0],xerr=biasstd[1:32,0]) #qc
+        c=colors[1],lw=width[1],xerr=biasstd[1:32,0]) #qc
     ax[jr,jc].errorbar(bias[1:32,1],ydat[1:32],label=r"$q$",
         c=colors[0],lw=width[0],xerr=biasstd[1:32,1]) #qc  
-    ax[jr,jc].plot([0,0],[0,16],c='k',lw=1.5)
+    ax[jr,jc].plot([0,0],[0,16],c='grey',lw=2)
     #ax[jr,jc].errorbar(meansim[1:32,0],ydat[1:32],label="SIM",
     #    c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
     strs=titlestr[iga]    
     ax[jr,jc].set_xlim(-12,10) 
     ax[jr,jc].set_title(strs,fontsize=18)
+    ymajorLocator   = MultipleLocator(4)
+    ax[jr,jc].yaxis.set_major_locator(ymajorLocator) 
     if jr==1 and jc==2 :
         ax[jr,jc].legend(loc=(0.05,0.8),frameon=False)
     if jc==0:    
@@ -490,7 +494,7 @@ for iga in range(0,nga):
     ij=ij+1
     jc=jc+1
 plt.show()
-plt.savefig(dirpic+"ALLCASE_BiasProfile_t_q.png",dpi=300)          
+plt.savefig(dirpic+"ALLCASE_BiasProfile_t_q_gray.png",dpi=300)          
 plt.show()
 <<<<<<< HEAD
 =======
@@ -526,18 +530,20 @@ for iga in range(0,nga):
     zdat=obsw[:,:,iga]
     #zdat=smtco   #-obstmp
     ##zdat[0,:]=0.0   ## the first level is below surface ground
-    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors='r',
+    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors='k',
         linewidths=1.5,levels=levs1,linestyles=linetype1)                           
 #    plt.title(titlename[0],fontsize=16)                          
     plt.axis([0, 121, 0, 16])
     plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
     zdat=obsqv[:,:,iga]
     zdat[0,:]=0.0   ## the first level is below surface ground
-    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors='g',
-        linewidths=1.5,levels=levs2)#,linestyles=linetype2)  
+    ax[jr,jc]=plt.contourf(xdat,ydat,zdat,cmap=cm.binary,extend='both',
+        levels=levs2)#,linestyles=linetype2)  #linewidths=1.5,
     plt.axis([0, 121, 0, 16])
     plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
     axx=fig.add_subplot(3,2,ij)
+    ymajorLocator   = MultipleLocator(4)
+    axx.yaxis.set_major_locator(ymajorLocator) 
     text1=mker  #r"($a$)"
     axx.text(1.5,16.5,text1,fontsize=18)                        
     axx.set_xticks(range(0,nt,16))
@@ -548,7 +554,10 @@ for iga in range(0,nga):
     ij=ij+1                
 plt.show()
 fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)
-plt.savefig(dirpic+"ALLCASE_EC_T&qv.png",dpi=300)          
+cax = fig.add_axes([0.2, 0.03, 0.6, 0.03])
+fig.colorbar(ax[0,0], cax,extend='both',
+              spacing='uniform', orientation='horizontal')
+plt.savefig(dirpic+"ALLCASE_EC_omega&qv_Gray.png",dpi=300)          
 plt.show()
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 plt.close()

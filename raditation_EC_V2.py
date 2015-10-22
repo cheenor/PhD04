@@ -60,7 +60,11 @@ dirceres='D:/MyPaper/PhD04/Data/CERES/'
 nga=len(CASES)
 fig,axs = plt.subplots(nrows=2,ncols=3,figsize=(18,8))
 color_cycle=['deeppink','lime','y','indigo','b','r','cyan','k','grey']
+<<<<<<< HEAD
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+=======
+color_cycle=['deeppink','lime','y','indigo','k','0.65','cyan','k','0.75']
+>>>>>>> updated 20151022
 wds=[2,2,2,2,2,2,2,2,2]
 linests=['-','--','-','--','-','--','-','--','-','--']
 linests=['-','-','-','-','-','-','-','-','-','-']
@@ -335,8 +339,12 @@ plt.savefig(dirout+'ALLCASE_radiation.png',dpi=300)
 =======
 plt.show()
 fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)                  
+<<<<<<< HEAD
 plt.savefig(dirout+'ALLCASE_radiation_albedo.png',dpi=300)          
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
+=======
+plt.savefig(dirout+'ALLCASE_radiation_albedo_grey.png',dpi=300)          
+>>>>>>> updated 20151022
 plt.show()
 plt.close()
 

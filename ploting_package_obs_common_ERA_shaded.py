@@ -293,7 +293,7 @@ plt.title(text1,fontsize=charsize+4)
 plt.ylabel('Height'+r' ($km$)', fontsize=20) #fontdict=font)
 plt.xlabel(yearstr, fontdict=font)
 plt.show()                     
-plt.savefig(pic_out+casenm+'_lsforcing_input.png',dpi=300)        
+plt.savefig(pic_out+casenm+'_lsforcing_input_gray.png',dpi=300)        
 plt.show()
 plt.close()
 #filename=pic_out+casenm+'_lsforcing_input.eps'

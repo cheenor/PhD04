@@ -55,6 +55,8 @@ fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(18,9))
 #fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
+color_cycle=['lightgrey', 'k', 'grey', 'y','indigo', 'cyan']
+wd=[4,1.5,1.5,2,2]
 ir=0
 ic=0
 for iga in range(0,nga):
@@ -177,8 +179,8 @@ for iga in range(0,nga):
     r2,p2=scista.pearsonr(xx1,yy2)
     r2str="r2= "+"%.2f"%r2
 #    plt.ylabel(r'Precipitation ($mm$ $hr^{-1}$)', size=18)
-    if iga==2 :
-        ax[ir,ic].legend(loc=(1.0,0.5),frameon=False)
+    if iga==5 :
+        ax[ir,ic].legend(loc=(0.65,0.65),frameon=False)
     if iga>3 :
         ax[ir,ic].set_yticks(range(0,3))
         ax[ir,ic].text(4,1.8,r1str,fontsize=18)
@@ -192,8 +194,9 @@ for iga in range(0,nga):
     ax[ir,ic].set_xticklabels(xticklabels, size=18)
     ic=ic+1
 fig.text(0.03, 0.7, r'Precipitation ($mm$ $hr^{-1}$)', ha = 'left',fontsize=24,rotation=90)
+fig.subplots_adjust(left=0.1,bottom=0.12,right=1-0.05,top=1-0.1,hspace=0.4)
 plt.show()                     
-plt.savefig(dirout+'ALLCASE_rainfall2.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_rainfall_Grey.png',dpi=300)          
 plt.show()
 plt.close()
 """

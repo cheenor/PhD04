@@ -144,7 +144,7 @@ for iga in range(0,nga):
     jc=jc+1
 #    ij=ij+1
 plt.show()
-plt.savefig(dirpic+'DCC_heatingprofiles_fortran'+add_suffix+'_regrid.png',dpi=300)          
+plt.savefig(dirpic+'DCC_heatingprofiles_fortran'+add_suffix+'_regrid_Gray.png',dpi=300)          
 plt.show()
 plt.close() 
 #
@@ -180,7 +180,7 @@ for iga in range(0,nga):
 #    ij=ij+1
 plt.legend()
 plt.show()
-plt.savefig(dirpic+'DCC_qlqi_fortran'+add_suffix+'_regrid.png',dpi=300)          
+plt.savefig(dirpic+'DCC_qlqi_fortran'+add_suffix+'_regrid_Gray.png',dpi=300)          
 plt.show()
 plt.close() 
 #
@@ -262,14 +262,14 @@ for iga in range(0,nga):
     lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
-    lnstygrey=['-','-','-','-']
-    lngrey=['silver','silver','darkgray','darkgray']
-    lnmkgrey=['o','x','o','x']
+    lnstygrey=['-',':','-','--','-']
+    lngrey=['k','k','gray','gray','lightgrey']
+    lnmkgrey=['None','None','None','None','None'] 
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lncolor
-    sty=lnstycolor
-    mker=lnmkcolor
-    width=lnwidcolor 
+    colors=lngrey
+    sty=lnstygrey
+    mker=lnmkgrey
+    width=lnwidgrey 
     size_title=18     
     ax[jr,jc].set_ylim(0,16)
     ax[jr,jc].set_xlim(-50,90)            
@@ -309,14 +309,14 @@ for iga in range(0,nga):
     lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
-    lnstygrey=['-','-','-','-']
-    lngrey=['silver','silver','darkgray','darkgray']
-    lnmkgrey=['o','x','o','x']
+    lnstygrey=['-',':','-','--','-']
+    lngrey=['k','k','gray','gray','lightgrey']
+    lnmkgrey=['None','None','None','None','None'] 
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lncolor
-    sty=lnstycolor
-    mker=lnmkcolor
-    width=lnwidcolor 
+    colors=lngrey
+    sty=lnstygrey
+    mker=lnmkgrey
+    width=lnwidgrey 
     ax[jr,jc].set_ylim(0,16) 
     ax[jr,jc].set_xlim(-50,90)          
     ax[jr,jc].plot(q1q2com[7,:,iga],ydat,label=r'$Q_2$e',
@@ -349,7 +349,7 @@ for iga in range(0,nga):
 plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2Comps'+add_suffix+'_regrid.png',dpi=300)          
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2Comps'+add_suffix+'_regrid_Gray.png',dpi=300)          
 plt.show()
 plt.close()
 #
@@ -379,14 +379,14 @@ for iga in range(0,nga):
     lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0,4.0,4.0]  
-    lnstygrey=['-','-','-','-']
-    lngrey=['silver','silver','darkgray','darkgray']
-    lnmkgrey=['o','x','o','x']
+    lnstygrey=['-',':','-','--','-']
+    lngrey=['k','k','gray','gray','lightgrey']
+    lnmkgrey=['None','None','None','None','None'] 
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lncolor
-    sty=lnstycolor
-    mker=lnmkcolor
-    width=lnwidcolor 
+    colors=lngrey
+    sty=lnstygrey
+    mker=lnmkgrey
+    width=lnwidgrey 
     micro_com=np.ndarray(shape=(5,km),dtype=float)
     micro_com[:,:]=condc[:,:,iga]
     size_title=18     
@@ -420,6 +420,6 @@ for iga in range(0,nga):
 plt.subplots_adjust(left = 0.1,right=0.85, wspace = 0.2, hspace = 0.25, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2CondComps'+add_suffix+'_regrid.png',dpi=300)          
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2CondComps'+add_suffix+'_regrid_Gray.png',dpi=300)          
 plt.show()
 #plt.close()

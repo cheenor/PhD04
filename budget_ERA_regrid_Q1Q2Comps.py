@@ -347,15 +347,20 @@ for iga in range(0,nga):
     lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
+<<<<<<< HEAD
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
+=======
+    lnstygrey=['-',':','-','--'] 
+    lngrey=['k','k','darkgray','darkgray']
+>>>>>>> updated 20151022
     lnmkgrey=['o','x','o','x']
-    lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lncolor
-    sty=lnstycolor
+    lnwidgrey=[3.0,3.0,4.0,4.0,4.0]   
+    colors=lngrey
+    sty=lnstygrey
     mker=lnmkcolor
-    width=lnwidcolor 
+    width=lnwidgrey
     size_title=18     
 <<<<<<< HEAD
     ax[iro,ic].set_ylim(0,16)           
@@ -405,18 +410,27 @@ for iga in range(0,nga):
     lncolor=['r','g','b','k']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
+<<<<<<< HEAD
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
+=======
+    lnstygrey=['-',':','-',':'] 
+    lngrey=['k','k','darkgray','darkgray']
+>>>>>>> updated 20151022
     lnmkgrey=['o','x','o','x']
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lncolor
-    sty=lnstycolor
+    colors=lngrey
+    sty=lnstygrey
     mker=lnmkcolor
+<<<<<<< HEAD
     width=lnwidcolor 
 <<<<<<< HEAD
     ax[iro,ic].set_ylim(0,16)           
 =======
+=======
+    width=lnwidgrey
+>>>>>>> updated 20151022
     ax[iro,ic].set_ylim(0,16) 
     ax[iro,ic].set_xlim(-6,6)           
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
@@ -452,7 +466,7 @@ for iga in range(0,nga):
 plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-plt.savefig(dirout+'ALLCASE_Q1Q2Comps.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_Q1Q2Comps_Gray.png',dpi=300)          
 plt.show()
 plt.close()
     #

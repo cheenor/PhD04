@@ -351,13 +351,13 @@ for iga in range(0,nga):
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-',':','-',':']
-    lngrey=['silver','silver','darkgray','darkgray']
-    lnmkgrey=['o','x','o','x']
+    lngrey=['k','k','darkgray','darkgray']
+#    lnmkgrey=['o','x','o','x']
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lncolor
-    sty=lnstycolor
+    colors=lngrey
+    sty=lnstygrey
     mker=lnmkcolor
-    width=lnwidcolor 
+    width=lnwidgrey 
     size_title=18     
     ax[iro,ic].set_ylim(0,16)           
     ax[iro,ic].plot(q1obs_pf,ydat,label=r'OBS $Q_1$',
@@ -373,6 +373,8 @@ for iga in range(0,nga):
     titlestr=atr+" "+area
     xmajorLocator   = MultipleLocator(2)
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
+    ymajorLocator   = MultipleLocator(4)
+    ax[iro,ic].yaxis.set_major_locator(ymajorLocator) 
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
     if iga==4 :
         ax[iro,ic].legend(frameon=False)
@@ -384,7 +386,7 @@ for iga in range(0,nga):
     ic=ic+1
     #ax0.legend()
 plt.show()                     
-plt.savefig(dirout+'ALLCASE_Q1Q2SIMandOBS.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_Q1Q2SIMandOBS_Grey.png',dpi=300)          
 plt.show()
 plt.close()
 #

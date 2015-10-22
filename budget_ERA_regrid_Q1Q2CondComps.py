@@ -355,15 +355,21 @@ for iga in range(0,nga):
     lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0,4.0,4.0]  
+<<<<<<< HEAD
 >>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
     lnmkgrey=['o','x','o','x']
+=======
+    lnstygrey=['-',':','-','--','-']
+    lngrey=['k','k','gray','gray','lightgrey']
+    lnmkgrey=['None','None','None','None','None'] 
+>>>>>>> updated 20151022
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lncolor
-    sty=lnstycolor
-    mker=lnmkcolor
-    width=lnwidcolor 
+    colors=lngrey
+    sty=lnstygrey
+    mker=lnmkgrey
+    width=lnwidgrey 
     size_title=18     
 <<<<<<< HEAD
     ax[iro,ic].set_ylim(0,16)           
@@ -407,7 +413,7 @@ for iga in range(0,nga):
 plt.subplots_adjust(left = 0.1,right=0.85, wspace = 0.2, hspace = 0.25, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-plt.savefig(dirout+'ALLCASE_Q1Q2CondComps.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_Q1Q2CondComps_Grey.png',dpi=300)          
 plt.show()
 plt.close()
     #
