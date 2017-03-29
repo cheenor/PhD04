@@ -43,11 +43,11 @@ def readAscii(fpath,iskp,*nl):
     print len(onedim)
     return onedim
 #
-CASE=['PRDCTR_EC','MLYRCTR_EC','NPCCTR_EC','NECCTR_EC','WTPCTR_EC','ETPCTR_EC',]
+CASE=['PRDCTR_H','MLYRCTR_H','NPCCTR_H','NECCTR_H','WTPCTR_H','ETPCTR_H',]
 nt=2880
-nx=202
+nx=1202
 nga=len(CASE)
-dirs='D:/MyPaper/PhD04/Cases/'
+dirs='Z:/CRM/500m/'
 dirobs='D:/MyPaper/PhD04/Data/TRMM/3B40/'
 direc='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 dirout='D:/MyPaper/PhD04/Pics/'
@@ -91,7 +91,7 @@ for iga in range(0,nga):
         atr=r'$(d)$'
     folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
     datestr="%4d"%iy+"%2.2d"%im+"%2.2d"%jd+'_031d'
-    dirin=dirs+area+folds
+    dirin=dirs+area+'/run/postdata/'
 #------------------------------------------------------------------------------
     fpath=dirin+'preci_'+casenm+'.txt'
     iskp=0
@@ -196,7 +196,7 @@ for iga in range(0,nga):
 fig.text(0.03, 0.7, r'Precipitation ($mm$ $hr^{-1}$)', ha = 'left',fontsize=24,rotation=90)
 fig.subplots_adjust(left=0.1,bottom=0.12,right=1-0.05,top=1-0.1,hspace=0.4)
 plt.show()                     
-plt.savefig(dirout+'ALLCASE_rainfall_Color.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_rainfall_Color_500m.png',dpi=300)          
 plt.show()
 plt.close()
 """

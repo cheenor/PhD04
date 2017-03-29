@@ -1,9 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Wen Aug 05 11:16:43 2015
+Created on Fri Mar 25 16:57:10 2016
 
-@author: jhchen
+@author: chenjh
 """
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
@@ -12,7 +11,6 @@ from pylab import *
 import string
 import numpy as np
 import datetime
-import math
 mpl.rcParams['xtick.direction'] = 'in'
 mpl.rcParams['ytick.direction'] = 'in'
 mpl.rcParams['contour.negative_linestyle'] = 'dashed'
@@ -37,78 +35,19 @@ def readAscii(fpath,iskp):
     del linesplit
     f.close()
     return onedim
-def heigh2pressure(yy,tmp4prs,ydat,prelevel):
-    nt=len(tmp4prs[0,:])
-    nz=len(tmp4prs[:,0])
-    menatmp=np.zeros(shape=(nz),dtype=float)
-    for iz in range(0,nz):
-        for it in range(0,nt):
-            menatmp[iz]=menatmp[iz]+tmp4prs[iz,it]/nt    
-    yyr=[]
-    for h in yy:    
-        if h==-50.:
-            p=prelevel[0]
-            yyr.append(p)
-            #print p
-            #return p
-        else:
-            for iz in range(1,nz):
-                if h>ydat[iz-1] and h<=ydat[iz]:
-                    dz=h-ydat[iz-1]
-                    p0=prelevel[iz-1]
-                    tmp=menatmp[iz]+(dz/(ydat[iz]-ydat[iz-1]))*(menatmp[iz]-menatmp[iz-1])
-                    tmp2=dz/(18400*(1+(tmp-273.15)/273))
-                    p=p0/(10**tmp2)
-                    #print p
-                    #return p
-                    yyr.append(p)    
-    return yyr
-def pressure2heigh(pres,tmp4prs,ydat,prelevel):
-    nt=len(tmp4prs[0,:])
-    nz=len(tmp4prs[:,0])
-    menatmp=np.zeros(shape=(nz),dtype=float)
-    for iz in range(0,nz):
-        for it in range(0,nt):
-            menatmp[iz]=menatmp[iz]+tmp4prs[iz,it]/nt    
-    for iz in range(1,nz):
-        if pres<prelevel[iz-1] and pres>=prelevel[iz]:
-            z1=ydat[iz-1]*1000. # km to m
-            p1=prelevel[iz-1]
-            at=((menatmp[iz]+menatmp[iz-1])/2.-273.15)*1./273.
-            z2=z1+18400*(1+at)*math.log10(p1/pres)
-            return z2
-def convert_ax(ax_f,tmp4prs,ydat,prelevel):
-    """
-    Update second axis according with first axis.
-    """
-    y1, y2 = ax_f.get_ylim()
-    yy=ax_f.get_yticks()
-    #print yy
-    #print y1,y2
-    yyr=heigh2pressure(yy,tmp4prs,ydat,prelevel)
-    #print yyr
-    yyrstr=[]
-    for y0 in yyr:
-        yyrstr.append('%d'%y0)
-    #n=len(yyrstr)
-    #yyrstr[n-1]=yyrstr[n-1]+r'$(hPa)$'
-    ax_c.set_yticklabels(yyrstr) #,heigh2pressure(y2,tmp4prs,ydat,prelevel))
-    ax_c.figure.canvas.draw()
 #
 nt=121
 nday=31
 nz=52
-CASE=['PRDCTR_EC','MLYRCTR_EC','NPCCTR_EC','NECCTR_EC','WTPCTR_EC','ETPCTR_EC']
+CASE=['PRDCTR_H','MLYRCTR_H','NPCCTR_H','NECCTR_H','WTPCTR_H','ETPCTR_H']
 nx=202
 nga=len(CASE)
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
-dirin1='D:/MyPaper/PhD04/Cases/'
+dirin1='Z:/CRM/500m/'
 dirs=dirin1
 dircnrain='D:/MyPaper/PhD04/Data/RainCN05/'
 pic_out='D:/MyPaper/PhD04/Pics/'
 dirpic=pic_out
-dis_pressure_ea=[750.,550.,400.,250.,150.]
-dis_pressure_tp=[450.,300.,200.,100.]
 #
 ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
       907.143 ,  1164.286,   1450.000,   1764.286 ,  2107.143,   2478.572 ,
@@ -143,8 +82,7 @@ obstmp=np.ndarray(shape=(nz,nt,nga),dtype=float)
 #obsrh=np.ndarray(shape=(nz,nt,nga),dtype=float)
 obsu=np.ndarray(shape=(nz,nt,nga),dtype=float)
 obsv=np.ndarray(shape=(nz,nt,nga),dtype=float)
-obsw=np.ndarray(shape=(nz,nt,nga),dtype=float)
-allprelevel=np.zeros(shape=(nz,nga),dtype=float) 
+obsw=np.ndarray(shape=(nz,nt,nga),dtype=float)  
 xdatet=[]
 titlestr=[]
 for iga in range(0,nga):
@@ -188,13 +126,12 @@ for iga in range(0,nga):
     topstr='' #'_250'
     datestr="%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"_031d"
     strnm=namestr+'_'+datestr
-    dirin=dirin1+namestr+'/'
+    dirin='Z:/CRM/500m/' #dirin1+namestr+'/'
     folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
     datestr="%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"_031d"
-    dirin=dirs+namestr+folds
+    dirin='Z:/CRM/500m/' #dirs+namestr+folds
     dirobs=diro+namestr+'/'
     f43=namestr+'_'+datestr+"_ERA.43"
-    f52=namestr+'_'+datestr+"_ERA_52pressure.52"    
     nameforcing=namestr+'_'+datestr+"_LSFORCING_ERA.37"
     titlestr.append(marktr+' '+namestr+' ('+yearstr+')')
 #fpath=dirin+'micro_202_ETP2D3'
@@ -214,7 +151,7 @@ for iga in range(0,nga):
         xdate.append(datetime.datetime.strftime(tm,"%d/%b")) 
     xdatet.append(xdate)
 ###################################################################
-    fpath=dirin+casenm+'_All.txt'
+    fpath=dirin+namestr+'/run/'+casenm+'_All.txt'
     iskp=0
     onedim1=readAscii(fpath, iskp)
     iskp=13*nz
@@ -222,7 +159,7 @@ for iga in range(0,nga):
     for it in range(0,nt):
         for iz in range(0,nz):
             ikkk=it*iskp+nz*0+iz
-            #print ikkk,it,iskp,nz,iz
+            print ikkk,it,iskp,nz,iz
             smt[iz,it,iga]=onedim1[ikkk]
             ikkk=it*iskp+nz*1+iz
             smq[iz,it,iga]=onedim1[ikkk]
@@ -249,17 +186,8 @@ for iga in range(0,nga):
             ikkk=it*iskp+nz*12+iz
             smtc[iz,it,iga]=onedim1[ikkk]
 ###############################################################################
-    del onedim1
-####### get the pressure levels ###############################################
-    fpath=dirobs+f52
-    iskp=0
-    onedim1=readAscii(fpath, iskp)      
-    allprelevel[:,iga]=onedim1[:]
 ##  open obs  files
     del onedim1
-    #########################################################
-    fout=dirobs+'temperature.txt'
-    f=open(fout,'w')    
     fpath=dirobs+f43
     iskp=0
     onedim1=readAscii(fpath, iskp)         
@@ -271,9 +199,7 @@ for iga in range(0,nga):
             k=iskp*it+1+iz+nz*1            
             obsqv[iz,it,iga]=onedim1[k]*1000. #convert kg/kg to g/kg  
             k=iskp*it+1+iz+nz*2         
-            obstmp[iz,it,iga]=onedim1[k]
-            itme="%f "%obstmp[iz,it,iga]
-            f.write(itme)
+            obstmp[iz,it,iga]=onedim1[k]  
             k=iskp*it+1+iz+nz*3          
             obsu[iz,it,iga]=onedim1[k]  
             k=iskp*it+1+iz+nz*4           
@@ -283,8 +209,6 @@ for iga in range(0,nga):
             obsw[iz,it,iga]=onedim1[k]*3600./100. # convert pa/s to hpa/hr
             smtco[iz,it,iga]=(smt[iz,it,iga]-obstha[iz,it,iga])/\
                 (obstha[iz,it,iga]/obstmp[iz,it,iga])
-        f.write('\n')
-    f.close()
 ###############################################################################
 fig,ax=plt.subplots(nrows=3,ncols=2,figsize=(18,12))
 #fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
@@ -311,9 +235,6 @@ for iga in range(0,nga):
         'weight' : 'normal',
         'size'   : 16,
         }     
-    tmp4prs=np.zeros(shape=(nz,nt),dtype=float)
-    tmp4prs[:,:]=obstmp[:,:,iga]
-    prelevel=allprelevel[:,iga]
     plt.subplot(3,2,ij)
     zdat=smtc[:,:,iga]+273.16-obstmp[:,:,iga]
     #zdat=smtco   #-obstmp
@@ -335,19 +256,12 @@ for iga in range(0,nga):
     axx.set_xticks(range(0,nt,16))
     xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
     axx.set_xticklabels(xticklabels, size=16)
-    ymajorLocator   = MultipleLocator(4) 
-    axx.yaxis.set_major_locator(ymajorLocator) 
-    ax_c = axx.twinx()
-    axx.callbacks.connect("ylim_changed", convert_ax(axx,tmp4prs,ydat,prelevel))
-    if ij in (1,3,5):
-        axx.set_ylabel(r'Height ($km$)', fontdict=font)
-    else:
-        ax_c.text(135,0.7,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)    
+    plt.ylabel(r'Height ($km$)', fontdict=font)
     jc=jc+1
     ij=ij+1                
 plt.show()
-fig.subplots_adjust(left=0.08,bottom=0.1,right=1-0.08,top=1-0.1,hspace=0.43)
-plt.savefig(dirpic+"ALLCASE_T&qv_Bias.png",dpi=300)          
+fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)
+plt.savefig(dirpic+"ALLCASE_T&qv_Bias_500m.png",dpi=300)          
 plt.show()
 plt.close()
 allmeanobs=np.ndarray(shape=(nga,nz,2),dtype=float)
@@ -371,9 +285,6 @@ for iga in range(0,nga):
     ij=jc+1
     mker=titlestr[iga]
     xdate=xdatet[iga]
-    tmp4prs=np.zeros(shape=(nz,nt),dtype=float)
-    tmp4prs[:,:]=obstmp[:,:,iga]
-    prelevel=allprelevel[:,iga]
 #obstmp[iz,it]=onedim1[k] obsqv[iz,it]
 #smtco[iz,it]   smq
     meanobs=np.ndarray(shape=(nz,2),dtype=float)
@@ -489,7 +400,7 @@ for iga in range(0,nga):
 #    ij=ij+1
 #    jc=jc+1
 plt.show()
-plt.savefig(dirpic+"ALLCASE_obsVSsim_t_q_profs.png",dpi=300)          
+plt.savefig(dirpic+"ALLCASE_obsVSsim_t_q_profs_500m.png",dpi=300)          
 plt.show()
 plt.close()
 #-------------------profiles of basis
@@ -503,17 +414,11 @@ jc=0
 jr=0
 ij=1
 for iga in range(0,nga):
-    dis_pressure=dis_pressure_ea
-    if iga ==4 or iga==5:
-        dis_pressure=dis_pressure_tp
     if jc==3:
         jc=0
         jr=jr+1
     bias=np.ndarray(shape=(nz,2),dtype=float)
     biasstd=np.ndarray(shape=(nz,2),dtype=float)
-    tmp4prs=np.zeros(shape=(nz,nt),dtype=float)
-    tmp4prs[:,:]=obstmp[:,:,iga]
-    prelevel=allprelevel[:,iga]    
     for k in range(0,nz):
         tmp1=0.
         tmp2=0.
@@ -536,22 +441,22 @@ for iga in range(0,nga):
 #    colors=['g','r']
     width=[1.5,4]
     #ax0=plt.subplot(1,2,1)
-#    ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],label="Temperature",
-#        c=colors[1],lw=width[0],xerr=biasstd[1:32,0]) #qc
-#    ax[jr,jc].errorbar(bias[1:32,1],ydat[1:32],label="Vapor",
-#        c=colors[0],lw=width[0],xerr=biasstd[1:32,1]) #qc
-#    ax[jr,jc].plot([0,0],[0,16],c='k',lw=1.5)
+    ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],label=r"$T$",
+        c=colors[1],lw=width[0],xerr=biasstd[1:32,0]) #qc
+    ax[jr,jc].errorbar(bias[1:32,1],ydat[1:32],label=r"$qv$",
+        c=colors[0],lw=width[0],xerr=biasstd[1:32,1]) #qc
+    ax[jr,jc].plot([0,0],[0,16],c='k',lw=1.5)
     #ax[jr,jc].errorbar(meansim[1:32,0],ydat[1:32],label="SIM",
     #    c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
-    ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],label=r"$T$",
+    if jc==0:    
+        plt.ylabel(r'Height ($km$)', fontdict=font)
+    ax[jr,jc].errorbar(bias[1:32,0],ydat[1:32],#label=r"$T$",
         c=colors[1],lw=width[1],xerr=biasstd[1:32,0]) #qc
-    ax[jr,jc].errorbar(bias[1:32,1],ydat[1:32],label=r"$q$",
+    ax[jr,jc].errorbar(bias[1:32,1],ydat[1:32],#label=r"$q$",
         c=colors[0],lw=width[0],xerr=biasstd[1:32,1]) #qc  
     ax[jr,jc].plot([0,0],[0,16],c='grey',lw=2)
     #ax[jr,jc].errorbar(meansim[1:32,0],ydat[1:32],label="SIM",
     #    c=colors[1],lw=width[1],xerr=simstd[1:32,0]) #qc
-    #if jc==0:    
-    #    plt.ylabel(r'Height ($km$)', fontdict=font)
     strs=titlestr[iga]    
     ax[jr,jc].set_xlim(-12,10) 
     ax[jr,jc].set_title(strs,fontsize=18)
@@ -561,27 +466,11 @@ for iga in range(0,nga):
         ax[jr,jc].legend(loc=(0.05,0.8),frameon=False)
     if jc==0:    
         ax[jr,jc].set_ylabel(r'Height ($km$)', fontdict=font)
-    presstr='%d'%prelevel[0]
-    ax[jr,jc].text(10.5,0,presstr, fontdict=font)
-    for pres in dis_pressure:    
-        hp=pressure2heigh(pres,tmp4prs,ydat,prelevel)
-        print hp
-        hp=hp/1000.
-        presstr='%d'%pres
-        ax[jr,jc].text(10.5,hp,presstr, fontdict=font)
-        
-    """    
-    ax_c = ax[jr,jc].twinx()
-    ax[jr,jc].callbacks.connect("ylim_changed", convert_ax(ax[jr,jc],tmp4prs,ydat,prelevel))
-    """
-    if ij in(3,6):
-        ax[jr,jc].text(15.5,10,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
 #    ax[jr,jc].set_title(area)
     ij=ij+1
     jc=jc+1
 plt.show()
-fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.3,wspace=0.4)
-plt.savefig(dirpic+"ALLCASE_BiasProfile_t_q_gray_p.png",dpi=300)          
+plt.savefig(dirpic+"ALLCASE_BiasProfile_t_q_gray_500m.png",dpi=300)          
 plt.show()
 plt.close()
 #----------the origin q and tmeperature
@@ -594,22 +483,15 @@ jc=0
 jr=0
 ij=1
 for iga in range(0,nga):
-    dis_pressure=dis_pressure_ea
-    if iga ==4 or iga==5:
-        dis_pressure=dis_pressure_tp
     if jc==2:
         jc=0
         jr=jr+1
     mker=titlestr[iga]
     xdate=xdatet[iga]
-    tmp4prs=np.zeros(shape=(nz,nt),dtype=float)
-    tmp4prs[:,:]=obstmp[:,:,iga]
-    prelevel=allprelevel[:,iga]
     levs1=[-12,-9,-6,-3,3,6,9,12]
     colors1=['g','g','g','g','r','r','r','r']
     linetype1=['solid','solid','solid','solid','dotted','dotted','dotted','dotted'] 
-    #levs2=[3,5,9,12,15,18,21]
-    levs2=[1,2,4,6,8,10,12,14,16,18,20]
+    levs2=[3,5,9,12,15,18,21]
     colors2=['g','g','r','r','r','r']
     linetype2=['dotted','dotted','solid','solid','solid','solid']
     titlename=[r"Temperature Bias ($K$)",r"Water Vapor Mixing Ratio Bias ($g$ $kg^{-1}$) "]
@@ -622,17 +504,17 @@ for iga in range(0,nga):
     zdat=obsw[:,:,iga]
     #zdat=smtco   #-obstmp
     ##zdat[0,:]=0.0   ## the first level is below surface ground
-    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors='r',
+    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors='k',
         linewidths=1.5,levels=levs1,linestyles=linetype1)                           
 #    plt.title(titlename[0],fontsize=16)                          
     plt.axis([0, 121, 0, 16])
     plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
     zdat=obsqv[:,:,iga]
     zdat[0,:]=0.0   ## the first level is below surface ground
-    ax[jr,jc]=plt.contourf(xdat,ydat,zdat,cmap=cm.Greens,extend='both',
+    ax[jr,jc]=plt.contourf(xdat,ydat,zdat,cmap=cm.binary,extend='both',
         levels=levs2)#,linestyles=linetype2)  #linewidths=1.5,
     plt.axis([0, 121, 0, 16])
-    #plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
+    plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
     axx=fig.add_subplot(3,2,ij)
     ymajorLocator   = MultipleLocator(4)
     axx.yaxis.set_major_locator(ymajorLocator) 
@@ -641,29 +523,7 @@ for iga in range(0,nga):
     axx.set_xticks(range(0,nt,16))
     xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
     axx.set_xticklabels(xticklabels, size=16)
-    #plt.ylabel(r'Height ($km$)', fontdict=font)
-    ymajorLocator   = MultipleLocator(4) 
-    axx.yaxis.set_major_locator(ymajorLocator)
-    presstr='%d'%prelevel[0]
-    axx.text(122,0,presstr, fontdict=font)
-    for pres in dis_pressure:    
-        hp=pressure2heigh(pres,tmp4prs,ydat,prelevel)
-        print hp
-        hp=hp/1000.
-        presstr='%d'%pres
-        axx.text(122,hp,presstr, fontdict=font)
-    """    
-    ax_c = axx.twinx()
-    axx.callbacks.connect("ylim_changed", convert_ax(axx,tmp4prs,ydat,prelevel))
-    if ij in (1,3,5):
-        axx.set_ylabel(r'Height ($km$)', fontdict=font)
-    else:
-        ax_c.text(135,0.7,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
-    """
-    if ij in (1,3,5):
-        axx.set_ylabel(r'Height ($km$)', fontdict=font)
-    if ij in(2,4,6):
-        axx.text(135,12,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
+    plt.ylabel(r'Height ($km$)', fontdict=font)
     jc=jc+1
     ij=ij+1                
 plt.show()
@@ -671,7 +531,7 @@ fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)
 cax = fig.add_axes([0.2, 0.03, 0.6, 0.03])
 fig.colorbar(ax[0,0], cax,extend='both',
               spacing='uniform', orientation='horizontal')
-plt.savefig(dirpic+"ALLCASE_EC_omega&qv_color_p.png",dpi=300)          
+plt.savefig(dirpic+"ALLCASE_EC_omega&qv_Gray_500m.png",dpi=300)          
 plt.show()
 plt.close()
 #----------the 
@@ -689,9 +549,6 @@ for iga in range(0,nga):
         jr=jr+1
     mker=titlestr[iga]
     xdate=xdatet[iga]
-    tmp4prs=np.zeros(shape=(nz,nt),dtype=float)
-    tmp4prs[:,:]=obstmp[:,:,iga]
-    prelevel=allprelevel[:,iga]
     levs1=[-15,-10,-5,5,10,15]
     colors1=['g','g','g','r','r','r']
     linetype1=['dotted','dotted','dotted','solid','solid','solid'] 
@@ -736,7 +593,7 @@ fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)
 #cax = fig.add_axes([0.2, 0.03, 0.6, 0.03])
 #fig.colorbar(ax[0,0], cax,extend='both',
 #              spacing='uniform', orientation='horizontal')
-plt.savefig(dirpic+"ALLCASE_EC_Biasa_Time_Color.png",dpi=300)          
+plt.savefig(dirpic+"ALLCASE_EC_Biasa_Time_Color_500m.png",dpi=300)          
 plt.show()
 plt.close()
 #############################################################################
@@ -849,7 +706,7 @@ plt.show()
 #cax = fig.add_axes([0.2, 0.03, 0.6, 0.03])
 #fig.colorbar(ax[0,0], cax,extend='both',
 #              spacing='uniform', orientation='horizontal')
-plt.savefig(dirpic+"ALLCASE_EC_Biasa_Time_Color_Profile.png",dpi=300)          
+plt.savefig(dirpic+"ALLCASE_EC_Biasa_Time_Color_Profile_500m.png",dpi=300)          
 plt.show()
 plt.close()
 #############################################################################
@@ -971,57 +828,6 @@ plt.show()
 #cax = fig.add_axes([0.2, 0.03, 0.6, 0.03])
 #fig.colorbar(ax[0,0], cax,extend='both',
 #              spacing='uniform', orientation='horizontal')
-plt.savefig(dirpic+"ALLCASE_EC_Biasa_Time_Color_Profile_Precents.png",dpi=300)          
-plt.show()
-plt.close()
-###############################################################################
-###############################################################################
-fig,ax=plt.subplots(nrows=3,ncols=2,figsize=(18,12))
-#fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
-color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
-wd=[2,2,2,2,2]
-jc=0
-jr=0
-ij=1
-for iga in range(0,nga):
-    if jc==2:
-        jc=0
-        jr=jr+1
-    mker=titlestr[iga]
-    xdate=xdatet[iga]
-    levs1=[-25,-15,-10,-5,-1,1,5,10,15,25]
-    colors1=['g','g','g','g','g','r','r','r','r','r']
-    linetype1=['dotted','dotted','dotted','dotted','dotted','solid''solid''solid','solid','solid'] 
-    font = {'family' : 'serif',
-        'color'  : 'k',
-        'weight' : 'normal',
-        'size'   : 16,
-        }     
-    plt.subplot(3,2,ij)
-    zdat=obsu[:,:,iga]
-    #zdat=smtco   #-obstmp
-    ##zdat[0,:]=0.0   ## the first level is below surface ground
-    ax[jr,jc]=plt.contour(xdat,ydat,zdat,colors=colors1,
-        linewidths=1.5,levels=levs1) #,linestyles=linetype1)                           
-#    plt.title(titlename[0],fontsize=16)                          
-    plt.axis([0, 121, 0, 16])
-    plt.clabel(ax[jr,jc],inline=1,fmt='%1d',fontsize=12)
-    axx=fig.add_subplot(3,2,ij)
-    ymajorLocator   = MultipleLocator(4)
-    axx.yaxis.set_major_locator(ymajorLocator) 
-    text1=mker  #r"($a$)"
-    axx.text(1.5,16.5,text1,fontsize=18)                        
-    axx.set_xticks(range(0,nt,16))
-    xticklabels = [xdate[nn] for nn in range(0,nt,16)] 
-    axx.set_xticklabels(xticklabels, size=16)
-    plt.ylabel(r'Height ($km$)', fontdict=font)
-    jc=jc+1
-    ij=ij+1                
-plt.show()
-fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)
-#cax = fig.add_axes([0.2, 0.03, 0.6, 0.03])
-#fig.colorbar(ax[0,0], cax,extend='both',
-#              spacing='uniform', orientation='horizontal')
-plt.savefig(dirpic+"ALLCASE_EC_wind_uwnd.png",dpi=300)          
+plt.savefig(dirpic+"ALLCASE_EC_Biasa_Time_Color_Profile_Precents_500m.png",dpi=300)          
 plt.show()
 plt.close()

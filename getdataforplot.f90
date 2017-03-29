@@ -4,6 +4,7 @@ IMPLICIT NONE
 INTEGER, PARAMETER :: NT=2880,NZ=34,NX=200,DT=15  ! DT OUTPUT INTERVAL TIMESTEP
 INTEGER, PARAMETER :: ND=30,NDT=24*60/DT
 INTEGER, PARAMETER :: NBIN=100  ! BINS FOR CLOUD WATER CONTENT
+INTEGER, PARAMETER :: NZZ=52  ! BINS FOR CLOUD WATER CONTENT
 REAL QL(NZ,NX),QI(NZ,NX),TL(NZ)
 REAL DEN(NZ),QRL(NZ,NX),QRS(NZ,NX),TC(NZ,NX)
 REAL OMG(NZ,NX),MAXOMG(NX,2)
@@ -60,6 +61,11 @@ REAL CON_PR(NDT,3), STR_PR(NDT,3), TAL_PR(NDT,3),DUPRECI(NDT)
 !---------------------------------------------------------
 REAL ZDAT(NZ),DZDAT(NZ)
 !
+REAL CQL(NZ),CQI(NZ)
+REAL CLDPATH(2,5),CONTCLDPATH(5)
+!
+REAL QC(NX,NZZ),QA(NX,NZZ),QB(NX,NZZ),QR(NX,NZZ)
+!
 REAL ICEPATH(5),WATERPATH(5),CCMAXOMG(5)
 REAL THKNSS(5,NDT)
 !
@@ -94,7 +100,7 @@ DATA ZDAT/ 0.0500000, 0.1643000, 0.3071000, 0.4786000            &
 REAL FRC,FRR
 REAL CM(99)
 INTEGER IT,ICDEX(5)
-REAL C1,C2,C3,C4,C5,C6,C7,C8,C9    ! TEMPORARY VARABLES 
+REAL C1,C2,C3,C4(NZ),C5(NZ),C6,C7,C8,C9    ! TEMPORARY VARABLES 
 INTEGER IC1,IC2,IC3,IC4,IC5
 CHARACTER*100 FPATH,DIRIN,DIROUT
 CHARACTER FOLD*30,CASENM(6)*20,REGNM*20
@@ -108,8 +114,8 @@ CASENM(3)="NPCCTR_EC"  ; DATESTR(3)='20100802'
 CASENM(4)="NECCTR_EC"  ; DATESTR(4)='20120706'
 CASENM(5)="MLYRCTR_EC" ; DATESTR(5)='20100602'
 CASENM(6)="PRDCTR_EC"  ; DATESTR(6)='20120401'
-DIRIN="X:\WORK\PhD04\Cases\"
-DIROUT="X:\WORK\PhD04\Cases\postdata\CTREC\"
+DIRIN="D:\Mypaper\PhD04\Cases\"
+DIROUT="D:\Mypaper\PhD04\Cases\postdata\CTREC\"
 !
 DO I=2,NZ
     DZDAT(I)=(ZDAT(I)-ZDAT(I-1))*1000.  ! KM TO M
@@ -159,6 +165,9 @@ DO I =1,6
     FPATH=TRIM(DIRIN)//TRIM(REGNM)//'/CTREC'//DATESTR(I)  &
    &   //'/Simulation/'//TRIM(CASENM(I))//'_QLQIT.TXT'
     OPEN(40,FILE=TRIM(FPATH))
+    FPATH=TRIM(DIRIN)//TRIM(REGNM)//'/CTREC'//DATESTR(I)  &
+   &   //'/Simulation/'//TRIM(CASENM(I))//'_Raw_qcqaqbqr.TXT'
+    OPEN(50,FILE=TRIM(FPATH))
 !
 ! -------- INTINITAL ARRAYS ----------------------	
 	ITDC = 0 ; ITST = 0 ; ITCR = 0 ; ITADC = 0
@@ -205,7 +214,12 @@ DO I =1,6
     IDT=1
 
     ZRL=0;SZRL=0;ISZRL=0
-
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_ALLTYPES_CLOUDWATER_PATH.TXT"
+    OPEN(101,FILE=TRIM(FPATH))
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_TEST01_CHEN.TXT"
+    OPEN(102,FILE=TRIM(FPATH))
+    FPATH=TRIM(DIROUT)//TRIM(CASENM(I))//"_TEST02_CHEN.TXT"
+    OPEN(103,FILE=TRIM(FPATH))
 	DO IT =1,NT
 		IF (IDT < NDT)THEN
 			IDT=IDT+1
@@ -223,9 +237,23 @@ DO I =1,6
                 IPREMX=IX
             ENDIF
         ENDDO
+        CQL=0
+        CQI=0
         DO IK=1,NZ
             READ(40,'(8E12.4)')DEN(IK),QL(IK,:),QI(IK,:),TC(IK,:)
+            C2=0. ; C3=0.
+            DO IX=1,NX
+                C2=C2+QL(IK,IX)/(NX*1.0)
+                C3=C3+QI(IK,IX)/(NX*1.0)
+            ENDDO
+            WRITE(102,*)C2,C3
         ENDDO
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!##
+        CLDPATH=0
+        CONTCLDPATH=0
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        C4=0.
+        C5=0.
 		DO IX=1,NX
             MAXOMG(IX,1)= -999.
             MAXOMG(IX,2)=  999.
@@ -238,17 +266,28 @@ DO I =1,6
             DUSRFHT(2,IDT)=DUSRFHT(2,IDT)+FLH(IX+1)
             IDUSRFHT(1,IDT)=IDUSRFHT(1,IDT)+1.
             IDUSRFHT(2,IDT)=IDUSRFHT(2,IDT)+1.
+            READ(50,'(8E12.4)')QC(IX,:),QA(IX,:),QB(IX,:),QR(IX,:)
+            DO IZ =1,NZ
+                C4(IZ)=C4(IZ)+(QC(IX,IZ+1)+QR(IX,IZ+1))/(NX*1.0)
+                C5(IZ)=C5(IZ)+(QA(IX,IZ+1)+QB(IX,IZ+1))/(NX*1.0)
+            ENDDO
             DO IK=1,NZ
 				READ(20,'(8E12.4)')QL(IK,IX),QI(IK,IX),OMG(IK,IX),   &
 		   &	  QRS(IK,IX),QRL(IK,IX)
+                QL(IK,IX)=QC(IX,IK+1)+QR(IX,IK+1)
+                QI(IK,IX)=QA(IX,IK+1)+QB(IX,IK+1)
 				TL(IK)=QL(IK,IX)+QI(IK,IX) ! TOTAL WATER CONTENT
-                IF(TL(IK)<1.0E-3) TL(IK)=0.0   ! IF THERE IS NO CLOUD TL=0
+                IF(TL(IK)<1.0E-4) TL(IK)=0.0   ! IF THERE IS NO CLOUD TL=0
                 IF (OMG(IK,IX)>MAXOMG(IK,1))THEN
                     MAXOMG(IX,1)=OMG(IK,IX)*10. ! MAX POSITIVE VALUE
                !     IF (MAXOMG(IX,1)>10.) PRINT*,MAXOMG(IX,1),'AAA'
                 ELSEIF(OMG(IK,IX)<MAXOMG(IK,2))THEN
                     MAXOMG(IX,2)=OMG(IK,IX)*10. ! MAX NEGITIVE VALUE
-                ENDIF              
+                ENDIF 
+                !!!!!!!!OUTPUT THE TIEM SERIS 
+                CQL(IK)=CQL(IK)+QL(IK,IX)/NX
+                CQI(IK)=CQI(IK)+QI(IK,IX)/NX
+                !!!!!!!!!!!!!!!!   
 			ENDDO
 !------------------ PRECIPITATION ------------------------------------
             IF (RAINRATE>25. .OR. MAXOMG(IX,1)>10.)THEN  ! CONVETIVE RAIN
@@ -328,11 +367,14 @@ DO I =1,6
     			     SZRL=SZRL+ZRL
                      ISZRL=ISZRL+1
                 ENDIF
-			ENDDO
+			ENDDO         
             IF (ICDEX(1)>0)THEN                
                 DUDCMNQI(IDT)=DUDCMNQI(IDT)+ICEPATH(1)
                 DUDCMNQL(IDT)=DUDCMNQL(IDT)+WATERPATH(1)
                 IDCLINE(IDT)=IDCLINE(IDT)+1
+                CLDPATH(1,1)= CLDPATH(1,1)+WATERPATH(1)
+                CLDPATH(2,1)= CLDPATH(2,1)+ICEPATH(1)
+                CONTCLDPATH(1)=CONTCLDPATH(1)+1.
             ENDIF
             !------------------ PRECIPITATION ------------------------------------
 !            IF (RAINRATE>5. .OR. MAXOMG(IX,1)>10.)THEN  ! CONVETIVE RAIN    Ori. 25
@@ -544,6 +586,9 @@ DO I =1,6
                 DUACMNQI(IDT)=DUACMNQI(IDT)+ICEPATH(2)
                 DUACMNQL(IDT)=DUACMNQL(IDT)+WATERPATH(2)
                 IACLINE(IDT)=IACLINE(IDT)+1
+                CLDPATH(1,2)= CLDPATH(1,2)+WATERPATH(2)
+                CLDPATH(2,2)= CLDPATH(2,2)+ICEPATH(2)
+                CONTCLDPATH(2)=CONTCLDPATH(2)+1.
             ENDIF
             IF (NA>0)THEN                
                 WPERCNT(2,IDT)=WPERCNT(2,IDT)+(ICEPATH(2)+WATERPATH(2))/(C1+C2)
@@ -553,6 +598,9 @@ DO I =1,6
                 ADUDCMNQI(IDT)=ADUDCMNQI(IDT)+ICEPATH(3)
                 ADUDCMNQL(IDT)=ADUDCMNQL(IDT)+WATERPATH(3)
                 AIDCLINE(IDT)=AIDCLINE(IDT)+1
+                CLDPATH(1,3)= CLDPATH(1,3)+WATERPATH(3)
+                CLDPATH(2,3)= CLDPATH(2,3)+ICEPATH(3)
+                CONTCLDPATH(3)=CONTCLDPATH(3)+1.
             ENDIF
             IF (NA>0)THEN                
                 WPERCNT(3,IDT)=WPERCNT(3,IDT)+(ICEPATH(3)+WATERPATH(3))/(C1+C2)
@@ -562,6 +610,9 @@ DO I =1,6
                 DUSTMNQI(IDT)=DUSTMNQI(IDT)+ICEPATH(4)
                 DUSTMNQL(IDT)=DUSTMNQL(IDT)+WATERPATH(4)
                 ISTLINE(IDT)=ISTLINE(IDT)+1
+                CLDPATH(1,4)= CLDPATH(1,4)+WATERPATH(4)
+                CLDPATH(2,4)= CLDPATH(2,4)+ICEPATH(4)
+                CONTCLDPATH(4)=CONTCLDPATH(4)+1.
             ENDIF
             IF (NA>0)THEN                
                 WPERCNT(4,IDT)=WPERCNT(4,IDT)+(ICEPATH(4)+WATERPATH(4))/(C1+C2)
@@ -571,12 +622,32 @@ DO I =1,6
                 DUCRMNQI(IDT)=DUCRMNQI(IDT)+ICEPATH(5)
                 DUCRMNQL(IDT)=DUCRMNQL(IDT)+WATERPATH(5)
                 ICRLINE(IDT)=ICRLINE(IDT)+1
+                CLDPATH(1,5)= CLDPATH(1,5)+WATERPATH(5)
+                CLDPATH(2,5)= CLDPATH(2,5)+ICEPATH(5)
+                CONTCLDPATH(5)=CONTCLDPATH(5)+1.
             ENDIF
             IF (NA>0)THEN                
                 WPERCNT(5,IDT)=WPERCNT(5,IDT)+(ICEPATH(5)+WATERPATH(5))/(C1+C2)
                 IWPERCNT(5,IDT)=IWPERCNT(5,IDT)+1
             ENDIF
 		ENDDO ! NX
+        DO J=1,5
+           !IF (CONTCLDPATH(J)>0)THEN
+           !     CLDPATH(1,J)= CLDPATH(1,J)/CONTCLDPATH(J)
+           !     CLDPATH(2,J)= CLDPATH(2,J)/CONTCLDPATH(J)
+           !ELSE
+           !     CLDPATH(1,J)= -9.9
+           !     CLDPATH(2,J)= -9.9
+           !ENDIF
+           CLDPATH(1,J)= CLDPATH(1,J)/NX
+           CLDPATH(2,J)= CLDPATH(2,J)/NX
+        ENDDO
+        WRITE(101,112)(CQL(K),K=1,NZ),(CQI(K),K=1,NZ),(CLDPATH(1,IK),IK=1,5),(CLDPATH(2,IK),IK=1,5)
+        WRITE(103,'(8E12.4)')(C4(K),K=1,NZ),(C5(K),K=1,NZ)
+        CQL=0
+        CQI=0
+        CLDPATH=0
+        CONTCLDPATH=0
     ENDDO ! NT
 ! ------- DOING THE AVERAGED  AND OUTPUT --------------------------------------
 !-----------FOR DEEP CONVECTION 
@@ -623,9 +694,16 @@ DO I =1,6
     OPEN(10,FILE=TRIM(FPATH))
     WRITE(10,*)ZRL
     CLOSE(10)
-!----------- FOR STRATIFORM     
+!----------- FOR STRATIFORM   
+    CLOSE(101)
+    CLOSE(102)
+    CLOSE(103)
+    CLOSE(20)
+    CLOSE(30)
+    CLOSE(40)
+    CLOSE(50)
 ENDDO ! REGIONS
-
+112 FORMAT(34(1X,E12.4),34(1X,E12.4),10(1X,E12.4))
 END PROGRAM
 !
 SUBROUTINE DEEPCC(QW,KM,KB,KE,NA) ! QW TOTAL CLOUD WATER,IM: HORIZONTAL GRID; KM : VERTICAL GRID

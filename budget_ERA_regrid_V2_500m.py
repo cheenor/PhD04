@@ -45,55 +45,22 @@ def readAscii(fpath,iskp,*nl):
     f.close()
     print len(onedim)
     return onedim
-def pressure2heigh(pres,tmp4prs,ydat,prelevel):
-    nt=len(tmp4prs[0,:])
-    nz=len(tmp4prs[:,0])
-    menatmp=np.zeros(shape=(nz),dtype=float)
-    for iz in range(0,nz):
-        for it in range(0,nt):
-            menatmp[iz]=menatmp[iz]+tmp4prs[iz,it]/nt    
-    for iz in range(1,nz):
-        if pres<prelevel[iz-1] and pres>=prelevel[iz]:
-            z1=ydat[iz-1]*1000. # km to m
-            p1=prelevel[iz-1]
-            at=((menatmp[iz]+menatmp[iz-1])/2.-273.15)*1./273.
-            z2=z1+18400*(1+at)*math.log10(p1/pres)
-            return z2
 #########################-----------------------------------------------------
 nt=121
 nz=33
-CASE=['PRDCTR_EC','MLYRCTR_EC','NPCCTR_EC','NECCTR_EC','WTPCTR_EC','ETPCTR_EC']
+CASE=['PRDCTR_H','MLYRCTR_H','NPCCTR_H','NECCTR_H','WTPCTR_H','ETPCTR_H']
 nx=202
 nga=len(CASE)
-dirs='D:/MyPaper/PhD04/Cases/'
+dirs="Z:/CRM/500m/"
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 dirout='D:/MyPaper/PhD04/Pics/'
-dis_pressure_ea=[750.,550.,400.,250.,150.]
-dis_pressure_tp=[450.,300.,200.,100.]
-nzz=52
-ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
-      907.143 ,  1164.286,   1450.000,   1764.286 ,  2107.143,   2478.572 ,
-      2878.572,   3307.143,  3764.286,  4250.000,   4764.286,   5307.143, 
-      5878.571,   6478.571,   7107.143,  7764.286,  8450.000,  9164.285,  
-      9907.143,  10678.570,  11478.570,  12307.143,  13164.285,  14050.000,
-      14964.285,  15907.143,  16878.572,  17878.572,  18907.145,  19964.285,
-      21050.000,  22164.285,  23307.145,  24478.572,  25678.572,  26907.145,
-      28164.285,  29450.000,  30764.285,  32107.145,  33478.570,  34878.570,
-      36307.141,  37764.285,  39250.000,  40750.000]
-ydatx=[]
-for i in range (0,nzz):#ydat_r:
-    ydatx.append(ydat_r[i]/1000.)
-fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(12,20))
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(9,20))
 #fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
 iro=0
 ic=0
-ij=1
 for iga in range(0,nga):
-    dis_pressure=dis_pressure_ea
-    if iga ==4 or iga==5:
-        dis_pressure=dis_pressure_tp
     if ic==3:
         ic=0
         iro=iro+1
@@ -126,27 +93,13 @@ for iga in range(0,nga):
     folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
     datestr="%4d"%iy+"%2.2d"%im+"%2.2d"%jd+'_031d'
     dirpic='D:/MyPaper/PhD04/Pics/'
-    dirin=dirs+area+folds
+    dirin=dirs+area+'/run/regrid/'
     dirq12=dirin
     nameq1q2=area+'_'+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd +"_031d_regrid_ERA.99"
     nameforcing=area+'_'+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd +"_031d_lsforcing_regrid_ERA.37"
     ydat=[]
     for i in range(0,nz):
         ydat.append(i*0.5) 
-#######################################
-    f52=area+'_'+datestr+"_ERA_52pressure.52"
-    dirobs=diro+area+'/'
-    fpath=dirobs+f52
-    iskp=0
-    prelevel=readAscii(fpath, iskp)
-    tmp4prs=np.zeros(shape=(nzz,nt),dtype=float)       
-    fpath=dirobs+'temperature.txt'
-    onedim1=readAscii(fpath, 0)   
-    for it in range(0,nt):
-        for iz in range(0,nzz):
-            k=it*nzz+iz
-            #print k,len(onedim1)              
-            tmp4prs[iz,it]=onedim1[k]
 ####### file 1
     filenm=casenm+'_regrid_qabcr_All.txt'
     fpath=dirin+filenm
@@ -363,7 +316,7 @@ for iga in range(0,nga):
     lnstycolor=['-','-','-','-','-']
     lncolor=['orangered','darkgoldenrod','yellowgreen','deepskyblue','darkorchid']
     lnmkcolor=['None','None','None','None','None'] 
-    lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
+    lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
     lnstygrey=['-','--',':','-',':']
     lngrey=['silver','gray','darkgray','gainsboro','k']
     lnmkgrey=['o','v','x','+','*']
@@ -377,9 +330,12 @@ for iga in range(0,nga):
 ###################
     q1sim_pf=np.ndarray(shape=(nz), dtype=float)
     q2sim_pf=np.ndarray(shape=(nz), dtype=float)
-    q1sim_pf[:]=eddyvar_mean[0,:]+eddyvar_mean[2,:]+  q1cm[:] \
-            +eddyvar_mean[6,:]+eddyvar_mean[7,:] +eddyvar_mean[4,:]
-    q2sim_pf[:]=eddyvar_mean[1,:]+eddyvar_mean[3,:]+ q2cm[:] +eddyvar_mean[5,:] 
+#    q1sim_pf[:]=eddyvar_mean[0,:]+eddyvar_mean[2,:]+  q1cm[:] \
+#            +eddyvar_mean[6,:]+eddyvar_mean[7,:] +eddyvar_mean[4,:]
+#    q2sim_pf[:]=eddyvar_mean[1,:]+eddyvar_mean[3,:]+ q2cm[:] +eddyvar_mean[5,:] 
+    q1sim_pf[:]= q1cm[:]+eddyvar_mean[2,:] \
+            +eddyvar_mean[6,:]+eddyvar_mean[7,:] +eddyvar_mean[4,:]+eddyvar_mean[0,:]
+    q2sim_pf[:]=q2cm[:] +eddyvar_mean[5,:]+eddyvar_mean[3,:]+eddyvar_mean[1,:] 
     q1sim_pf[0]=0.0
     q2sim_pf[0]=0.0
     ####plot setup 
@@ -417,29 +373,15 @@ for iga in range(0,nga):
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
     if iga==4 :
         ax[iro,ic].legend(frameon=False)
-#    if iga in(1,2,4,5)  :
-#        setp(ax[iro,ic].get_yticklabels(), visible=False) #
+    if iga in(1,2,4,5)  :
+        setp(ax[iro,ic].get_yticklabels(), visible=False) #
     if iga in(0,3) :   
         ylabs='Height'+r' ($km$)'
         ax[iro,ic].set_ylabel(ylabs,fontsize=size_title)
-    xs, xe = ax[iro,ic].get_xlim()
-    presstr='%d'%prelevel[0]
-    ax[iro,ic].text(xe+0.1,0,presstr, fontdict=font)
-    for pres in dis_pressure:    
-        hp=pressure2heigh(pres,tmp4prs,ydatx,prelevel)
-        print hp
-        hp=hp/1000.
-        presstr='%d'%pres
-        ax[iro,ic].text(xe+0.1,hp,presstr, fontdict=font)
-    if ij in(3,6):
-        ax[iro,ic].text(xe+1.8,11,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90) 
     ic=ic+1
-    ij=ij+1
     #ax0.legend()
-plt.subplots_adjust(left = 0.1, wspace = 0.5, hspace = 0.25, \
-    bottom = 0.1, right=0.9, top = 0.90)
 plt.show()                     
-plt.savefig(dirout+'ALLCASE_Q1Q2SIMandOBS_Grey_2_p.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_Q1Q2SIMandOBS_Grey_500m.png',dpi=300)          
 plt.show()
 plt.close()
 #

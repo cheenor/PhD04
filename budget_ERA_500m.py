@@ -11,13 +11,13 @@ import string
 import numpy as np
 import os
 os.system("cls")
-casenm='ETPCTR_EC'
+casenm='ETPCTR_H'
 #casenm='WTP2D0'
 #casenm='NPC2D2'
 nt=121
 nz=52
 starid=4  # this parameter can discard the dirst day
-dirs='D:/MyPaper/PhD04/Cases/'
+dirs='Z:/CRM/500m/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 if casenm[0:3]=='ETP':
     area=casenm[0:3]
@@ -51,7 +51,7 @@ if casenm[0:3]=='NEC':
     iy,im,jd=2012,7,6 
 folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
 dirpic='D:/MyPaper/PhD04/Pics/'
-dirin=dirs+area+folds
+dirin=dirs+area+'/run/'
 dirobs=diro+area+'/'
 f43=area+'_'+datestr+"_ERA.43"
 nameforcing=area+'_'+datestr+"_LSFORCING_ERA.37"
@@ -312,7 +312,7 @@ ax0.set_ylabel(ylabs,fontsize=20)
 ax0.legend()
 #
 plt.show()                     
-plt.savefig(dirpic+casenm+'_qaqbqcqr_profiles_3k.png',dpi=300)          
+plt.savefig(dirpic+casenm+'_qaqbqcqr_profiles2_500m.png',dpi=300)          
 #plt.show()
 plt.close() 
 ##############################
@@ -454,7 +454,7 @@ ax4.legend()
 ax5.axis('off')
 #####
 plt.show()                     
-plt.savefig(dirpic+casenm+'_Q1Q2_profiles_3k.png',dpi=300)          
+plt.savefig(dirpic+casenm+'_Q1Q2_profiles2_500m.png',dpi=300)          
 #plt.show()
 plt.close() 
 ################### plotting every simulated copms of Qc 
@@ -499,7 +499,7 @@ ylabs='Height'+r' ($km$)'
 ax4.set_ylabel(ylabs,fontsize=size_title)
 ax5.axis('off')
 plt.show()                     
-plt.savefig(dirpic+casenm+'_Q1Q2_profiles_Composition_3k.png',dpi=300)          
+plt.savefig(dirpic+casenm+'_Q1Q2_profiles_Composition2_500m.png',dpi=300)          
 #plt.show()
 plt.close() 
          

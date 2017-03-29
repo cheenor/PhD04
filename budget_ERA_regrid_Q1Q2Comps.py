@@ -45,6 +45,20 @@ def readAscii(fpath,iskp,*nl):
     f.close()
     print len(onedim)
     return onedim
+def pressure2heigh(pres,tmp4prs,ydat,prelevel):
+    nt=len(tmp4prs[0,:])
+    nz=len(tmp4prs[:,0])
+    menatmp=np.zeros(shape=(nz),dtype=float)
+    for iz in range(0,nz):
+        for it in range(0,nt):
+            menatmp[iz]=menatmp[iz]+tmp4prs[iz,it]/nt    
+    for iz in range(1,nz):
+        if pres<prelevel[iz-1] and pres>=prelevel[iz]:
+            z1=ydat[iz-1]*1000. # km to m
+            p1=prelevel[iz-1]
+            at=((menatmp[iz]+menatmp[iz-1])/2.-273.15)*1./273.
+            z2=z1+18400*(1+at)*math.log10(p1/pres)
+            return z2
 #########################-----------------------------------------------------
 nt=121
 nz=33
@@ -54,13 +68,32 @@ nga=len(CASE)
 dirs='D:/MyPaper/PhD04/Cases/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 dirout='D:/MyPaper/PhD04/Pics/'
+dis_pressure_ea=[750.,550.,400.,250.,150.]
+dis_pressure_tp=[450.,300.,200.,100.]
+nzz=52
+ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
+      907.143 ,  1164.286,   1450.000,   1764.286 ,  2107.143,   2478.572 ,
+      2878.572,   3307.143,  3764.286,  4250.000,   4764.286,   5307.143, 
+      5878.571,   6478.571,   7107.143,  7764.286,  8450.000,  9164.285,  
+      9907.143,  10678.570,  11478.570,  12307.143,  13164.285,  14050.000,
+      14964.285,  15907.143,  16878.572,  17878.572,  18907.145,  19964.285,
+      21050.000,  22164.285,  23307.145,  24478.572,  25678.572,  26907.145,
+      28164.285,  29450.000,  30764.285,  32107.145,  33478.570,  34878.570,
+      36307.141,  37764.285,  39250.000,  40750.000]
+ydatx=[]
+for i in range (0,nzz):#ydat_r:
+    ydatx.append(ydat_r[i]/1000.)
 fig,ax=plt.subplots(nrows=3,ncols=4,figsize=(12,35))
 #fig,axs=plt.subplots(nrows=2,ncols=3,figsize=(12,12))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
 iro=0
 ic=0
+ij=1
 for iga in range(0,nga):
+    dis_pressure=dis_pressure_ea
+    if iga ==4 or iga==5:
+        dis_pressure=dis_pressure_tp
     if ic==4:
         ic=0
         iro=iro+1
@@ -68,11 +101,11 @@ for iga in range(0,nga):
     casenm=CASE[iga]
     if casenm[0:3]=='ETP':
         area=casenm[0:3]   
-        iy,im,jd=2012,5,20
+        iy,im,jd=2010,6,3
         atr=r'$(f)$'
     if casenm[0:3]=='WTP':
         area=casenm[0:3]    
-        iy,im,jd=2010,7,14
+        iy,im,jd=2010,7,3
         atr=r'$(e)$'    
     if casenm[0:3]=='NPC':
         area=casenm[0:3]   
@@ -84,7 +117,7 @@ for iga in range(0,nga):
         atr=r'$(a)$'
     if casenm[0:3]=='MLY':
         area=casenm[0:4]
-        iy,im,jd=2010,6,24 
+        iy,im,jd=2010,6,2 
         atr=r'$(b)$'
     if casenm[0:3]=='NEC':
         area=casenm[0:3]   
@@ -100,6 +133,20 @@ for iga in range(0,nga):
     ydat=[]
     for i in range(0,nz):
         ydat.append(i*0.5) 
+#######################################
+    f52=area+'_'+datestr+"_ERA_52pressure.52"
+    dirobs=diro+area+'/'
+    fpath=dirobs+f52
+    iskp=0
+    prelevel=readAscii(fpath, iskp)
+    tmp4prs=np.zeros(shape=(nzz,nt),dtype=float)       
+    fpath=dirobs+'temperature.txt'
+    onedim1=readAscii(fpath, 0)   
+    for it in range(0,nt):
+        for iz in range(0,nzz):
+            k=it*nzz+iz
+            #print k,len(onedim1)              
+            tmp4prs[iz,it]=onedim1[k]
 ####### file 1
     filenm=casenm+'_regrid_qabcr_All.txt'
     fpath=dirin+filenm
@@ -339,22 +386,16 @@ for iga in range(0,nga):
     lnstycolor=['-','-','-','-']
     lncolor=['orangered','orangered','yellowgreen','yellowgreen']
     lncolor=['r','darkgoldenrod','g','b','darkorchid']
-<<<<<<< HEAD
     lncolor=['deeppink','b','green','y']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
-=======
     lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
-<<<<<<< HEAD
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
-=======
     lnstygrey=['-',':','-','--'] 
     lngrey=['k','k','darkgray','darkgray']
->>>>>>> updated 20151022
     lnmkgrey=['o','x','o','x']
     lnwidgrey=[3.0,3.0,4.0,4.0,4.0]   
     colors=lngrey
@@ -362,16 +403,14 @@ for iga in range(0,nga):
     mker=lnmkcolor
     width=lnwidgrey
     size_title=18     
-<<<<<<< HEAD
-    ax[iro,ic].set_ylim(0,16)           
-=======
     ax[iro,ic].set_ylim(0,16)
     ax[iro,ic].set_xlim(-6,6)           
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     ax[iro,ic].plot(eddyvar_mean[0,:],ydat,label=r'$Q_1$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
-    ax[iro,ic].plot(eddyvar_mean[2,:]+eddyvar_mean[4,:],ydat,label=r'$Q_1$d'+'\n'+'+ $Q_1$s',
+#    ax[iro,ic].plot(eddyvar_mean[2,:]+eddyvar_mean[4,:],ydat,label=r'$Q_1$d'+'\n'+'+ $Q_1$s',
+#        color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
+    ax[iro,ic].plot(eddyvar_mean[2,:]+eddyvar_mean[4,:],ydat,label=r'$Q_1$d',
         color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
     ax[iro,ic].plot(q1cm,ydat,label=r'$Q_1$c',
         color=colors[2],ls=sty[2],marker=mker[2],lw=width[2],)  #
@@ -381,92 +420,104 @@ for iga in range(0,nga):
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_1$'# ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
-<<<<<<< HEAD
-    xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
-=======
     xmajorLocator   = MultipleLocator(3) #将y轴主刻度标签设置为2的倍数  
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
     ax[iro,ic].yaxis.set_major_locator(ymajorLocator)
-    if iro==1 and ic==3 :
-        ax[iro,ic].legend(loc=(0.97,0.2),frameon=False)
-    if iro==0 and ic==2 :
-        ax[iro,ic].legend(loc=(2.17,0.1),frameon=False)
+#    if iro==1 and ic==3 :
+#        ax[iro,ic].legend(loc=(0.97,0.2),frameon=False)
+#    if iro==0 and ic==2 :
+#        ax[iro,ic].legend(loc=(2.17,0.1),frameon=False)
+    if iro==2 and ic==2 :
+        ax[iro,ic].legend(loc=1,frameon=False,fontsize='medium')
+    if iro==2 and ic==3 :
+        ax[iro,ic].legend(loc=1,frameon=False,fontsize='medium') #(2.17,0.1)
     if ic==0:
         ylabs='Height'+r' ($km$)'
         ax[iro,ic].set_ylabel(ylabs,fontsize=size_title)
-    if iro in(0,1,2) and ic in(1,2,3):
-            setp(ax[iro,ic].get_yticklabels(), visible=False) #
+#    if iro in(0,1,2) and ic in(1,2,3):
+#            setp(ax[iro,ic].get_yticklabels(), visible=False) #
+    presstr='%d'%prelevel[0]
+    ax[iro,ic].text(6.1,0,presstr, fontdict=font)
+    for pres in dis_pressure:    
+        hp=pressure2heigh(pres,tmp4prs,ydatx,prelevel)
+        print hp
+        hp=hp/1000.
+        presstr='%d'%pres
+        ax[iro,ic].text(6.1,hp,presstr, fontdict=font)
+    if ij in(4,8,12):
+        ax[iro,ic].text(10,11,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90) 
     # Q2
     ic=ic+1
+    ij=ij+1
     lnstycolor=['-','-','-','-']
-<<<<<<< HEAD
     lncolor=['r','orange','lime','y']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[3.0,3.0,3.0,3.0,3.0]  
-=======
     lncolor=['r','g','b','k']
     lnmkcolor=['None','None','None','None','None'] 
     lnwidcolor=[4.0,4.0,4.0,4.0,4.0]  
-<<<<<<< HEAD
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     lnstygrey=['-','-','-','-']
     lngrey=['silver','silver','darkgray','darkgray']
-=======
     lnstygrey=['-',':','-',':'] 
     lngrey=['k','k','darkgray','darkgray']
->>>>>>> updated 20151022
     lnmkgrey=['o','x','o','x']
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
     colors=lngrey
     sty=lnstygrey
     mker=lnmkcolor
-<<<<<<< HEAD
     width=lnwidcolor 
-<<<<<<< HEAD
     ax[iro,ic].set_ylim(0,16)           
-=======
-=======
     width=lnwidgrey
->>>>>>> updated 20151022
     ax[iro,ic].set_ylim(0,16) 
     ax[iro,ic].set_xlim(-6,6)           
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
     ax[iro,ic].plot(eddyvar_mean[1,:],ydat,label=r'$Q_2$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
-    ax[iro,ic].plot(eddyvar_mean[3,:]+eddyvar_mean[5,:],ydat,label=r'$Q_2$d'+'\n'+'+ $Q_2$s',
+#    ax[iro,ic].plot(eddyvar_mean[3,:]+eddyvar_mean[5,:],ydat,label=r'$Q_2$d'+'\n'+'+ $Q_2$s',
+#        color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
+    ax[iro,ic].plot(eddyvar_mean[3,:]+eddyvar_mean[5,:],ydat,label=r'$Q_2$d',
         color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
     ax[iro,ic].plot(q2cm,ydat,label=r'$Q_2$c',
         color=colors[2],ls=sty[2],marker=mker[2],lw=width[2],)  #
     #ax[ir,ic].set_title('Case '+casenm+r'   $Q_1$ and $Q_2$'+ r' ($K$ $d^{-1}$)',fontsize=size_title)
     titlestr=atr+" "+area+r' $Q_2$' # ($K$ $day^{-1}$)'
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
-<<<<<<< HEAD
-    xmajorLocator   = MultipleLocator(2) #将y轴主刻度标签设置为2的倍数  
-=======
     xmajorLocator   = MultipleLocator(3) #将y轴主刻度标签设置为2的倍数  
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #    ymajorFormatter = FormatStrFormatter('%1.1f') #设置y轴标签文本的格式 
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
     ax[iro,ic].yaxis.set_major_locator(ymajorLocator) 
-    if iro==1 and ic==3 :
-        ax[iro,ic].legend(loc=(0.97,0.2),frameon=False)
-    if iro==0 and ic==2 :
-        ax[iro,ic].legend(loc=(2.17,0.1),frameon=False)
+#    if iro==1 and ic==3 :
+#        ax[iro,ic].legend(loc=(0.97,0.2),frameon=False)
+#    if iro==0 and ic==2 :
+#        ax[iro,ic].legend(loc=(2.17,0.1),frameon=False)
+    if iro==2 and ic==2 :
+        ax[iro,ic].legend(loc=1,frameon=False,fontsize='medium')
+    if iro==2 and ic==3 :
+        ax[iro,ic].legend(loc=1,frameon=False,fontsize='medium')
     if ic==0:
         ylabs='Height'+r' ($km$)'
         ax[iro,ic].set_ylabel(ylabs,fontsize=size_title)
-    if iro in(0,1,2) and ic in(1,2,3):
-            setp(ax[iro,ic].get_yticklabels(), visible=False) #
+#    if iro in(0,1,2) and ic in(1,2,3):
+#        setp(ax[iro,ic].get_yticklabels(), visible=False)  #
+    presstr='%d'%prelevel[0]
+    ax[iro,ic].text(6.1,0,presstr, fontdict=font)
+    for pres in dis_pressure:    
+        hp=pressure2heigh(pres,tmp4prs,ydatx,prelevel)
+        print hp
+        hp=hp/1000.
+        presstr='%d'%pres
+        ax[iro,ic].text(6.1,hp,presstr, fontdict=font)
+    if ij in(4,8,12):
+        ax[iro,ic].text(10,11,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)    
     ic=ic+1
-plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
-    bottom = 0.1, top = 0.90)
+    ij=ij+1
+plt.subplots_adjust(left = 0.08, wspace = 0.55, hspace = 0.3, \
+    bottom = 0.1, right=0.92, top = 0.90)
 plt.show()                     
-plt.savefig(dirout+'ALLCASE_Q1Q2Comps_Gray.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_Q1Q2Comps_Gray_2_p.png',dpi=300)          
 plt.show()
 plt.close()
     #

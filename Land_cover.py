@@ -7,6 +7,7 @@ Created on Thu Sep 30  2015
 """
 from netCDF4 import Dataset #用于读取netcdf文件
 from mpl_toolkits.basemap import Basemap# 地图
+import matplotlib.cm as cm
 import numpy as np  # 数组，数值计算
 import matplotlib.pyplot as plt  # 画图 模块
 import math  #数学公式模块
@@ -26,12 +27,12 @@ mlyrlon=[112.5, 112.5,  120,   120, 112.5]
 prdlat=[20,  27.5, 27.5, 20, 20]
 prdlon=[110, 110,  117.5,   117.5, 110]
 fonttp = {'family' : 'serif',
-        'color'  : 'w',
+        'color'  : 'k',
         'weight' : 'normal',
         'size'   : 18,
         }  
 fontec = {'family' : 'serif',
-        'color'  : 'k',
+        'color'  : 'w',
         'weight' : 'normal',
         'size'   : 18,
         }  
@@ -54,6 +55,7 @@ m=Basemap(projection='lcc', llcrnrlon=77.,llcrnrlat=15.,urcrnrlon=150.,urcrnrlat
           lat_1=15.,lat_2=45.,lat_0=35.,lon_0=105.,rsphere=6371200., resolution='l') 
 m.drawcoastlines() # 显示地图海岸线
 m.drawcountries() # 显示国界线
+m.drawstates() # 显示国界线
 parallels = np.arange(-90,90,10.) #地图上的纬度线，间隔是10，范围是-90到90
 m.drawparallels(parallels,labels=[1,0,0,0],fontsize=14) #地图上画出
 # draw meridians
@@ -67,9 +69,11 @@ for i in range(0,ny):
         lat_grid[i,j]=lat[i]
 x, y = m(lon_grid, lat_grid) # compute map proj coordinates. 
 clevs= range(0,6000,500)  # 等值线间隔为10，从0开始
-cs = m.contourf(x,y,hight[0,:,:],clevs,cmap='binary',extend='both')
+cs = m.contourf(x,y,hight[0,:,:],clevs,cmap=cm.terrain,extend='both')
 cbar = m.colorbar(cs,location='bottom',pad="5%") # 色标
 cbar.set_label('m',fontsize=16) # 色标下面标注单位
+#clevs=[3500,2000]
+#cs1=m.contour(x,y,hight[0,:,:],clevs,colors=['w','w','w'],linewidths=[3,3,3])
 x, y = m(etplon, etplat) 
 m.plot(x,y,c='w')
 x, y = m(93, 33) 
@@ -99,8 +103,8 @@ m.plot(x,y,c='k')
 x, y = m(112, 23.5) 
 plt.text(x,y,'PRD',fontec)
 #
+
 plt.show() #显示图像
-plt.savefig(dirout+'Land_10min.png',dpi=300)  #保存图片，这里保存为pdf，常用格式矢量格式 eps,ps等都是支持的
+plt.savefig(dirout+'Land_10min_color.png',dpi=300)  #保存图片，这里保存为pdf，常用格式矢量格式 eps,ps等都是支持的
 # 非矢量格式，png，jpg，tiff等
 plt.close() # 关闭画图窗口
-

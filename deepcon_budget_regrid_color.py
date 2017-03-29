@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Thu Aug 27 09:49:17 2015
+Created on Thu Dec 17 10:12:17 2015
 
 @author: chenjh
 """
@@ -38,20 +38,6 @@ def readAscii(fpath,iskp):
     del linesplit
     f.close()
     return onedim
-def pressure2heigh(pres,tmp4prs,ydat,prelevel):
-    nt=len(tmp4prs[0,:])
-    nz=len(tmp4prs[:,0])
-    menatmp=np.zeros(shape=(nz),dtype=float)
-    for iz in range(0,nz):
-        for it in range(0,nt):
-            menatmp[iz]=menatmp[iz]+tmp4prs[iz,it]/nt    
-    for iz in range(1,nz):
-        if pres<prelevel[iz-1] and pres>=prelevel[iz]:
-            z1=ydat[iz-1]*1000. # km to m
-            p1=prelevel[iz-1]
-            at=((menatmp[iz]+menatmp[iz-1])/2.-273.15)*1./273.
-            z2=z1+18400*(1+at)*math.log10(p1/pres)
-            return z2
 #--------------------------------------·---------------
 add_suffix='_V3'
 if add_suffix[2]=='3':
@@ -69,11 +55,6 @@ orderstr=[r'($a$)',r'($b$)',r'($c$)',r'($d$)',r'($e$)',r'($f$)',]
 nga=len(CASENM)
 dirin="D:/MyPaper/PhD04/Cases/"
 dirpic="D:/MyPaper/PhD04/Pics/"
-diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
-dis_pressure_ea=[750.,550.,400.,250.,150.]
-dis_pressure_tp=[450.,300.,200.,100.]
-nzz=52
-ntx=121
 #
 ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
       907.143 ,  1164.286,   1450.000,   1764.286 ,  2107.143,   2478.572 ,
@@ -163,7 +144,7 @@ for iga in range(0,nga):
     jc=jc+1
 #    ij=ij+1
 plt.show()
-plt.savefig(dirpic+'DCC_heatingprofiles_fortran'+add_suffix+'_regrid_Gray.png',dpi=300)          
+plt.savefig(dirpic+'DCC_heatingprofiles_fortran'+add_suffix+'_regrid_Color.png',dpi=300)          
 plt.show()
 plt.close() 
 #
@@ -218,23 +199,7 @@ for iga in range(0,nga):
     if casenm[0:3]=='MLY':
         area=casenm[0:4]
     else:
-        area=casenm[0:3]
-    dis_pressure=dis_pressure_ea
-    if iga ==4 or iga==5:
-        dis_pressure=dis_pressure_tp
-    f52=area+'_'+datestr[iga]+"_031d_ERA_52pressure.52"
-    dirobs=diro+area+'/'
-    fpath=dirobs+f52
-    iskp=0
-    prelevel=readAscii(fpath, iskp)
-    tmp4prs=np.zeros(shape=(nzz,ntx),dtype=float)       
-    fpath=dirobs+'temperature.txt'
-    onedim1=readAscii(fpath, 0)   
-    for it in range(0,ntx):
-        for iz in range(0,nzz):
-            k=it*nzz+iz
-            #print k,len(onedim1)              
-            tmp4prs[iz,it]=onedim1[k] 
+        area=casenm[0:3]   
     atr=orderstr[iga]
     lnstycolor=['-','-','-','-','-','-','-','-']
     lncolor=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
@@ -245,10 +210,10 @@ for iga in range(0,nga):
     lngrey=['k','k','gray','gray','lightgrey','lightgrey']
     lnmkgrey='None','None','None','None','None','None'
     lnwidgrey=[3.5,3.5,4.0,4.5,5,5.5]   
-    colors=lngrey
+    colors=lncolor
     sty=lnstygrey
     mker=lnmkgrey
-    width=lnwidgrey 
+    width=lnwidcolor 
     q1m=np.ndarray(shape=(km),dtype=float)
     q2m=np.ndarray(shape=(km),dtype=float)
     q2m[:]=(condc[0,:,iga]+condc[1,:,iga]+condc[2,:,iga]+condc[3,:,iga])*2.5e10/2.834e10 \
@@ -259,56 +224,36 @@ for iga in range(0,nga):
     ax[0].set_ylim(0,16)           
     ax[0].plot(q1m,ydat,label=area,
         color=colors[iga],ls=sty[iga],marker=mker[iga],lw=width[iga],) #
-        #axx.text(hp,15,presstr, fontdict=font,rotation=-90)
-    ax[0].set_title(r'($a$) $Q_1$',fontsize=20)   
-   #axx.text(18,12,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
-    #ax[0].text(125,11,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
+    ax[0].set_title(r'($a$) $Q_1$',fontsize=20)
     #allvar_mean[5,0]=0.
     ax[1].set_ylim(0,16) 
     ax[1].plot(q2m,ydat,label=area , #r'$Q_2$',
         color=colors[iga],ls=sty[iga],marker=mker[iga],lw=width[iga],)  #
     ax[1].set_title(r'($b$) $Q_2$',fontsize=20)
-    plt.legend(frameon=False)
+    plt.legend()
 #plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
 #    bottom = 0.1, top = 0.90)
 plt.show()                     
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2'+add_suffix+'_regrid_grey_p.png',dpi=300)          
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2'+add_suffix+'_regrid_Color.png',dpi=300)          
 plt.show()
 plt.close()
 matplotlib.rcParams['ytick.labelsize'] = 16
 matplotlib.rcParams['xtick.labelsize'] = 16
 #------------------------------------------------------------------------------
-fig,ax=plt.subplots(nrows=3,ncols=4,figsize=(15,35))
+fig,ax=plt.subplots(nrows=3,ncols=4,figsize=(12,35))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
 jr=0
 jc=0
-ij=1
 for iga in range(0,nga):
+    if jc==4:
+        jc=0
+        jr=jr+1
     casenm=CASENM[iga]
     if casenm[0:3]=='MLY':
         area=casenm[0:4]
     else:
-        area=casenm[0:3]
-    dis_pressure=dis_pressure_ea
-    if iga ==4 or iga==5:
-        dis_pressure=dis_pressure_tp
-    f52=area+'_'+datestr[iga]+"_031d_ERA_52pressure.52"
-    dirobs=diro+area+'/'
-    fpath=dirobs+f52
-    iskp=0
-    prelevel=readAscii(fpath, iskp)
-    tmp4prs=np.zeros(shape=(nzz,ntx),dtype=float)       
-    fpath=dirobs+'temperature.txt'
-    onedim1=readAscii(fpath, 0)   
-    for it in range(0,ntx):
-        for iz in range(0,nzz):
-            k=it*nzz+iz
-            #print k,len(onedim1)              
-            tmp4prs[iz,it]=onedim1[k]    
-    if jc==4:
-        jc=0
-        jr=jr+1   
+        area=casenm[0:3]   
     atr=orderstr[iga]
     lnstycolor=['-','-','-','-']
     lncolor=['orangered','orangered','yellowgreen','yellowgreen']
@@ -321,19 +266,17 @@ for iga in range(0,nga):
     lngrey=['k','k','gray','gray','lightgrey']
     lnmkgrey=['None','None','None','None','None'] 
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lngrey
+    colors=lncolor
     sty=lnstygrey
     mker=lnmkgrey
-    width=lnwidgrey 
+    width=lnwidcolor
     size_title=18     
     ax[jr,jc].set_ylim(0,16)
     ax[jr,jc].set_xlim(-50,90)            
     ax[jr,jc].plot(q1q2com[0,:,iga],ydat,label=r'$Q_1$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
-#    ax[jr,jc].plot(q1q2com[1,:,iga]+q1q2com[2,:,iga],ydat,label=r'$Q_1$d'+'\n'+'+ $Q_1$s',
-#        color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
-    ax[jr,jc].plot(q1q2com[1,:,iga]+q1q2com[2,:,iga],ydat,label=r'$Q_1$d',
+    ax[jr,jc].plot(q1q2com[1,:,iga]+q1q2com[2,:,iga],ydat,label=r'$Q_1$d'+'\n'+'+ $Q_1$s',
         color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
     q1cm=np.ndarray(shape=(km),dtype=float)
     q1cm[:]=condc[0,:,iga]+condc[1,:,iga]+condc[2,:,iga]+condc[3,:,iga]+condc[4,:,iga]
@@ -351,31 +294,17 @@ for iga in range(0,nga):
     ax[jr,jc].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
     ax[jr,jc].yaxis.set_major_locator(ymajorLocator)
-    if jr==2 and jc==2 :
-        ax[jr,jc].legend(loc=1,frameon=False)
-    if jr==0 and jc==3 :
-        ax[jr,jc].legend(loc=1,frameon=False) #(2.17,0.1)
+    if jr==1 and jc==3 :
+        ax[jr,jc].legend(loc=(0.97,0.2),frameon=False)
+    if jr==0 and jc==2 :
+        ax[jr,jc].legend(loc=(2.17,0.1),frameon=False)
     if jc==0:
         ylabs='Height'+r' ($km$)'
         ax[jr,jc].set_ylabel(ylabs,fontsize=size_title)
-#    if jr in(0,1,2) and jc in(1,2,3):
-#            setp(ax[jr,jc].get_yticklabels(), visible=False) #
-    presstr='%d'%prelevel[0]
-    ax[jr,jc].text(92,0,presstr, fontdict=font)
-    #axx.text(0,15,presstr, fontdict=font,rotation=-90)
-    for pres in dis_pressure:    
-        hp=pressure2heigh(pres,tmp4prs,ydat,prelevel)
-        print hp
-        hp=hp/1000.
-        presstr='%d'%pres
-        ax[jr,jc].text(92,hp,presstr, fontdict=font)
-        #axx.text(hp,15,presstr, fontdict=font,rotation=-90)
-    #axx.text(18,12,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
-    if ij in(4,8,12):
-        ax[jr,jc].text(125,11,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
+    if jr in(0,1,2) and jc in(1,2,3):
+            setp(ax[jr,jc].get_yticklabels(), visible=False) #
     # Q2
     jc=jc+1
-    ij=ij+1
     lnstycolor=['-','-','-','-']
     lncolor=['r','g','b','orange','blueviolet','aqua']
     lnmkcolor=['None','None','None','None','None'] 
@@ -384,18 +313,16 @@ for iga in range(0,nga):
     lngrey=['k','k','gray','gray','lightgrey']
     lnmkgrey=['None','None','None','None','None'] 
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lngrey
+    colors=lncolor
     sty=lnstygrey
     mker=lnmkgrey
-    width=lnwidgrey 
+    width=lnwidcolor 
     ax[jr,jc].set_ylim(0,16) 
     ax[jr,jc].set_xlim(-50,90)          
     ax[jr,jc].plot(q1q2com[7,:,iga],ydat,label=r'$Q_2$e',
         color=colors[0],ls=sty[0],marker=mker[0],lw=width[0],) #
     #allvar_mean[5,0]=0.
-#    ax[jr,jc].plot(q1q2com[8,:,iga]+q1q2com[9,:,iga],ydat,label=r'$Q_2$d'+'\n'+'+ $Q_2$s',
-#        color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
-    ax[jr,jc].plot(q1q2com[8,:,iga]+q1q2com[9,:,iga],ydat,label=r'$Q_2$d',
+    ax[jr,jc].plot(q1q2com[8,:,iga]+q1q2com[9,:,iga],ydat,label=r'$Q_2$d'+'\n'+'+ $Q_2$s',
         color=colors[1],ls=sty[1],marker=mker[1],lw=width[1],)  #
     q2cm=np.ndarray(shape=(km),dtype=float)
     q2cm[:]=(condc[0,:,iga]+condc[1,:,iga]+condc[2,:,iga]+condc[3,:,iga])*2.5e10/2.834e10
@@ -409,69 +336,37 @@ for iga in range(0,nga):
     ax[jr,jc].xaxis.set_major_locator(xmajorLocator) 
     ymajorLocator   = MultipleLocator(4) 
     ax[jr,jc].yaxis.set_major_locator(ymajorLocator) 
-    if jr==2 and jc==2 :
-        ax[jr,jc].legend(loc=1,frameon=False) #(0.97,0.2)
-    if jr==2 and jc==3 :
-        ax[jr,jc].legend(loc=1,frameon=False)#(2.17,0.1)
+    if jr==1 and jc==3 :
+        ax[jr,jc].legend(loc=(0.97,0.2),frameon=False)
+    if jr==0 and jc==2 :
+        ax[jr,jc].legend(loc=(2.17,0.1),frameon=False)
     if jc==0:
         ylabs='Height'+r' ($km$)'
         ax[jr,jc].set_ylabel(ylabs,fontsize=size_title)
-#    if jr in(0,1,2) and jc in(1,2,3):
-#            setp(ax[jr,jc].get_yticklabels(), visible=False) #
-    presstr='%d'%prelevel[0]
-    ax[jr,jc].text(92,0,presstr, fontdict=font)
-    #axx.text(0,15,presstr, fontdict=font,rotation=-90)
-    for pres in dis_pressure:    
-        hp=pressure2heigh(pres,tmp4prs,ydat,prelevel)
-        print hp
-        hp=hp/1000.
-        presstr='%d'%pres
-        ax[jr,jc].text(92,hp,presstr, fontdict=font)
-        #axx.text(hp,15,presstr, fontdict=font,rotation=-90)
-    #axx.text(18,12,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
-    if ij in(4,8,12):
-        ax[jr,jc].text(125,11,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
-#        plt.yticks() #
+    if jr in(0,1,2) and jc in(1,2,3):
+            setp(ax[jr,jc].get_yticklabels(), visible=False) #
     jc=jc+1
-    ij=ij+1
-plt.subplots_adjust(left = 0.08, right = 0.92,wspace = 0.45, hspace = 0.3, \
+plt.subplots_adjust(left = 0.1, wspace = 0.2, hspace = 0.3, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2Comps'+add_suffix+'_regrid_Gray_2_p.png',dpi=300)          
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2Comps'+add_suffix+'_regrid_Color.png',dpi=300)          
 plt.show()
 plt.close()
 #
-fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(15,18))
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(10,18))
 color_cycle=['deeppink', 'lime', 'b', 'y','indigo', 'cyan']
 wd=[2,2,2,2,2]
 iro=0
 ic=0
-ij=1
 for iga in range(0,nga):
+    if ic==3:
+        ic=0
+        iro=iro+1
     casenm=CASENM[iga]
     if casenm[0:3]=='MLY':
         area=casenm[0:4]
     else:
-        area=casenm[0:3]
-    dis_pressure=dis_pressure_ea
-    if iga ==4 or iga==5:
-        dis_pressure=dis_pressure_tp
-    f52=area+'_'+datestr[iga]+"_031d_ERA_52pressure.52"
-    dirobs=diro+area+'/'
-    fpath=dirobs+f52
-    iskp=0
-    prelevel=readAscii(fpath, iskp)
-    tmp4prs=np.zeros(shape=(nzz,ntx),dtype=float)       
-    fpath=dirobs+'temperature.txt'
-    onedim1=readAscii(fpath, 0)   
-    for it in range(0,ntx):
-        for iz in range(0,nzz):
-            k=it*nzz+iz
-            #print k,len(onedim1)              
-            tmp4prs[iz,it]=onedim1[k]    
-    if ic==3:
-        ic=0
-        iro=iro+1  
+        area=casenm[0:3]   
     atr=orderstr[iga]  
 ##############################
 # Q1 and Q2
@@ -488,10 +383,10 @@ for iga in range(0,nga):
     lngrey=['k','k','gray','gray','lightgrey']
     lnmkgrey=['None','None','None','None','None'] 
     lnwidgrey=[4.0,4.0,4.0,4.0,4.0]   
-    colors=lngrey
+    colors=lncolor
     sty=lnstygrey
     mker=lnmkgrey
-    width=lnwidgrey 
+    width=lnwidcolor 
     micro_com=np.ndarray(shape=(5,km),dtype=float)
     micro_com[:,:]=condc[:,:,iga]
     size_title=18     
@@ -513,35 +408,18 @@ for iga in range(0,nga):
     ax[iro,ic].set_title(titlestr,fontsize=size_title)
     xmajorLocator   = MultipleLocator(b) #将y轴主刻度标签设置为3的倍数  
     ax[iro,ic].xaxis.set_major_locator(xmajorLocator) 
-    if iro==1 and ic==2 :
-        ax[iro,ic].legend(loc=1,frameon=False) #loc=(1.0,0.5)
+    if iro==0 and ic==2 :
+        ax[iro,ic].legend(loc=(1.0,0.5),frameon=False)
     if ic==0:    
         ylabs='Height'+r' ($km$)'
         ax[iro,ic].set_ylabel(ylabs,fontsize=size_title)
-#    if iro in(0,1,2) and ic in(1,2,3):
-#            setp(ax[iro,ic].get_yticklabels(), visible=False) #
-    presstr='%d'%prelevel[0]
-    ax[iro,ic].text(133,0,presstr, fontdict=font)
-    ymajorLocator   = MultipleLocator(4) 
-    ax[iro,ic].yaxis.set_major_locator(ymajorLocator) 
-    #axx.text(0,15,presstr, fontdict=font,rotation=-90)
-    for pres in dis_pressure:    
-        hp=pressure2heigh(pres,tmp4prs,ydat,prelevel)
-        print hp
-        hp=hp/1000.
-        presstr='%d'%pres
-        ax[iro,ic].text(133,hp,presstr, fontdict=font)
-        #axx.text(hp,15,presstr, fontdict=font,rotation=-90)
-    #axx.text(18,12,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
-    if ij in(3,6):
-        ax[iro,ic].text(170,11,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)
-#        plt.yticks() #
+    if iro in(0,1,2) and ic in(1,2,3):
+            setp(ax[iro,ic].get_yticklabels(), visible=False) #
     # Q2
     ic=ic+1
-    ij=ij+1
-plt.subplots_adjust(left = 0.1,right=0.9, wspace = 0.35, hspace = 0.25, \
+plt.subplots_adjust(left = 0.1,right=0.85, wspace = 0.2, hspace = 0.25, \
     bottom = 0.1, top = 0.90)
 plt.show()                     
-plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2CondComps'+add_suffix+'_regrid_Gray_p.png',dpi=300)          
+plt.savefig(dirpic+'ALLCASE_DCC_Q1Q2CondComps'+add_suffix+'_regrid_Color.png',dpi=300)          
 plt.show()
 #plt.close()

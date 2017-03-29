@@ -43,10 +43,10 @@ def readAscii(fpath,iskp,*nl):
     del linesplit,ff
     f.close()
     return onedim
-#
-CASES=['PRDCTR_EC','MLYRCTR_EC','NPCCTR_EC','NECCTR_EC','WTPCTR_EC','ETPCTR_EC']
+#C
+CASES=['PRDCTR_H','MLYRCTR_H','NPCCTR_H','NECCTR_H','WTPCTR_H','ETPCTR_H']
 nt=241
-dirs='D:/MyPaper/PhD04/Cases/'
+dirs='Z:/CRM/500m/'
 diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
 dirpic='D:/MyPaper/PhD04/Pics/'
 dirceres='D:/MyPaper/PhD04/Data/CERES/'
@@ -60,6 +60,10 @@ fig,axs = plt.subplots(nrows=2,ncols=3,figsize=(18,8))
 color_cycle=['deeppink','lime','y','indigo','b','r','cyan','k','grey']
 color_cycle=['deeppink','lime','y','indigo','k','0.65','cyan','k','0.75']
 wds=[2,2,2,2,2,2,2,2,2]
+############# Gray figure ######################
+color_cycle=['0.65','k','cyan','0.75','0.75']
+wds=[3,2.5,3,2.5,3,2.5,3,2.5]
+#############################################
 linests=['-','--','-','--','-','--','-','--','-','--']
 linests=['-','-','-','-','-','-','-','-','-','-']
 ir=0
@@ -95,7 +99,7 @@ for iga in range(0,nga):
         astr=r'$(d)$'
     folds="/CTREC"+"%4d"%iy+"%2.2d"%im+"%2.2d"%jd+"/Simulation/"
     datestr="%4d"%iy+"%2.2d"%im+"%2.2d"%jd+'_031d'  
-    dirin=dirs+area+folds
+    dirin=dirs+area+'/run/postdata/'
     dirsim=dirin
     simnm='rad_3hr_'+casenm
     ceresnm=area+"_"+"%4d"%iy+'_'+"%2.2d"%im+'_'+"%2.2d"%jd+"__30d3h.txt"
@@ -305,7 +309,7 @@ for iga in range(0,nga):
     jc=jc+1
 plt.show()                     
 fig.subplots_adjust(left=0.1,bottom=0.1,right=1-0.1,top=1-0.1,hspace=0.4)                  
-plt.savefig(dirout+'ALLCASE_radiation_albedo_color_2.png',dpi=300)          
+plt.savefig(dirout+'ALLCASE_radiation_albedo_gray_500m.png',dpi=300)          
 plt.show()
 plt.close()
 

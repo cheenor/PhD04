@@ -372,11 +372,8 @@ for i in range(0,nr):
         ir=ir+1
     for j in range(0,nty):          
         plt.subplot(nr,nty,ij)   # plot ax[i,j]
-<<<<<<< HEAD
-        ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i],cmap=cm.YlOrRd, extend='both')
-=======
+#        ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i],cmap=cm.YlOrRd, extend='both')
         ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i],cmap=cm.jet, extend='both')
->>>>>>> e7f6294ce64f9ff8e82dba507be001724e7f2df1
 #        ax[ij]=plt.contourf(xdat,zdat,BINMAX[:,:,j,i],cmap=cm.Greys, levels=maxlevs,extend='both')  levels=maxlevs,          
         marknm=regioname+cloudtype[j]
         plt.title(marknm,fontsize=12)                          

@@ -63,7 +63,7 @@ CC SST DATA FROM NMC ANALYSIS (TSST IS TIME IN DAYS, DSST IS IN DEG C)
       topstr='' !'_150'
 !      TOPSTR=''
       DIRFLUX='X:\Data\ERA_interim\SHLH\'
-      DIROUT='D:\MyPaper\PhD04\Cases\ERA\FORCING\'
+      DIROUT='D:\MyPaper\PhD04\Cases\ERA\FORCING\3D\'
       AREA(1)='ETP' ; AYEAR(1)=2010
       AREA(2)='WTP' ; AYEAR(2)=2010
       DO I=1,12
@@ -562,8 +562,12 @@ CC SCALE AND WRITE TO FILES:
 CC   VELOCITY PROFILES FOR SELECTED PERIOD (FORT.35); NOTE ROTATION
           SVEL=10.    ! VELOCITY SCALE IN CLARKS MODEL
           DO K=1,L
-            OUT1(K)=-VE1(K)/SVEL
-            OUT2(K)= UE1(K)/SVEL
+            !!! 2D
+            !OUT1(K)=-VE1(K)/SVEL
+            !OUT2(K)= UE1(K)/SVEL
+            !!!! 3D
+            OUT1(K)= UE1(K)/SVEL
+            OUT2(K)= VE1(K)/SVEL
           ENDDO
           WRITE(35,801) TIME,OUT1,OUT2
           WRITE(42,801) TIME,OMG_ADJ,OMG_ORI,Q1H, Q1V, Q2H, Q2V

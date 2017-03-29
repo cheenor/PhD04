@@ -17,35 +17,65 @@ import calendar
 import string
 import time
 #
-def readAscii(fpath,iskp,nrl):
+def readAscii(fpath,iskp,*nl):
     #iskp  the total line skipped of the file
     # fpath   the full path of the file
     # usage: onedim=readAscii(fpaht,iskp)
     onedim=[]
     linesplit=[]
     f=open(fpath)
-    print iskp,nrl
-    ff=f.readlines()[iskp:nrl]  ## first line in obs file is legend 
+    if nl:
+        nrl=nl[0]
+        ff=f.readlines()[iskp:nrl]  ## first line in obs file is legend 
+    else:
+        ff=f.readlines()[iskp:]
     for line in ff:
         line=string.lstrip(line)
         linesplit.append(line[:-1].split(' '))
     for lnstrs in linesplit:
         for strs in lnstrs:
-            if strs!='':
+#            if strs!='':
+#                onedim.append(string.atof(strs))
+            try:
                 onedim.append(string.atof(strs))
+            except:
+                strs=""
+#            else:
+#                onedim.append(string.atof(strs))
     del linesplit,ff
     f.close()
     print len(onedim)
     return onedim
+def pressure2heigh(pres,tmp4prs,ydat,prelevel):
+    nt=len(tmp4prs[0,:])
+    nz=len(tmp4prs[:,0])
+    menatmp=np.zeros(shape=(nz),dtype=float)
+    for iz in range(0,nz):
+        for it in range(0,nt):
+            menatmp[iz]=menatmp[iz]+tmp4prs[iz,it]/nt    
+    for iz in range(1,nz):
+        if pres<prelevel[iz-1] and pres>=prelevel[iz]:
+            z1=ydat[iz-1]*1000. # km to m
+            p1=prelevel[iz-1]
+            at=((menatmp[iz]+menatmp[iz-1])/2.-273.15)*1./273.
+            z2=z1+18400*(1+at)*math.log10(p1/pres)
+            return z2
 dt=15
 ndt=24*60/dt
 nz=34
+nzz=52
+ntx=121
 nbin=100
 dirpic="d:/mypaper/PhD04/Pics/"
 casenm=['PRDCTR_EC','MLYRCTR_EC', 'NPCCTR_EC',
            'NECCTR_EC','WTPCTR_EC' , 'ETPCTR_EC']   
 astr=[r'$(a)$',r'$(b)$', r'$(c)$',r'$(d)$',r'$(e)$',r'$(f)$']
+datestr=['20120401' , '20100602' , '20100802' ,
+           '20120706' , '20100703' , '20100603' ]
 dirin="d:/mypaper/PhD04/Cases/postdata/CTREC/"
+diro='D:/MyPaper/PhD04/Cases/ERA/FORCING/'
+dis_pressure_ea=[750.,550.,400.,250.,150.]
+dis_pressure_tp=[450.,300.,200.,100.]
 cloudtype=["DEEPCONVECTION","ALLCELLS","STRATIFORM","CIRRUS","DEEPCONVECTION_A"]
 nty=len(cloudtype)
 nr=len(casenm)
@@ -66,6 +96,18 @@ zdat=[  0.0500000, 0.1643000, 0.3071000, 0.4786000
         , 7.1069999, 7.7639999, 8.4499998, 9.1639996, 9.9069996
         ,10.6800003,11.4799995,12.3100004,13.1599998,14.0500002
         ,14.9600000,15.9099998,16.8799992,17.8799992,18.9099998]
+ydat_r=[ -50.000 ,    50.000 ,   164.286,    307.143,    478.571  ,  678.571 ,
+      907.143 ,  1164.286,   1450.000,   1764.286 ,  2107.143,   2478.572 ,
+      2878.572,   3307.143,  3764.286,  4250.000,   4764.286,   5307.143, 
+      5878.571,   6478.571,   7107.143,  7764.286,  8450.000,  9164.285,  
+      9907.143,  10678.570,  11478.570,  12307.143,  13164.285,  14050.000,
+      14964.285,  15907.143,  16878.572,  17878.572,  18907.145,  19964.285,
+      21050.000,  22164.285,  23307.145,  24478.572,  25678.572,  26907.145,
+      28164.285,  29450.000,  30764.285,  32107.145,  33478.570,  34878.570,
+      36307.141,  37764.285,  39250.000,  40750.000]
+ydatx=[]
+for yd in ydat_r:
+    ydatx.append(yd*0.001)
 FCDY=np.ndarray(shape=(nz,ndt,nty,nr),dtype=float)
 DUQRL=np.ndarray(shape=(nz,ndt,nty,nr),dtype=float)
 DUQRS=np.ndarray(shape=(nz,ndt,nty,nr),dtype=float)
@@ -458,6 +500,91 @@ ij=1
 ir=0
 jc=0
 for i in range(0,nr):
+    dis_pressure=dis_pressure_ea
+    if i ==4 or i==5:
+        dis_pressure=dis_pressure_tp
+    if casenm[i][0:3] == "MLY" :
+        regioname= casenm[i][0:4]
+    else:
+        regioname= casenm[i][0:3]
+    if jc==3:
+        jc=0
+        ir=ir+1
+#######################################
+    f52=regioname+'_'+datestr[i]+"_031d_ERA_52pressure.52"
+    dirobs=diro+regioname+'/'
+    fpath=dirobs+f52
+    iskp=0
+    prelevel=readAscii(fpath, iskp)
+    tmp4prs=np.zeros(shape=(nzz,ntx),dtype=float)       
+    fpath=dirobs+'temperature.txt'
+    onedim1=readAscii(fpath, 0)   
+    for it in range(0,ntx):
+        for iz in range(0,nzz):
+            k=it*nzz+iz
+            #print k,len(onedim1)              
+            tmp4prs[iz,it]=onedim1[k]
+    j=0  # for deep convection          
+    plt.subplot(2,3,ij)   # plot ax[i,j]
+    greys=np.linspace(0.1,0.95,9)
+    ncl=len(greys)
+    mycolor=[]
+    for icl in range(0,ncl):
+        mycolor.append('%.2f'%greys[ncl-icl-1])
+    ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i]*100.,colors=mycolor,extend='both')#cmap=cm.binary, extend='both')
+#        ax[ij]=plt.contourf(xdat,zdat,BINMAX[:,:,j,i],cmap=cm.Greys, levels=maxlevs,extend='both')  levels=maxlevs,          
+    marknm=astr[i]+' '+regioname
+    plt.title(marknm,fontsize=14)                          
+#        plt.axis([0, 16, 0, nbin])
+    if ij in (1,4):
+        plt.ylabel(r'Height ($km$)', fontdict=font)     
+    axx=fig.add_subplot(2,3,ij)
+    axx.set_ylim(0,16)
+    axx.plot((0,5),(ZRL[i],ZRL[i]),c='grey',lw=1.5)
+    ymajorLocator   = MultipleLocator(4)
+    axx.yaxis.set_major_locator(ymajorLocator)                                         
+    if ir==1:
+        plt.xlabel(r'Max Cloud Water Content ($g$ $kg^{-1}$)', fontdict=font)        
+#    if ij in(2,3,5,6)  :
+#        for tick in axx.yaxis.get_major_ticks():
+#            tick.label1On = False
+#    if ij in(1,2,3)  :
+#        for tick in axx.xaxis.get_major_ticks():
+#            tick.label1On = False      
+    if ij in(3,6):
+        zrtxt='Freezing'+'\n'+'level'
+        zrtxt='Freezing level'
+        axx.text(2.4,ZRL[i]+0.5,zrtxt,fontsize=14)
+    presstr='%d'%prelevel[0]
+    axx.text(5.1,0,presstr, fontdict=font)
+    for pres in dis_pressure:    
+        hp=pressure2heigh(pres,tmp4prs,ydatx,prelevel)
+        print hp
+        hp=hp/1000.
+        presstr='%d'%pres
+        axx.text(5.1,hp,presstr, fontdict=font)
+    if ij in(3,6):
+        axx.text(6,12,'Pressure '+r'($hPa$)', fontdict=font,rotation=-90)  
+    plt.show()
+    ij=ij+1 
+    jc=jc+1   
+plt.subplots_adjust(left = 0.07, wspace = 0.35, hspace = 0.25, \
+    bottom = 0.2, top = 0.95)
+cax = fig.add_axes([0.17, 0.035, 0.7, 0.04])
+fig.colorbar(ax[0,0], cax,extend='both',
+              spacing='uniform', orientation='horizontal')
+titlename=r"Frequency of Max Cloud Water Content ($10^{-2}%$)"
+plt.title(titlename,fontsize=14)
+plt.show()
+plt.savefig(dirpic+'deepcon_maxcwcvsheight_2_Grey_p.png',dpi=300)        
+plt.show()
+plt.close()
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(15,10))
+#maxlevs=[]
+ij=1   
+ir=0
+jc=0
+for i in range(0,nr):
     if casenm[i][0:3] == "MLY" :
         regioname= casenm[i][0:4]
     else:
@@ -467,7 +594,7 @@ for i in range(0,nr):
         ir=ir+1
     j=0  # for deep convection          
     plt.subplot(2,3,ij)   # plot ax[i,j]
-    ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i]*100.,cmap=cm.binary, extend='both')
+    ax[ir,jc]=plt.contourf(WATERBIN,zdat,BINMAX[:,:,j,i]*100.,cmap=cm.jet, extend='both')
 #        ax[ij]=plt.contourf(xdat,zdat,BINMAX[:,:,j,i],cmap=cm.Greys, levels=maxlevs,extend='both')  levels=maxlevs,          
     marknm=astr[i]+' '+regioname
     plt.title(marknm,fontsize=14)                          
@@ -494,13 +621,13 @@ for i in range(0,nr):
     jc=jc+1   
 plt.subplots_adjust(left = 0.1, wspace = 0.1, hspace = 0.2, \
     bottom = 0.2, top = 0.90)
-cax = fig.add_axes([0.15, 0.03, 0.7, 0.04])
+cax = fig.add_axes([0.17, 0.03, 0.7, 0.04])
 fig.colorbar(ax[0,0], cax,extend='both',
               spacing='uniform', orientation='horizontal')
 titlename=r"Frequency of Max Cloud Water Content ($10^{-2}%$)"
 plt.title(titlename,fontsize=14)
 plt.show()
-plt.savefig(dirpic+'deepcon_maxcwcvsheight_2.png',dpi=300)        
+plt.savefig(dirpic+'deepcon_maxcwcvsheight_2_color.png',dpi=300)        
 plt.show()
 plt.close()
 ###############################################################################
@@ -511,20 +638,25 @@ ir=0
 jc=0
 j=0 # for deep convection        
 i=4
+greys=np.linspace(0.1,0.95,18)
+ncl=len(greys)
+mycolor=[]
+for icl in range(0,ncl):
+    mycolor.append('%.2f'%greys[ncl-icl-1])
 plt.subplot(2,3,ij)   # plot ax[i,j]
-ax[0,0]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,cmap=cm.binary, levels=cloudlevs,extend='both')
+ax[0,0]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,colors=mycolor, levels=cloudlevs,extend='both')
 marknm=r'($a$)'+' WTP'
 #plt.title(marknm,fontsize=14)
 axx=fig.add_subplot(2,3,ij)                         
 axx.set_xticks(range(0,ndt,12)) 
 xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
 axx.set_xticklabels(xticklabels, size=14)   
-axx.set_ylim(0,16)
+axx.set_ylim(4,16)
 axx.set_title(marknm)
 axx.set_ylabel('Height'+r'($km$)',fontsize=16)
 #axx.set_xlabel('UTC')
 pnoon=96*6/24
-axx.text(pnoon,0.5,'N')
+axx.text(pnoon,4.2,'N')
 ymajorLocator   = MultipleLocator(4)
 axx.yaxis.set_major_locator(ymajorLocator)
 for tick in axx.xaxis.get_major_ticks():
@@ -532,13 +664,13 @@ for tick in axx.xaxis.get_major_ticks():
 ij=ij+1
 i=5
 plt.subplot(2,3,ij)
-ax[0,1]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,cmap=cm.binary, levels=cloudlevs,extend='both')
+ax[0,1]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,colors=mycolor, levels=cloudlevs,extend='both')
 marknm=r'($b$)'+' ETP'
 axx=fig.add_subplot(2,3,ij)                         
 axx.set_xticks(range(0,ndt,12)) 
 xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
 axx.set_xticklabels(xticklabels, size=14) 
-axx.set_ylim(0,16)
+axx.set_ylim(4,16)
 ymajorLocator   = MultipleLocator(4)
 axx.yaxis.set_major_locator(ymajorLocator) 
 axx.set_title(marknm)
@@ -546,12 +678,12 @@ axx.set_ylabel('Height'+r'($km$)',fontsize=16)
 #axx.set_xlabel('UTC') 
 for tick in axx.xaxis.get_major_ticks():
     tick.label1On = False 
-axx.text(pnoon,0.5,'N') 
+axx.text(pnoon,4.2,'N') 
 ij=ij+1
 j=1
 i=4
-ax[0,2].plot(xdat,SRFHT[0,:,0,4]+SRFHT[1,:,0,4],c='g',label=r'WTP',lw=2)
-ax[0,2].plot(xdat,SRFHT[0,:,0,5]+SRFHT[1,:,0,5],c='r',label=r'ETP',lw=2)
+ax[0,2].plot(xdat,SRFHT[0,:,0,4]+SRFHT[1,:,0,4],c='k',label=r'WTP',lw=2)
+ax[0,2].plot(xdat,SRFHT[0,:,0,5]+SRFHT[1,:,0,5],c='grey',label=r'ETP',lw=2)
 #ax[0,1].plot(xdat,DUIPH[:,j,i],c='b',label=r'$IWP$')
 #ax[0,1].plot(xdat,DULPH[:,j,i],c='r',label=r'$LWP$')
 ax[0,2].legend(frameon=False)
@@ -569,10 +701,10 @@ for tick in ax[0,2].xaxis.get_major_ticks():
     tick.label1On = False    
 #
 i=4
-ax[1,0].plot(xdat,DUIPH[:,j,i]+DULPH[:,j,i],c='g',label=r'WTP',lw=2)
+ax[1,0].plot(xdat,DUIPH[:,j,i]+DULPH[:,j,i],c='k',label=r'WTP',lw=2)
 #ax[1,0].plot(xdat,DUIPH[:,2,i]+DULPH[:,2,i],c='g',label=r'$St(WTP)$',ls='dotted',lw=2)
 i=5
-ax[1,0].plot(xdat,DUIPH[:,j,i]+DULPH[:,j,i],c='r',label=r'ETP',lw=2)
+ax[1,0].plot(xdat,DUIPH[:,j,i]+DULPH[:,j,i],c='grey',label=r'ETP',lw=2)
 #ax[1,0].plot(xdat,DUIPH[:,2,i]+DULPH[:,2,i],c='r',label=r'$St(ETP)$',ls='dotted',lw=2)
 #ax[0,1].plot(xdat,DUIPH[:,j,i],c='b',label=r'$IWP$')
 #ax[0,1].plot(xdat,DULPH[:,j,i],c='r',label=r'$LWP$')
@@ -587,13 +719,14 @@ marknm=r'($d$)'+r' CWP '+r'($g$ $m^{-2}$)'
 ax[1,0].set_title(marknm)
 ymajorLocator   = MultipleLocator(150)
 ax[1,0].yaxis.set_major_locator(ymajorLocator)
+ax[1,0].set_xlabel('UTC') 
 #ax[0,1].set_xlabel('UTC')  
 ij=ij+1
 j=0
 i=4
-ax[1,1].plot(xdat,DUPRECI[:,j,i],c='g',label=r'WTP',lw=2)
+ax[1,1].plot(xdat,DUPRECI[:,j,i],c='k',label=r'WTP',lw=2)
 i=5
-ax[1,1].plot(xdat,DUPRECI[:,j,i],c='r',label=r'ETP',lw=2)
+ax[1,1].plot(xdat,DUPRECI[:,j,i],c='grey',label=r'ETP',lw=2)
 ax[1,1].set_ylim(0.3,1.1)
 ax[1,1].set_xticks(range(0,ndt,12)) 
 xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
@@ -603,7 +736,8 @@ ax[1,1].text(pnoon,0.32,'N')
 marknm=r'($e$)'+r'Mean Rainrate '+r'($mm$ $hr^{-1}$)'
 ax[1,1].set_title(marknm)
 ymajorLocator   = MultipleLocator(0.2)
-ax[1,1].yaxis.set_major_locator(ymajorLocator) 
+ax[1,1].yaxis.set_major_locator(ymajorLocator)
+ax[1,1].set_xlabel('UTC') 
 #ax[0,2].set_xlabel('UTC') 
 ij=ij+1
 #\
@@ -625,18 +759,19 @@ ax[1,1].legend(frameon=False)
 ax[1,1].text(pnoon,0.65,'N')
 ''' 
 #
-ax[1,2].plot(xdat,TYRAIN[1,:,0,4],c='g',label=r'WTP',lw=2)
-ax[1,2].plot(xdat,TYRAIN[1,:,0,5],c='r',label=r'ETP',lw=2)
+ax[1,2].plot(xdat,TYRAIN[1,:,0,4],c='k',label=r'WTP',lw=2)
+ax[1,2].plot(xdat,TYRAIN[1,:,0,5],c='grey',label=r'ETP',lw=2)
 ax[1,2].legend(frameon=False)
 ax[1,2].set_ylim(0.3,0.75)
 ax[1,2].set_xticks(range(0,ndt,12)) 
 xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
 ax[1,2].set_xticklabels(xticklabels, size=14)
-marknm=r'($f$)'+r'Stratifarm Rainrate '+r'($mm$ $hr^{-1}$)'
+marknm=r'($f$)'+r'Stratiform Rainrate '+r'($mm$ $hr^{-1}$)'
 ax[1,2].set_title(marknm)
 ymajorLocator   = MultipleLocator(0.1)
 ax[1,2].yaxis.set_major_locator(ymajorLocator) 
 ax[1,2].text(pnoon,0.31,'N')
+ax[1,2].set_xlabel('UTC')
 plt.subplots_adjust(left = 0.1, wspace = 0.23, hspace = 0.22, \
     bottom = 0.18, top = 0.90, right=0.95)
 cax = fig.add_axes([0.15, 0.04, 0.7, 0.04])
@@ -645,7 +780,7 @@ fig.colorbar(ax[0,0], cax,extend='both',
 titlename=r"Frequency of Cloud Top for Convections ($10^{-2}%$)"
 plt.title(titlename,fontsize=14)
 plt.show()
-plt.savefig(dirpic+'deepcon_ETPWTP_du_Gray.png',dpi=300)        
+plt.savefig(dirpic+'deepcon_ETPWTP_du_Gray_p.png',dpi=300)        
 plt.show()
 plt.close()
 #
@@ -700,5 +835,136 @@ ax[2,2].set_xticks(range(0,ndt,12))
 xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
 ax[2,2].set_xticklabels(xticklabels, size=14)
 plt.savefig(dirpic+'deepcon_ETPWTP_thknss.png',dpi=300)        
+plt.show()
+plt.close()
+#############################################################################################
+font = {'family' : 'serif',
+        'color'  : 'w',
+        'weight' : 'normal',
+        'size'   : 12,
+        }  
+fig,ax=plt.subplots(nrows=2,ncols=3,figsize=(12,8))
+#maxlevs=[]
+ij=1   
+ir=0
+jc=0
+j=0 # for deep convection        
+i=4
+plt.subplot(2,3,ij)   # plot ax[i,j]
+ax[0,0]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,cmap=cm.jet, levels=cloudlevs,extend='both')
+marknm=r'($a$)'+' WTP'
+#plt.title(marknm,fontsize=14)
+axx=fig.add_subplot(2,3,ij)                         
+axx.set_xticks(range(0,ndt,12)) 
+xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
+axx.set_xticklabels(xticklabels, size=14)   
+axx.set_ylim(4,16)
+axx.set_title(marknm)
+axx.set_ylabel('Height'+r'($km$)',fontsize=16)
+#axx.set_xlabel('UTC')
+pnoon=96*6/24
+axx.text(pnoon,4.2,'N',fontdict=font)
+ymajorLocator   = MultipleLocator(4)
+axx.yaxis.set_major_locator(ymajorLocator)
+for tick in axx.xaxis.get_major_ticks():
+    tick.label1On = False     
+ij=ij+1
+i=5
+plt.subplot(2,3,ij)
+ax[0,1]=plt.contourf(xdat,zdat,FCDY[:,:,j,i]*100.,cmap=cm.jet, levels=cloudlevs,extend='both')
+marknm=r'($b$)'+' ETP'
+axx=fig.add_subplot(2,3,ij)                         
+axx.set_xticks(range(0,ndt,12)) 
+xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
+axx.set_xticklabels(xticklabels, size=14) 
+axx.set_ylim(4,16)
+ymajorLocator   = MultipleLocator(4)
+axx.yaxis.set_major_locator(ymajorLocator) 
+axx.set_title(marknm)
+axx.set_ylabel('Height'+r'($km$)',fontsize=16)
+#axx.set_xlabel('UTC') 
+for tick in axx.xaxis.get_major_ticks():
+    tick.label1On = False 
+axx.text(pnoon,4.2,'N',fontdict=font) 
+ij=ij+1
+j=1
+i=4
+ax[0,2].plot(xdat,SRFHT[0,:,0,4]+SRFHT[1,:,0,4],c='r',label=r'WTP',lw=2)
+ax[0,2].plot(xdat,SRFHT[0,:,0,5]+SRFHT[1,:,0,5],c='g',label=r'ETP',lw=2)
+#ax[0,1].plot(xdat,DUIPH[:,j,i],c='b',label=r'$IWP$')
+#ax[0,1].plot(xdat,DULPH[:,j,i],c='r',label=r'$LWP$')
+ax[0,2].legend(frameon=False)
+ax[0,2].set_xticks(range(0,ndt,12)) 
+xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
+ax[0,2].set_xticklabels(xticklabels, size=14) 
+ax[0,2].set_ylim(0,400)
+ax[0,2].legend(frameon=False)
+ax[0,2].text(pnoon,6,'N')
+marknm=r'($c$)'+r' SRF Heat Flux '+r'($W$ $m^{-2}$)'
+ax[0,2].set_title(marknm)
+ymajorLocator   = MultipleLocator(80)
+ax[0,2].yaxis.set_major_locator(ymajorLocator)
+for tick in ax[0,2].xaxis.get_major_ticks():
+    tick.label1On = False    
+#
+i=4
+ax[1,0].plot(xdat,DUIPH[:,j,i]+DULPH[:,j,i],c='r',label=r'WTP',lw=2)
+#ax[1,0].plot(xdat,DUIPH[:,2,i]+DULPH[:,2,i],c='g',label=r'$St(WTP)$',ls='dotted',lw=2)
+i=5
+ax[1,0].plot(xdat,DUIPH[:,j,i]+DULPH[:,j,i],c='g',label=r'ETP',lw=2)
+#ax[1,0].plot(xdat,DUIPH[:,2,i]+DULPH[:,2,i],c='r',label=r'$St(ETP)$',ls='dotted',lw=2)
+#ax[0,1].plot(xdat,DUIPH[:,j,i],c='b',label=r'$IWP$')
+#ax[0,1].plot(xdat,DULPH[:,j,i],c='r',label=r'$LWP$')
+ax[1,0].legend(frameon=False)
+ax[1,0].set_xticks(range(0,ndt,12)) 
+xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
+ax[1,0].set_xticklabels(xticklabels, size=14) 
+ax[1,0].set_ylim(200,800)
+ax[1,0].legend(frameon=False)
+ax[1,0].text(pnoon,208,'N')
+marknm=r'($d$)'+r' CWP '+r'($g$ $m^{-2}$)'
+ax[1,0].set_title(marknm)
+ymajorLocator   = MultipleLocator(150)
+ax[1,0].yaxis.set_major_locator(ymajorLocator)
+#ax[0,1].set_xlabel('UTC')  
+ij=ij+1
+j=0
+i=4
+ax[1,1].plot(xdat,DUPRECI[:,j,i],c='r',label=r'WTP',lw=2)
+i=5
+ax[1,1].plot(xdat,DUPRECI[:,j,i],c='g',label=r'ETP',lw=2)
+ax[1,1].set_ylim(0.3,1.1)
+ax[1,1].set_xticks(range(0,ndt,12)) 
+xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
+ax[1,1].set_xticklabels(xticklabels, size=14) 
+ax[1,1].legend(frameon=False)
+ax[1,1].text(pnoon,0.32,'N')
+marknm=r'($e$)'+r'Mean Rainrate '+r'($mm$ $hr^{-1}$)'
+ax[1,1].set_title(marknm)
+ymajorLocator   = MultipleLocator(0.2)
+ax[1,1].yaxis.set_major_locator(ymajorLocator) 
+#ax[0,2].set_xlabel('UTC') 
+ij=ij+1
+ax[1,2].plot(xdat,TYRAIN[1,:,0,4],c='r',label=r'WTP',lw=2)
+ax[1,2].plot(xdat,TYRAIN[1,:,0,5],c='g',label=r'ETP',lw=2)
+ax[1,2].legend(frameon=False)
+ax[1,2].set_ylim(0.3,0.75)
+ax[1,2].set_xticks(range(0,ndt,12)) 
+xticklabels = [xtime[nn] for nn in range(0,ndt,12)] 
+ax[1,2].set_xticklabels(xticklabels, size=14)
+marknm=r'($f$)'+r'Stratiform Rainrate '+r'($mm$ $hr^{-1}$)'
+ax[1,2].set_title(marknm)
+ymajorLocator   = MultipleLocator(0.1)
+ax[1,2].yaxis.set_major_locator(ymajorLocator) 
+ax[1,2].text(pnoon,0.31,'N')
+plt.subplots_adjust(left = 0.08, wspace = 0.3, hspace = 0.22, \
+    bottom = 0.18, top = 0.90, right=0.95)   
+cax = fig.add_axes([0.15, 0.04, 0.7, 0.04])
+fig.colorbar(ax[0,0], cax,extend='both',
+              spacing='uniform', orientation='horizontal')
+titlename=r"Frequency of Cloud Top for Convections ($10^{-2}%$)"
+plt.title(titlename,fontsize=14)
+plt.show()
+plt.savefig(dirpic+'deepcon_ETPWTP_du_color_p.png',dpi=300)        
 plt.show()
 plt.close()
